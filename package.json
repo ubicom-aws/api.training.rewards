@@ -11,10 +11,10 @@
     "yarn": ">=0.20.3"
   },
   "scripts": {
-    "dev-server": "cross-env NODE_ENV=development PORT=4040 gulp serve",
-    "start": "cross-env NODE_ENV=production PORT=443 gulp serve",
+    "dev-server": "cross-env NODE_ENV=development PORT=4040 MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 gulp serve",
+    "start": "cross-env NODE_ENV=production PORT=443 MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 gulp serve",
     "start:debug": "cross-env DEBUG=api.utopian.io:* yarn start",
-    "build": "cross-env NODE_ENV=production PORT=443 gulp",
+    "build": "gulp",
     "lint": "esw *.js server config --color",
     "lint:watch": "yarn lint -- --watch",
     "precommit": "yarn lint && yarn test",
