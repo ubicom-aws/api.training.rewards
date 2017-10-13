@@ -60,37 +60,42 @@ function update(req, res, next) {
 }
 
 function list(req, res, next) {
-  const { limit, skip } = req.query;
+  const { limit, skip, filterBy, sortBy, projectId = null, platform = null, author = null } = req.query;
 
-  Post.countAll()
+  console.log("--------COOKIES", req.cookies)
+
+  let query = {};
+  const sort = sortBy === 'created' ? { created: -1 } : { net_votes: -1 };
+
+  if (filterBy === 'active') {
+    query = {
+      created:
+        {
+          $gte: JSON.stringify(new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))))
+        }
+    };
+  }
+  if (filterBy === 'project') {
+    query = {
+      'json_metadata.repository.id': +projectId,
+      'json_metadata.platform': platform,
+    };
+  }
+  if (filterBy === 'author') {
+    query = {
+      author
+    };
+  }
+
+  Post.countAll({ query })
     .then(count => {
-      Post.list({ limit, skip })
+      Post.list({ limit, skip, query, sort })
         .then(posts => res.json({
           total: count,
           results: posts
         }))
         .catch(e => next(e));
-    })
-    .catch(e => next(e));
-}
 
-function listActive (req, res, next) {
-  const { limit, skip } = req.query;
-  const query = {
-    created:
-      {
-        $gte: new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000)))
-      }
-  };
-
-  Post.countAll({ query })
-    .then(count => {
-      Post.list({ limit, skip, query })
-        .then(posts => res.json({
-          total: count,
-          results: posts
-        }))
-        .catch(e => next(e));
     })
     .catch(e => next(e));
 }
@@ -102,4 +107,4 @@ function remove(req, res, next) {
     .catch(e => next(e));
 }
 
-export default { load, get, create, update, updateActive, list, listActive, remove };
+export default { load, get, create, update, list, remove };

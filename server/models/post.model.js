@@ -201,10 +201,11 @@ PostSchema.statics = {
       });
   },
   countAll({ query = {} } = {}) {
-    return this.count(JSON.stringify(query)).exec();
+    return this.count(query).exec();
   },
   list({ skip = 0, limit = 50, query = {}, sort = { created: -1 }} = {}) {
-    return this.find(JSON.stringify(query))
+    console.log(query)
+    return this.find(query)
       .sort(sort)
       .skip(+skip)
       .limit(+limit)

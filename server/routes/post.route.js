@@ -14,11 +14,6 @@ router.route('/:permlink')
   .put(postCtrl.update)
   .delete(postCtrl.remove);
 
-/*
-router.route('/update')
-  .get(postCtrl.updateActive);
-*/
-
 router.param('permlink', postCtrl.load);
 
 export default router;

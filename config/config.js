@@ -9,7 +9,11 @@ const envVarsSchema = Joi.object({
     .allow(['development', 'production', 'test', 'provision'])
     .default('development'),
   PORT: Joi.number()
-    .default(4040),
+    .when('NODE_ENV', {
+      is: Joi.string().equal('development'),
+      then: Joi.number().default(4040),
+      otherwise: Joi.number().default(443)
+    }),
   MONGOOSE_DEBUG: Joi.boolean()
     .when('NODE_ENV', {
       is: Joi.string().equal('development'),

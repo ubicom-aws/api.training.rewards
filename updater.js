@@ -37,8 +37,10 @@ conn.once('open', function ()
                 if (!err) {
                   console.log(`---- NOW CHECKING POST ${post.permlink} by ${post.author} ----\n`);
 
+                  updatedPost['json_metadata'] = JSON.parse(updatedPost['json_metadata']);
+
                   for (var prop in updatedPost) {
-                    if (updatedPost[prop] !== post[prop]) {
+                      if (updatedPost[prop] !== post[prop]) {
                       post[prop] = updatedPost[prop];
                       console.log(`UPDATED PROP ${prop} was ${JSON.stringify(post[prop])} now is ${JSON.stringify(updatedPost[prop])}\n`);
                     }

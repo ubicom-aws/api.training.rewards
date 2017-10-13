@@ -1,8 +1,8 @@
 {
-  "name": "express-mongoose-es6-rest-api",
-  "version": "2.0.0",
-  "description": "A Boilerplate application for building REST APIs using express, mongoose in ES6 with code coverage",
-  "author": "Kunal Kapadia <kunalkapadia12@gmail.com>",
+  "name": "api.utopian.io",
+  "version": "1.0.0",
+  "description": "RESTful API for Utopian.io",
+  "author": "Diego Pucci <me@diegopucci.com>",
   "main": "index.js",
   "private": false,
   "engines": {
@@ -11,9 +11,10 @@
     "yarn": ">=0.20.3"
   },
   "scripts": {
-    "start": "gulp serve",
-    "start:debug": "cross-env DEBUG=express-mongoose-es6-rest-api:* yarn start",
-    "build": "gulp",
+    "dev-server": "cross-env NODE_ENV=development PORT=4040 gulp serve",
+    "start": "cross-env NODE_ENV=production PORT=443 gulp serve",
+    "start:debug": "cross-env DEBUG=api.utopian.io:* yarn start",
+    "build": "cross-env NODE_ENV=production PORT=443 gulp",
     "lint": "esw *.js server config --color",
     "lint:watch": "yarn lint -- --watch",
     "precommit": "yarn lint && yarn test",
@@ -25,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:KunalKapadia/express-mongoose-es6-rest-api.git"
+    "url": "git@github.com:utopian-io/api.utopian.io.git"
   },
   "keywords": [
     "express",

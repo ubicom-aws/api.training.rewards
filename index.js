@@ -5,7 +5,10 @@ import util from 'util';
 import config from './config/config';
 import app from './config/express';
 
-const debug = require('debug')('express-mongoose-es6-rest-api:index');
+const https = require('https');
+const fs = require('fs');
+
+const debug = require('debug')('api.utopian.io:index');
 
 // make bluebird default Promise
 Promise = require('bluebird'); // eslint-disable-line no-global-assign
@@ -31,9 +34,20 @@ if (config.MONGOOSE_DEBUG) {
 // src: https://github.com/mochajs/mocha/issues/1912
 if (!module.parent) {
   // listen on port config.port
-  app.listen(config.port, () => {
-    console.info(`server started on port ${config.port} (${config.env})`); // eslint-disable-line no-console
-  });
+
+  if (config.env === 'production') {
+    const options = {
+      cert: fs.readFileSync('/etc/letsencrypt/live/api.utopian.io/fullchain.pem'),
+      key: fs.readFileSync('/etc/letsencrypt/live/api.utopian.io/privkey.pem')
+    };
+
+    https.createServer(options, app).listen(config.port);
+
+  } else {
+    app.listen(config.port, () => {
+      console.info(`server started on port ${config.port} (${config.env})`); // eslint-disable-line no-console
+    });
+  }
 }
 
 export default app;
