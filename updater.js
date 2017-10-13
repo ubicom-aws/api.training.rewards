@@ -14,7 +14,7 @@ conn.once('open', function ()
   const query = {
     created:
       {
-        $gte: new Date((new Date().getTime() - (15 * 24 * 60 * 60 * 1000)))
+        $gte: JSON.stringify(new Date((new Date().getTime() - (15 * 24 * 60 * 60 * 1000))))
       }
   };
 
