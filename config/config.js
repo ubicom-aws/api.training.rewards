@@ -20,6 +20,7 @@ const envVarsSchema = Joi.object({
       then: Joi.boolean().default(true),
       otherwise: Joi.boolean().default(false)
     }),
+  STEEM_NODE: Joi.string().default('https://steemd-int.steemit.com'),
   MONGO_HOST: Joi.string().required()
     .description('Mongo DB host url'),
   MONGO_PORT: Joi.number()
@@ -35,6 +36,7 @@ if (error) {
 const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
+  steemNode: envVars.STEEM_NODE,
   mongooseDebug: envVars.MONGOOSE_DEBUG,
   mongo: {
     host: envVars.MONGO_HOST,
