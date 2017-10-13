@@ -8,6 +8,12 @@ export default {
       mobileNumber: Joi.string().regex(/^[1-9][0-9]{9}$/).required()
     }
   },
+  createPost: {
+    body: {
+      author: Joi.string().required(),
+      permlink: Joi.string().required(),
+    }
+  },
 
   // UPDATE /api/users/:userId
   updateUser: {
