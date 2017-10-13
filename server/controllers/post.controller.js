@@ -62,8 +62,6 @@ function update(req, res, next) {
 function list(req, res, next) {
   const { limit, skip, filterBy, sortBy, projectId = null, platform = null, author = null } = req.query;
 
-  console.log("--------COOKIES", req.cookies)
-
   let query = {};
   const sort = sortBy === 'created' ? { created: -1 } : { net_votes: -1 };
 
