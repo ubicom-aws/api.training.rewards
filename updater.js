@@ -23,7 +23,7 @@ conn.once('open', function ()
     .then(count => {
       if (count === 0) {
         console.log(`NO POSTS TO UPDATE. ENDED.`);
-        return;
+        process.exit(0);
       } else {
         console.log(`${count} ACTIVE POSTS. CHECKING AND UPDATING`);
       }
