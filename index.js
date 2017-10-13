@@ -35,17 +35,15 @@ if (config.MONGOOSE_DEBUG) {
 if (!module.parent) {
   // listen on port config.port
 
-  console.log("HERE");
-
   if (config.env === 'production') {
     const options = {
       cert: fs.readFileSync('/etc/letsencrypt/live/api.utopian.io/fullchain.pem'),
       key: fs.readFileSync('/etc/letsencrypt/live/api.utopian.io/privkey.pem')
     };
 
-    console.log(config.port);
-
-    https.createServer(options, app).listen(config.port);
+    https.createServer(options, app).listen(config.port, () => {
+      console.info(`server started on port ${config.port} (${config.env})`); // eslint-disable-line no-console
+    });
 
   } else {
     app.listen(config.port, () => {
