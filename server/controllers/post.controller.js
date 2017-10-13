@@ -1,5 +1,5 @@
 import Post from '../models/post.model';
-const steem = require('steem');
+import steemAPI from '../steemAPI';
 
 function load(req, res, next, permlink) {
   Post.get(permlink)
@@ -18,7 +18,7 @@ function create(req, res, next) {
   const author = req.body.author;
   const permlink = req.body.permlink;
 
-  steem.api.getContent(author, permlink, (err, post) => {
+  steemAPI.getContent(author, permlink, (err, post) => {
     if (!err) {
       const newPost = new Post({
         ...post,
@@ -40,7 +40,7 @@ function update(req, res, next) {
   const author = req.body.author;
   const permlink = req.body.permlink;
 
-  steem.api.getContent(author, permlink, (err, updatedPost) => {
+  steemAPI.getContent(author, permlink, (err, updatedPost) => {
     if (!err) {
 
       for (var prop in updatedPost) {
