@@ -1,17 +1,12 @@
 import Post from '../models/post.model';
 import steemAPI from '../steemAPI';
 
-function load(req, res, next, permlink) {
-  Post.get(permlink)
+function get(req, res) {
+  Post.get(req.params.author, req.params.permlink)
     .then((post) => {
-      req.post = post;
-      return next();
+      res.json(post);
     })
     .catch(e => next(e));
-}
-
-function get(req, res) {
-  return res.json(req.post);
 }
 
 function create(req, res, next) {
@@ -36,27 +31,32 @@ function create(req, res, next) {
 }
 
 function update(req, res, next) {
-  const post = req.post;
   const author = req.body.author;
   const permlink = req.body.permlink;
 
-  steemAPI.getContent(author, permlink, (err, updatedPost) => {
-    if (!err) {
+  Post.get(req.params.author, req.params.permlink)
+    .then((post) => {
+      steemAPI.getContent(author, permlink, (err, updatedPost) => {
+        if (!err) {
 
-      for (var prop in updatedPost) {
-        if (updatedPost[prop] !== post[prop]) {
-          post[prop] = updatedPost[prop]
+          updatedPost['json_metadata'] = JSON.parse(updatedPost['json_metadata']);
+
+          for (var prop in updatedPost) {
+            if (updatedPost[prop] !== post[prop]) {
+              post[prop] = updatedPost[prop]
+            }
+          }
+
+          post.save()
+            .then(savedPost => res.json(savedPost))
+            .catch(e => {
+              console.log("ERROR UPDATING POST", e);
+              next(e);
+            });
         }
-      }
-
-      post.save()
-        .then(savedPost => res.json(savedPost))
-        .catch(e => {
-          console.log("ERROR UPDATING POST", e);
-          next(e);
-        });
-    }
-  });
+      });
+    })
+    .catch(e => next(e));
 }
 
 function list(req, res, next) {
@@ -105,4 +105,4 @@ function remove(req, res, next) {
     .catch(e => next(e));
 }
 
-export default { load, get, create, update, list, remove };
+export default { get, create, update, list, remove };
