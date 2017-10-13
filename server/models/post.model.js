@@ -189,8 +189,8 @@ PostSchema.method({
 });
 
 PostSchema.statics = {
-  get(permlink) {
-    return this.findOne({ permlink })
+  get(author, permlink) {
+    return this.findOne({ author, permlink })
       .exec()
       .then((post) => {
         if (post) {

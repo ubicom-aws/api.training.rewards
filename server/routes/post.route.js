@@ -9,11 +9,9 @@ router.route('/')
   .get(postCtrl.list)
   .post(validate(paramValidation.createPost), postCtrl.create);
 
-router.route('/:permlink')
+router.route('/:author/:permlink')
   .get(postCtrl.get)
   .put(postCtrl.update)
   .delete(postCtrl.remove);
-
-router.param('permlink', postCtrl.load);
 
 export default router;
