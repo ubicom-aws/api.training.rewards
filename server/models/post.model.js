@@ -183,6 +183,10 @@ const PostSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  reviewed: {
+    type: Boolean,
+    required: true,
+  },
 });
 
 PostSchema.method({
@@ -204,7 +208,7 @@ PostSchema.statics = {
     return this.count(query).exec();
   },
   list({ skip = 0, limit = 50, query = {}, sort = { created: -1 }} = {}) {
-    console.log(query)
+    console.log(query);
     return this.find(query)
       .sort(sort)
       .skip(+skip)

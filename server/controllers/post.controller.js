@@ -1,7 +1,7 @@
 import Post from '../models/post.model';
 import steemAPI from '../steemAPI';
 
-function get(req, res) {
+function get(req, res, next) {
   Post.get(req.params.author, req.params.permlink)
     .then((post) => {
       res.json(post);
@@ -17,6 +17,7 @@ function create(req, res, next) {
     if (!err) {
       const newPost = new Post({
         ...post,
+        reviewed: false,
         json_metadata: JSON.parse(post.json_metadata)
       });
 
@@ -33,6 +34,7 @@ function create(req, res, next) {
 function update(req, res, next) {
   const author = req.body.author;
   const permlink = req.body.permlink;
+  const reviewed = req.body.reviewed || false;
 
   Post.get(req.params.author, req.params.permlink)
     .then((post) => {
@@ -41,9 +43,14 @@ function update(req, res, next) {
 
           updatedPost['json_metadata'] = JSON.parse(updatedPost['json_metadata']);
 
+          // making sure the post stays verified or gets verified on update
+          if (reviewed) {
+            post.reviewed = true;
+          }
+
           for (var prop in updatedPost) {
             if (updatedPost[prop] !== post[prop]) {
-              post[prop] = updatedPost[prop]
+              post[prop] = updatedPost[prop];
             }
           }
 
@@ -60,27 +67,59 @@ function update(req, res, next) {
 }
 
 function list(req, res, next) {
-  const { limit, skip, filterBy, sortBy, projectId = null, platform = null, author = null } = req.query;
+  /*
+    type : author | project | all
+    category: ideas | code | graphic | social | all
+    sortBy: created | votes | reward
+    filterBy: active | any
+   */
+  const { limit, skip, type = 'all', category = 'any', sortBy = 'created', filterBy = 'any', projectId = null, platform = null, author = null } = req.query;
+  const activeSince = new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000)));
+  let sort = { created: -1 };
+  let query = {
+    reviewed: true,
+  };
 
-  let query = {};
-  const sort = sortBy === 'created' ? { created: -1 } : { net_votes: -1 };
+  if (filterBy === 'review') {
+    sort = { created : 1 };
+  }
+
+  if (sortBy === 'votes') {
+    sort = { net_votes : -1 };
+  }
+
+  if (filterBy === 'review') {
+    query = {
+      ...query,
+      reviewed: false,
+      created:
+        {
+          $gte: activeSince.toISOString()
+        },
+    }
+  }
 
   if (filterBy === 'active') {
     query = {
+      ...query,
       created:
         {
-          $gte: JSON.stringify(new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))))
-        }
+          $gte: activeSince.toISOString()
+        },
     };
   }
-  if (filterBy === 'project') {
+
+  if (type === 'project') {
     query = {
+      ...query,
       'json_metadata.repository.id': +projectId,
       'json_metadata.platform': platform,
     };
   }
-  if (filterBy === 'author') {
+
+  if (type === 'author') {
     query = {
+      ...query,
       author
     };
   }
