@@ -68,12 +68,12 @@ function update(req, res, next) {
 
 function list(req, res, next) {
   /*
-    type : author | project | all
-    category: ideas | code | graphic | social | all
+    section : author | project | all
+    type: ideas | code | graphics | social | all
     sortBy: created | votes | reward
-    filterBy: active | any
+    filterBy: active | review | any
    */
-  const { limit, skip, type = 'all', category = 'any', sortBy = 'created', filterBy = 'any', projectId = null, platform = null, author = null } = req.query;
+  const { limit, skip, section = 'all', type = 'all', sortBy = 'created', filterBy = 'any', projectId = null, platform = null, author = null } = req.query;
   const activeSince = new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000)));
   let sort = { created: -1 };
   let query = {
@@ -109,7 +109,14 @@ function list(req, res, next) {
     };
   }
 
-  if (type === 'project') {
+  if (type !== 'all') {
+    query = {
+      ...query,
+      'json_metadata.type': type,
+    };
+  }
+
+  if (section === 'project') {
     query = {
       ...query,
       'json_metadata.repository.id': +projectId,
@@ -117,7 +124,7 @@ function list(req, res, next) {
     };
   }
 
-  if (type === 'author') {
+  if (section === 'author') {
     query = {
       ...query,
       author
