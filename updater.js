@@ -11,10 +11,11 @@ const conn = mongoose.connection;
 conn.once('open', function ()
 {
   // updating only posts created in last 15 days
+  const activeSince = new Date((new Date().getTime() - (15 * 24 * 60 * 60 * 1000)));
   const query = {
     created:
       {
-        $gte: JSON.stringify(new Date((new Date().getTime() - (15 * 24 * 60 * 60 * 1000))))
+        $gte: activeSince.toISOString()
       }
   };
 
