@@ -88,11 +88,6 @@ function list(req, res, next) {
     reviewed: true,
   };
 
-  // homepage order by votes DESC
-  if (section === 'all' && !projectId) {
-    sort = { net_votes : -1 };
-  }
-
   if (filterBy === 'review') {
     sort = { created : 1 };
   }
