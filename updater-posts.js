@@ -46,6 +46,9 @@ conn.once('open', function ()
                     updatedPost.json_metadata.type = post.json_metadata.type;
                   }
 
+                  // @UTOPIAN forcing repository from Mongo
+                  updatedPost.json_metadata.repository = post.json_metadata.repository;
+
                   for (var prop in updatedPost) {
                     if (updatedPost[prop] !== post[prop]) {
                       post[prop] = updatedPost[prop];

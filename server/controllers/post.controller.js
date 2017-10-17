@@ -48,6 +48,9 @@ function update(req, res, next) {
             updatedPost.json_metadata.type = post.json_metadata.type;
           }
 
+          // @UTOPIAN forcing repository from Mongo
+          updatedPost.json_metadata.repository = post.json_metadata.repository;
+
           // making sure the post stays verified or gets verified on update
           if (reviewed) {
             post.reviewed = true;
@@ -84,6 +87,11 @@ function list(req, res, next) {
   let query = {
     reviewed: true,
   };
+
+  // homepage order by votes DESC
+  if (section === 'all' && !projectId) {
+    sort = { net_votes : -1 };
+  }
 
   if (filterBy === 'review') {
     sort = { created : 1 };
