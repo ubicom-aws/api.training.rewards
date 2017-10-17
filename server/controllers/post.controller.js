@@ -44,7 +44,7 @@ function update(req, res, next) {
           updatedPost.json_metadata = JSON.parse(updatedPost.json_metadata);
 
           // @UTOPIAN backward compatibility with older posts without type
-          if (!updatedPost.json_metadata.type && post.json_metadata.type) {
+          if (!updatedPost.json_metadata.type && post.json_metadata.type || updatedPost.json_metadata.type !== post.json_metadata.type) {
             updatedPost.json_metadata.type = post.json_metadata.type;
           }
 
