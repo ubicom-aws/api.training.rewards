@@ -1,7 +1,8 @@
 import Post from './server/models/post.model';
-import config from './config/config';
 
-const steem = require('steem');
+import config from './config/config';
+import steemApi from './server/steemAPI';
+
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 
@@ -34,7 +35,7 @@ conn.once('open', function ()
         .then(posts => {
           if(posts.length > 0) {
             posts.forEach((post, index) => {
-              steem.api.getContent(post.author, post.permlink, (err, updatedPost) => {
+              steemApi.getContent(post.author, post.permlink, (err, updatedPost) => {
                 if (!err) {
                   console.log(`---- NOW CHECKING POST ${post.permlink} by ${post.author} ----\n`);
 
@@ -46,7 +47,7 @@ conn.once('open', function ()
                   }
 
                   for (var prop in updatedPost) {
-                      if (updatedPost[prop] !== post[prop]) {
+                    if (updatedPost[prop] !== post[prop]) {
                       post[prop] = updatedPost[prop];
                       console.log(`UPDATED PROP ${prop} was ${JSON.stringify(post[prop])} now is ${JSON.stringify(updatedPost[prop])}\n`);
                     }
