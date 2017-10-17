@@ -136,16 +136,11 @@ function list(req, res, next) {
     };
   }
 
-  Post.countAll({ query })
-    .then(count => {
-      Post.list({ limit, skip, query, sort })
-        .then(posts => res.json({
-          total: count,
-          results: posts
-        }))
-        .catch(e => next(e));
-
-    })
+  Post.list({ limit, skip, query, sort })
+    .then(posts => res.json({
+      total: posts.length,
+      results: posts
+    }))
     .catch(e => next(e));
 }
 

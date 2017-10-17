@@ -14,7 +14,11 @@ export default {
       permlink: Joi.string().required(),
     }
   },
-
+  createSponsor: {
+    body: {
+      account: Joi.string().required(),
+    }
+  },
   // UPDATE /api/users/:userId
   updateUser: {
     body: {
