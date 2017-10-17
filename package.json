@@ -13,7 +13,8 @@
   "scripts": {
     "dev-server": "cross-env NODE_ENV=development PORT=4040 MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 gulp serve",
     "start": "cross-env NODE_ENV=production PORT=443 MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 gulp serve",
-    "updater": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./updater.js",
+    "updater-posts": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./updater-posts.js",
+    "updater-sponsors": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./updater-sponsors.js",
     "start:debug": "cross-env DEBUG=api.utopian.io:* yarn start",
     "build": "gulp",
     "lint": "esw *.js server config --color",
