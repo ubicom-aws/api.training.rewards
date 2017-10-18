@@ -19,7 +19,7 @@ function create(req, res, next) {
         const account = accounts[0];
         Sponsor.get(account.name).then(isSponsor =>{
           if(!isSponsor) {
-            const json_metadata = JSON.parse(account.json_metadata);
+            const json_metadata = account.json_metadata ? JSON.parse(account.json_metadata) : {};
             const newSponsor = new Sponsor({
               account: account.name,
               json_metadata,
@@ -45,7 +45,8 @@ function create(req, res, next) {
       }
     } else {
       res.status(500).json({
-        message: 'Something went wrong. Please try again later!' + err
+        message: 'Something went wrong. Please try again later!';
+        console.log(err);
       });
     }
   });
