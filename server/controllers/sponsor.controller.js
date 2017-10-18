@@ -45,8 +45,7 @@ function create(req, res, next) {
       }
     } else {
       res.status(500).json({
-        message: 'Something went wrong. Please try again later!';
-        console.log(err);
+        message: 'Something went wrong. Please try again later!'
       });
     }
   });
