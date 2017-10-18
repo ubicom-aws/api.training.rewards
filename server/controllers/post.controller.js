@@ -82,7 +82,7 @@ function list(req, res, next) {
     filterBy: active | review | any
    */
   const { limit, skip, section = 'all', type = 'all', sortBy = 'created', filterBy = 'any', projectId = null, platform = null, author = null } = req.query;
-  const activeSince = new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000)));
+  const activeSince = new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))).toISOString();
   let sort = { created: -1 };
   let query = {
     reviewed: true,
@@ -102,7 +102,7 @@ function list(req, res, next) {
       reviewed: false,
       created:
         {
-          $gte: activeSince.toISOString()
+          $gte: activeSince
         },
     }
   }
@@ -112,7 +112,17 @@ function list(req, res, next) {
       ...query,
       created:
         {
-          $gte: activeSince.toISOString()
+          $gt: activeSince
+        },
+    };
+  }
+
+  if (filterBy === 'inactive') {
+    query = {
+      ...query,
+      created:
+        {
+          $lt: activeSince
         },
     };
   }
@@ -139,11 +149,16 @@ function list(req, res, next) {
     };
   }
 
-  Post.list({ limit, skip, query, sort })
-    .then(posts => res.json({
-      total: posts.length,
-      results: posts
-    }))
+  Post.countAll({ query })
+    .then(count => {
+      Post.list({ limit, skip, query, sort })
+        .then(posts => res.json({
+          total: count,
+          results: posts
+        }))
+        .catch(e => next(e));
+
+    })
     .catch(e => next(e));
 }
 
