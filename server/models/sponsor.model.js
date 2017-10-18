@@ -13,7 +13,7 @@ const SponsorSchema = new mongoose.Schema({
   },
   json_metadata: {
     type: Object,
-    required: true,
+    required: false,
   },
   vesting_shares: {
     type: Number,
