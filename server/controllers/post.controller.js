@@ -149,6 +149,10 @@ function list(req, res, next) {
     };
   }
 
+  if (section === 'all') {
+    sort = { net_votes : -1 };
+  }
+
   Post.countAll({ query })
     .then(count => {
       Post.list({ limit, skip, query, sort })
