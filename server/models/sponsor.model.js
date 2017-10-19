@@ -15,6 +15,9 @@ const SponsorSchema = new mongoose.Schema({
     type: Object,
     required: false,
   },
+  total_paid_rewards: Number,
+  should_receive_rewards: Number,
+  percentage_total_vesting_shares: Number,
   vesting_shares: {
     type: Number,
     required: true,
@@ -46,6 +49,16 @@ SponsorSchema.statics = {
   },
   listAll() {
     return this.find()
+      .exec();
+  },
+  listBeneficiaries() {
+    return this.find({
+      vesting_shares: {
+        '$gt': 0
+      }
+    })
+      .sort({ should_receive_rewards: -1 })
+      .limit(8)
       .exec();
   }
 };

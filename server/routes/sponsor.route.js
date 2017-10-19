@@ -9,4 +9,7 @@ router.route('/')
   .get(sponsorCtrl.list)
   .post(validate(paramValidation.createSponsor), sponsorCtrl.create);
 
+router.route('/beneficiaries')
+  .get(sponsorCtrl.listBeneficiaries)
+
 export default router;

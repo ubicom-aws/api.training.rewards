@@ -10,6 +10,15 @@ function list(req, res, next) {
     .catch(e => next(e));
 }
 
+function listBeneficiaries(req, res, next) {
+  Sponsor.listBeneficiaries()
+    .then(sponsors => res.json({
+      total: sponsors.length,
+      results: sponsors
+    }))
+    .catch(e => next(e));
+}
+
 function create(req, res, next) {
   const account = req.body.account.replace('@', '');
 
@@ -23,7 +32,10 @@ function create(req, res, next) {
             const newSponsor = new Sponsor({
               account: account.name,
               json_metadata,
-              vesting_shares: 0
+              vesting_shares: 0,
+              percentage_total_vesting_shares: 0,
+              total_paid_rewards: 0,
+              should_receive_rewards: 0,
             });
 
             newSponsor.save()
@@ -51,4 +63,4 @@ function create(req, res, next) {
   });
 }
 
-export default { create, list };
+export default { create, list, listBeneficiaries };
