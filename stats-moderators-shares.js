@@ -13,9 +13,7 @@ const conn = mongoose.connection;
 conn.once('open', function ()
 {
   const dedicatedPercentageModerators = 5;
-  const paidRewardsDate = '1969-12-31T23:59:59';
   const query = {
-    cashout_time: paidRewardsDate,
     reviewed: true,
     moderator: {
       $exists : true
@@ -24,9 +22,9 @@ conn.once('open', function ()
 
   Post
     .countAll({ query })
-    .then(countPaidPosts => {
+    .then(countPosts => {
       Post
-        .list({ skip: 0, limit: countPaidPosts, query })
+        .list({ skip: 0, limit: countPosts, query })
         .then(posts => {
           if(posts.length > 0) {
             posts.forEach((post, indexPost) => {
@@ -42,10 +40,7 @@ conn.once('open', function ()
                     })
                   }
 
-                  console.log("MODERATOR", moderatorObj.account);
-
                   const queryTotalModerated = {
-                    cashout_time: paidRewardsDate,
                     moderator: moderatorObj.account,
                     reviewed: true,
                   };
@@ -55,8 +50,7 @@ conn.once('open', function ()
                     .then(currentModerated => {
                       Stats.get()
                         .then(stats => {
-                          console.log("TOTAL MOD", currentModerated);
-                          const percentageTotalShares = (currentModerated / countPaidPosts) * 100;
+                          const percentageTotalShares = (currentModerated / countPosts) * 100;
                           const total_paid_authors = stats.total_paid_authors;
                           const totalDedicatedModerators = (total_paid_authors * dedicatedPercentageModerators) / 100;
                           const shouldHaveReceivedRewards = (percentageTotalShares * totalDedicatedModerators) / 100;
