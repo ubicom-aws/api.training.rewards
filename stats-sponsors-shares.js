@@ -43,6 +43,11 @@ conn.once('open', function ()
                     sponsor.should_receive_rewards = mustReceiveRewards;
                   }
 
+                  if (shouldHaveReceivedRewards < total_paid_rewards) {
+                    const waitForNextRewards = 0;
+                    sponsor.should_receive_rewards = waitForNextRewards;
+                  }
+
                   sponsor.vesting_shares = currentVestingShares;
                   sponsor.percentage_total_vesting_shares = percentageTotalShares;
 

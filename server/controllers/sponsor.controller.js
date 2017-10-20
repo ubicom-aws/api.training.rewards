@@ -28,10 +28,8 @@ function create(req, res, next) {
         const account = accounts[0];
         Sponsor.get(account.name).then(isSponsor =>{
           if(!isSponsor) {
-            const json_metadata = account.json_metadata ? JSON.parse(account.json_metadata) : {};
             const newSponsor = new Sponsor({
               account: account.name,
-              json_metadata,
               vesting_shares: 0,
               percentage_total_vesting_shares: 0,
               total_paid_rewards: 0,
