@@ -12,7 +12,6 @@ const SponsorSchema = new mongoose.Schema({
     unique: true,
   },
   json_metadata: {
-    type: Object,
     required: false,
   },
   total_paid_rewards: Number,
@@ -58,7 +57,7 @@ SponsorSchema.statics = {
       }
     })
       .sort({ should_receive_rewards: -1 })
-      .limit(8)
+      .limit(7)
       .exec();
   }
 };

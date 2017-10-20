@@ -2,6 +2,9 @@ import express from 'express';
 import userRoutes from './user.route';
 import postRoutes from './post.route';
 import sponsorRoutes from './sponsor.route';
+import beneficiariesRoutes from './beneficiaries.route';
+
+import moderatorRoutes from './moderator.route';
 import statsRoutes from './stats.route';
 import authRoutes from './auth.route';
 
@@ -19,7 +22,11 @@ router.use('/posts', postRoutes);
 
 router.use('/stats', statsRoutes);
 
+router.use('/beneficiaries', beneficiariesRoutes);
+
 router.use('/sponsors', sponsorRoutes);
+
+router.use('/moderators', moderatorRoutes);
 
 // mount auth routes at /auth
 router.use('/auth', authRoutes);

@@ -35,6 +35,7 @@ function update(req, res, next) {
   const author = req.body.author;
   const permlink = req.body.permlink;
   const reviewed = req.body.reviewed || false;
+  const moderator = req.body.moderator || null;
 
   Post.get(req.params.author, req.params.permlink)
     .then((post) => {
@@ -44,16 +45,16 @@ function update(req, res, next) {
           updatedPost.json_metadata = JSON.parse(updatedPost.json_metadata);
 
           // @UTOPIAN backward compatibility with older posts without type
-          if (!updatedPost.json_metadata.type && post.json_metadata.type || updatedPost.json_metadata.type !== post.json_metadata.type) {
+          if (!updatedPost.json_metadata.type && post.json_metadata.type) {
             updatedPost.json_metadata.type = post.json_metadata.type;
           }
 
-          // @UTOPIAN forcing repository from Mongo
-          updatedPost.json_metadata.repository = post.json_metadata.repository;
-
-          // making sure the post stays verified or gets verified on update
           if (reviewed) {
             post.reviewed = true;
+          }
+
+          if (moderator) {
+            post.moderator = moderator;
           }
 
           for (var prop in updatedPost) {
@@ -83,14 +84,12 @@ function list(req, res, next) {
    */
   const { limit, skip, section = 'all', type = 'all', sortBy = 'created', filterBy = 'any', projectId = null, platform = null, author = null } = req.query;
   const activeSince = new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))).toISOString();
+  const cashoutTime = '1969-12-31T23:59:59';
+
   let sort = { created: -1 };
   let query = {
     reviewed: true,
   };
-
-  if (filterBy === 'review') {
-    sort = { created : 1 };
-  }
 
   if (sortBy === 'votes') {
     sort = { net_votes : -1 };
@@ -110,9 +109,9 @@ function list(req, res, next) {
   if (filterBy === 'active') {
     query = {
       ...query,
-      created:
+      cashout_time:
         {
-          $gt: activeSince
+          $gt: cashoutTime
         },
     };
   }
@@ -120,9 +119,9 @@ function list(req, res, next) {
   if (filterBy === 'inactive') {
     query = {
       ...query,
-      created:
+      cashout_time:
         {
-          $lt: activeSince
+          $eq: cashoutTime
         },
     };
   }
@@ -147,10 +146,6 @@ function list(req, res, next) {
       ...query,
       author
     };
-  }
-
-  if (section === 'all') {
-    sort = { net_votes : -1 };
   }
 
   Post.countAll({ query })
