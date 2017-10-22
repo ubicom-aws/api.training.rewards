@@ -69,7 +69,7 @@ conn.once('open', function ()
               }
             });
 
-            if (todayWeight >= 100000){
+            if (todayWeight >= 40000){
               // we make sure the bot is not exausting the voting power
               return;
             }
