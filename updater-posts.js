@@ -41,10 +41,15 @@ conn.once('open', function ()
 
                   updatedPost.json_metadata = JSON.parse(updatedPost.json_metadata);
 
-                  // @UTOPIAN backward compatibility with older posts without type
+                  // @UTOPIAN @TODO bad patches. Needs to have a specific place where the put the utopian data so it does not get overwritten
                   if (!updatedPost.json_metadata.type && post.json_metadata.type) {
                     updatedPost.json_metadata.type = post.json_metadata.type;
                   }
+                  if (updatedPost.json_metadata.app !== 'utopian/1.0.0') updatedPost.json_metadata.app = 'utopian/1.0.0';
+                  if (updatedPost.json_metadata.community !== 'utopian') updatedPost.json_metadata.community = 'utopian';
+                  // making sure the repository does not get deleted
+                  if (!updatedPost.json_metadata.repository) updatedPost.json_metadata.repository = post.json_metadata.repository;
+                  if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
 
                   for (var prop in updatedPost) {
                     if (updatedPost[prop] !== post[prop]) {
