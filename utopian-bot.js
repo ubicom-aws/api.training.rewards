@@ -71,6 +71,9 @@ conn.once('open', function ()
 
             if (todayWeight >= 100000){
               // we make sure the bot is not exausting the voting power
+              console.log("UPS I AM SO TIRED TODAY. VOTED TOO MUCH", todayWeight)
+              conn.close();
+              process.exit(0);
               return;
             }
           }
