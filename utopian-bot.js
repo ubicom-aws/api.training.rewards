@@ -311,6 +311,11 @@ conn.once('open', function ()
                                         achievements.push('In total you have more votes than average for this category. Bravo!');
                                       }
 
+                                      if (achievements.length >= 4) {
+                                        // WOW a lot of achievements. Better to give a gift
+                                        vote = vote + 15;
+                                      }
+
                                       // NEGATIVE VOTES
                                       if(reputation < 25) vote--;
                                       if(reputation < 15) vote--;
