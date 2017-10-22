@@ -61,12 +61,14 @@ conn.once('open', function ()
                     })
                     .finally(() => {
                       if ((index + 1) === count) {
+                        conn.close();
                         process.exit(0);
                       }
                     })
                 } else {
                   console.log(`CANNOT RETRIEVE POST - STEEM ERROR ${err}\n`);
                   if ((index + 1) === count) {
+                    conn.close();
                     process.exit(0);
                   }
                 }

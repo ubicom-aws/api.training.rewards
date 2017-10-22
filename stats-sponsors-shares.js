@@ -58,6 +58,7 @@ conn.once('open', function ()
 
                 sponsor.save(savedSponsor => {
                   if ((index + 1) === sponsors.length) {
+                    conn.close();
                     process.exit(0);
                   }
                 });

@@ -212,7 +212,6 @@ PostSchema.statics = {
     return this.count(query).exec();
   },
   list({ skip = 0, limit = 50, query = {}, sort = { created: -1 }} = {}) {
-    console.log(query);
     return this.find(query)
       .sort(sort)
       .skip(+skip)

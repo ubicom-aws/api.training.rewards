@@ -60,6 +60,7 @@ conn.once('open', function ()
                     }
                     moderator.save().then(savedModerator => {
                       if ((index + 1) === moderators.length) {
+                        conn.close();
                         process.exit(0);
                       }
                     });
