@@ -28,7 +28,7 @@ conn.once('open', function ()
   console.log("-----SECRET-------", secret);
 
   const now = new Date();
-  const limit = 10;
+  const limit = 30;
   const query = {
     reviewed: true,
     'active_votes.voter': { $ne: botAccount },
