@@ -41,6 +41,12 @@ const StatsSchema = new mongoose.Schema({
     analysis: categoriesStats,
     social: categoriesStats,
   },
+  utopian_votes: [
+    {
+      date: String,
+      weight: Number,
+    }
+  ]
 });
 
 StatsSchema.method({
