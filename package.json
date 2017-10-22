@@ -14,6 +14,8 @@
     "dev-server": "cross-env NODE_ENV=development PORT=4040 MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 gulp serve",
     "start": "cross-env NODE_ENV=production PORT=443 MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 gulp serve",
     "updater-posts": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./updater-posts.js",
+    "utopian-bot": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./utopian-bot.js $REFRESH_TOKEN $CLIENT_SECRET",
+    "stats-categories": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./stats-categories.js",
     "stats-moderators-shares": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./stats-moderators-shares.js",
     "stats-sponsors-shares": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./stats-sponsors-shares.js",
     "stats-total-paid": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./stats-total-paid.js",
@@ -70,9 +72,11 @@
     "mongoose": "4.7.4",
     "morgan": "1.7.0",
     "ramda": "^0.25.0",
+    "sc2-sdk": "0.0.5",
     "secure-random": "^1.1.1",
     "speakingurl": "^14.0.1",
     "steem": "^0.6.4",
+    "superagent": "^3.7.0",
     "winston": "2.3.0"
   },
   "devDependencies": {
@@ -98,7 +102,6 @@
     "gulp-nodemon": "^2.0.6",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-util": "^3.0.7",
-    "husky": "^0.13.1",
     "istanbul": "1.1.0-alpha.1",
     "mocha": "3.2.0",
     "run-sequence": "^1.1.5",

@@ -36,7 +36,10 @@ conn.once('open', function ()
               });
 
               stats.total_pending_rewards = total_pending_rewards;
-              stats.save().then(savedStats => process.exit(0));
+              stats.save().then(savedStats => {
+                conn.close();
+                process.exit(0);
+              });
             });
           }
         })

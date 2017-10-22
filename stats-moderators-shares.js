@@ -71,6 +71,7 @@ conn.once('open', function ()
 
                           moderatorObj.save(savedModerator => {
                             if ((indexPost + 1) === posts.length) {
+                              conn.close();
                               process.exit(0);
                             }
                           });

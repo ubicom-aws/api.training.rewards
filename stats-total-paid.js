@@ -55,7 +55,10 @@ conn.once('open', function ()
               stats.total_paid_authors = total_paid_authors;
               stats.total_paid_curators = total_paid_curators;
 
-              stats.save().then(savedStats => process.exit(0));
+              stats.save().then(savedStats => {
+                conn.close();
+                process.exit(0);
+              });
 
             });
           }

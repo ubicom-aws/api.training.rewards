@@ -6,12 +6,41 @@ import APIError from '../helpers/APIError';
  * Stats Schema
  */
 
+const categoriesStats = {
+  total_posts: Number,
+  total_likes: Number,
+  average_likes_per_post: Number,
+  total_paid: Number,
+  total_paid_authors: Number,
+  average_paid_authors: Number,
+  total_paid_curators: Number,
+  average_paid_curators: Number,
+  total_posts_length: Number,
+  average_posts_length: Number,
+  total_images: Number,
+  average_images_per_post: Number,
+  total_links: Number,
+  average_links_per_post: Number,
+  total_tags: Number,
+  average_tags_per_post: Number,
+};
+
 const StatsSchema = new mongoose.Schema({
   total_paid_rewards: Number,
   total_pending_rewards: Number,
   total_paid_sponsors: Number,
   total_paid_authors: Number,
   total_paid_curators: Number,
+  categories: {
+    ideas: categoriesStats,
+    development: categoriesStats,
+    'bug-hunting': categoriesStats,
+    translations: categoriesStats,
+    graphics: categoriesStats,
+    documentation: categoriesStats,
+    analysis: categoriesStats,
+    social: categoriesStats,
+  },
 });
 
 StatsSchema.method({
