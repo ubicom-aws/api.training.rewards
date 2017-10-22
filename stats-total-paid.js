@@ -12,9 +12,7 @@ mongoose.connect(`${config.mongo.host}`);
 const conn = mongoose.connection;
 conn.once('open', function ()
 {
-  const dedicatedPercentageSponsors = 20;
   const paidRewardsDate = '1969-12-31T23:59:59';
-  const startDateSponsors = '2017-10-16T23:59:59';
   const query = {
     cashout_time:
       {
@@ -33,7 +31,6 @@ conn.once('open', function ()
               let total_paid_rewards = 0;
               let total_paid_authors = 0;
               let total_paid_curators = 0;
-              let total_paid_sponsors = 0;
 
               posts.forEach((post, index) => {
                 const payoutDetails = calculatePayout(post);
@@ -44,14 +41,9 @@ conn.once('open', function ()
                 total_paid_rewards = total_paid_rewards + sumPayouts;
                 total_paid_authors = total_paid_authors + authorPayouts;
                 total_paid_curators = total_paid_curators + curatorPayouts;
-
-                if (post.created >= startDateSponsors) {
-                  total_paid_sponsors = total_paid_sponsors + authorPayouts;
-                }
               });
 
               stats.total_paid_rewards = total_paid_rewards;
-              stats.total_paid_sponsors = (total_paid_sponsors * dedicatedPercentageSponsors) / 100;
               stats.total_paid_authors = total_paid_authors;
               stats.total_paid_curators = total_paid_curators;
 

@@ -28,7 +28,6 @@ const categoriesStats = {
 const StatsSchema = new mongoose.Schema({
   total_paid_rewards: Number,
   total_pending_rewards: Number,
-  total_paid_sponsors: Number,
   total_paid_authors: Number,
   total_paid_curators: Number,
   categories: {
