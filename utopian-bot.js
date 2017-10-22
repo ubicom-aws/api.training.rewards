@@ -228,21 +228,25 @@ conn.once('open', function ()
                                     }
                                     achievements.push('You are having more votes than average for this category. Nice!');
                                   };
-                                  if (post.net_votes > followers.follower_count / 4 ) {
+
+                                  if (post.net_votes > followers.follower_count) {
+                                    // giving a tip for account swith small followers or 0
+                                    vote = vote + 5;
+                                  }
+
+                                  if (post.net_votes > followers.follower_count / 4 && followers.follower_count > 100) {
                                     // the post is voted by many considering the total number of followers
                                     vote = vote + 5;
 
-                                    if (post.net_votes > followers.follower_count / 3) {
+                                    if (post.net_votes > followers.follower_count / 3 && followers.follower_count > 100) {
                                       vote = vote + 5;
                                     }
-                                    if (post.net_votes > followers.follower_count / 2) {
-                                      vote = vote + 5;
-                                    }
-                                    if (post.net_votes > followers.follower_count) {
+                                    if (post.net_votes > followers.follower_count / 2 && followers.follower_count > 100) {
                                       vote = vote + 5;
                                     }
                                     achievements.push('This contribution is performing very well based on the number of your followers. Kudos!');
                                   }
+
                                   if (payoutDetails.potentialPayout > totalGenerating) {
                                     // the contribution is generating big payouts
                                     vote = vote + 10;
