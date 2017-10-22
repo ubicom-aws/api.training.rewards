@@ -8,6 +8,8 @@ import SteemConnect from 'sc2-sdk';
 import { createCommentPermlink } from './server/steemitHelpers';
 const request = require('superagent');
 
+import * as R from 'ramda';
+
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 
@@ -50,12 +52,33 @@ conn.once('open', function ()
 
       Stats.get()
         .then(stats => {
-          const { categories } = stats;
+          const { categories, utopian_votes } = stats;
+
+          if (utopian_votes && utopian_votes.length) {
+            let todayWeight = 0;
+            let totalVotesToday = 0;
+
+            utopian_votes.forEach(utopianVote => {
+              const voteDate = new Date(utopianVote.date);
+              const todayDate = new Date();
+
+              if(voteDate.setHours(0,0,0,0) == todayDate.setHours(0,0,0,0)) {
+                todayWeight = todayWeight + utopianVote.weight;
+                totalVotesToday++;
+              }
+            });
+
+            if (todayWeight >= 10000 || totalVotesToday >= 35){
+              // we make sure the bot is not exausting the voting power
+              return;
+            }
+          }
+
           Post
             .countAll({ query })
             .then(countAllPosts => {
               Post
-                .list({ skip: 0, limit: countAllPosts, query })
+                .list({ skip: 0, limit: countAllPosts, query, sort: { net_votes: -1 } })
                 .then(posts => {
                   if(posts.length > 0) {
                     posts.forEach((post, allPostsIndex) => {
@@ -394,6 +417,7 @@ conn.once('open', function ()
                                       setTimeout(function() {
                                         console.log("-----VOTING AUTHOR-------", post.author);
                                         console.log("VOTING PERMLINK", post.permlink);
+                                        console.log("VOTING VOTE", vote);
 
                                         const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
 
@@ -425,7 +449,17 @@ conn.once('open', function ()
                                         suggestions.forEach(suggestion => console.log(suggestion));
 
                                         if (vote > 0) {
-                                          console.log("VOTING VOTE", vote);
+
+                                          stats.utopian_votes = [
+                                            ...stats.utopian_votes,
+                                            {
+                                              date: new Date().toISOString(),
+                                              weight: vote * 100
+                                            }
+                                          ];
+
+                                          stats.save();
+
                                           SteemConnect.vote(botAccount, post.author, post.permlink, vote * 100)
                                             .then(() => {
                                               console.log("NOW SUBMITTING COMMENT FROM THEN");
