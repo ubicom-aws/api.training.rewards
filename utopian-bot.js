@@ -388,7 +388,7 @@ conn.once('open', function ()
                                   if (foundBots > 0) suggestions.push('Utopian has detected ' + foundBots + ' bot votes. I am the only bot you should love!!');
 
                                   vote = Math.round(vote);
-                                  if(vote < 0) vote = 0;
+                                  if(vote < 0) vote = 1;
                                   if(vote > 100) vote = 100;
 
 
@@ -417,6 +417,19 @@ conn.once('open', function ()
                                     console.log("VOTING PERMLINK", post.permlink);
                                     console.log("VOTING VOTE", vote);
 
+                                    achievements.forEach(achievement => console.log(achievement));
+                                    suggestions.forEach(suggestion => console.log(suggestion));
+
+                                    stats.utopian_votes = [
+                                      ...stats.utopian_votes,
+                                      {
+                                        date: new Date().toISOString(),
+                                        weight: vote * 100
+                                      }
+                                    ];
+
+                                    stats.save();
+
                                     const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
 
                                     const comment = () => {
@@ -443,36 +456,17 @@ conn.once('open', function ()
                                       });
                                     };
 
-                                    achievements.forEach(achievement => console.log(achievement));
-                                    suggestions.forEach(suggestion => console.log(suggestion));
-
-                                    if (vote > 0) {
-
-                                      stats.utopian_votes = [
-                                        ...stats.utopian_votes,
-                                        {
-                                          date: new Date().toISOString(),
-                                          weight: vote * 100
-                                        }
-                                      ];
-
-                                      stats.save();
-
-                                      SteemConnect.vote(botAccount, post.author, post.permlink, vote * 100)
-                                        .then(() => {
-                                          console.log("NOW SUBMITTING COMMENT FROM THEN");
-                                          comment();
-                                        }).catch(e => {
-                                        // I think there is a problem with sdk. Always gets in the catch
-                                        if (e.error_description == undefined) {
-                                          console.log("NOW SUBMITTING COMMENT FROM CATCH");
-                                          comment();
-                                        }
-                                      });
-                                    } else {
-                                      console.log("NOW SUBMITTING COMMENT WITHOUT VOTE");
-                                      comment();
-                                    }
+                                    SteemConnect.vote(botAccount, post.author, post.permlink, vote * 100)
+                                      .then(() => {
+                                        console.log("NOW SUBMITTING COMMENT FROM THEN");
+                                        comment();
+                                      }).catch(e => {
+                                      // I think there is a problem with sdk. Always gets in the catch
+                                      if (e.error_description == undefined) {
+                                        console.log("NOW SUBMITTING COMMENT FROM CATCH");
+                                        comment();
+                                      }
+                                    });
 
                                   }, allPostsIndex === 0 || 30000 * allPostsIndex);
 
