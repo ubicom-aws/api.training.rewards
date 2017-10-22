@@ -67,7 +67,8 @@ conn.once('open', function ()
                             steem.api.getFollowCount(account.name, function(err, followers) {
                               const contributionsQuery = {
                                 reviewed: true,
-                                id: { $ne: post.id }
+                                id: { $ne: post.id },
+                                author: post.author,
                               };
 
                               Post
