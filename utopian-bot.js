@@ -165,10 +165,10 @@ conn.once('open', function ()
                                         if (bodyLength - 1000 > average_posts_length) {
                                           vote = vote + 5;
                                         }
-                                        if (bodyLength - 50000 > average_posts_length) {
+                                        if (bodyLength - 3000 > average_posts_length) {
                                           vote = vote + 5;
                                         }
-                                        if (bodyLength - 10000 > average_posts_length) {
+                                        if (bodyLength - 5000 > average_posts_length) {
                                           vote = vote + 5;
                                         }
                                         achievements.push('You are writing more than the average for this category. Good job!');
@@ -321,16 +321,16 @@ conn.once('open', function ()
                                       if (linksLessThanAverage) vote--;
 
                                       if (bodyLessThanAverage && imagesLessThanAverage) {
-                                        if(average_posts_length - bodyLength > 5000) {
+                                        if(average_posts_length - bodyLength > 1000) {
                                           vote--;
                                         }
+                                        if(average_posts_length - bodyLength > 3000) {
+                                          vote = vote - 5;
+                                        }
+                                        if(average_posts_length - bodyLength > 7000) {
+                                          vote = vote - 5;
+                                        }
                                         if(average_posts_length - bodyLength > 10000) {
-                                          vote = vote - 5;
-                                        }
-                                        if(average_posts_length - bodyLength > 30000) {
-                                          vote = vote - 5;
-                                        }
-                                        if(average_posts_length - bodyLength > 60000) {
                                           vote = vote - 5;
                                         }
                                         suggestions.push('You are writing less than average for this category. Next time write a bit more.');
