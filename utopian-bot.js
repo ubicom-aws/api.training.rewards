@@ -8,8 +8,6 @@ import SteemConnect from 'sc2-sdk';
 import { createCommentPermlink } from './server/steemitHelpers';
 const request = require('superagent');
 
-import * as R from 'ramda';
-
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 
