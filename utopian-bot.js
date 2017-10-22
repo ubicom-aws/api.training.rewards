@@ -125,9 +125,9 @@ conn.once('open', function ()
                                   const curation_rewards = account.curation_rewards;
 
                                   const categoryStats = categories[post.json_metadata.type];
-                                  const contributionsVotes = contributions.map(contribution => contribution.active_votes);
-                                  const contributionsTotalVotes = contributionsVotes.length || 0;
-                                  const contributionsTotalVotesAverage = contributionsTotalVotes / contributionsCount;
+                                  let contributionsTotalVotes = 0;
+                                  contributions.forEach(contribution => contributionsTotalVotes = contributionsTotalVotes + contribution.net_votes);
+                                  const contributionsTotalVotesAverage = contributionsTotalVotes > 0 && contributionsCount > 0 ? contributionsTotalVotes / contributionsCount : 0;
 
                                   const bodyLength = post.body.length;
                                   const average_posts_length = Math.round(categoryStats.average_posts_length);
