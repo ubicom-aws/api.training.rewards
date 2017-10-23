@@ -44,6 +44,8 @@ const StatsSchema = new mongoose.Schema({
     {
       date: String,
       weight: Number,
+      permlink: String,
+      author: String,
     }
   ]
 });
