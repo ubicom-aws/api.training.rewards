@@ -185,7 +185,15 @@ const PostSchema = new mongoose.Schema({
   },
   reviewed: {
     type: Boolean,
-    required: true,
+    required: false,
+  },
+  flagged: {
+    type: Boolean,
+    required: false,
+  },
+  pending: {
+    type: Boolean,
+    required: false,
   },
   moderator: {
     type: String,

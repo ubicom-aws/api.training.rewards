@@ -34,6 +34,8 @@ function create(req, res, next) {
 function update(req, res, next) {
   const author = req.body.author;
   const permlink = req.body.permlink;
+  const flagged = req.body.flagged || false;
+  const pending = req.body.pending || false;
   const reviewed = req.body.reviewed || false;
   const moderator = req.body.moderator || null;
 
@@ -56,6 +58,14 @@ function update(req, res, next) {
 
           if (reviewed) {
             post.reviewed = true;
+          }
+
+          if (flagged) {
+            post.flagged = true;
+          }
+
+          if (pending) {
+            post.pending = true;
           }
 
           if (moderator) {
@@ -85,15 +95,18 @@ function list(req, res, next) {
     section : author | project | all
     type: ideas | code | graphics | social | all
     sortBy: created | votes | reward
-    filterBy: active | review | any
+    filterBy: active | review | any,
+    status: pending | flagged | any
    */
-  const { limit, skip, section = 'all', type = 'all', sortBy = 'created', filterBy = 'any', projectId = null, platform = null, author = null } = req.query;
-  const activeSince = new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))).toISOString();
+  const { limit, skip, section = 'all', type = 'all', sortBy = 'created', filterBy = 'any', status = 'any', projectId = null, platform = null, author = null, moderator = 'any' } = req.query;
   const cashoutTime = '1969-12-31T23:59:59';
 
   let sort = { created: -1 };
   let query = {
     reviewed: true,
+    flagged: {
+      $ne : true,
+    },
   };
 
   if (sortBy === 'votes') {
@@ -104,10 +117,23 @@ function list(req, res, next) {
     query = {
       ...query,
       reviewed: false,
-      created:
-        {
-          $gte: activeSince
-        },
+      pending: {
+        $ne : true,
+      },
+    }
+  }
+
+  if (status === 'pending') {
+    query = {
+      ...query,
+      pending: true,
+    }
+  }
+
+  if (status === 'flagged') {
+    query = {
+      ...query,
+      flagged: true,
     }
   }
 
@@ -150,6 +176,13 @@ function list(req, res, next) {
     query = {
       ...query,
       author
+    };
+  }
+
+  if (moderator && moderator !== 'any') {
+    query = {
+      ...query,
+      moderator,
     };
   }
 
