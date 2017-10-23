@@ -11,6 +11,8 @@ const ModeratorSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  banned: Boolean,
+  reviewed: Boolean,
   total_paid_rewards: Number,
   should_receive_rewards: Number,
   total_moderated: Number,
@@ -32,9 +34,12 @@ ModeratorSchema.statics = {
   },
   list() {
     return this.find({
-      total_moderated: {
-        '$gt': 0
-      }
+      banned: {
+        '$ne': true,
+      },
+      reviewed: {
+        '$eq': true,
+      },
     })
       .sort({ total_moderated: -1 })
       .exec();
@@ -47,7 +52,13 @@ ModeratorSchema.statics = {
     let query = {
       total_moderated: {
         '$gt': 0
-      }
+      },
+      banned: {
+        '$ne': true,
+      },
+      reviewed: {
+        '$eq': true,
+      },
     };
 
     if (exclude && exclude.length) {
