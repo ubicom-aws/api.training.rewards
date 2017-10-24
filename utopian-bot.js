@@ -160,6 +160,12 @@ conn.once('open', function ()
 
                                       let vote = 0;
 
+
+                                      if (post.json_metadata.type === 'development') {
+                                        vote = vote + 15;
+                                        achievements.push('I am a bot...I love developers... <3');
+                                      }
+
                                       // POSITIVE VOTES
                                       if (tagsInAverage || tagsMoreThanAverage) vote++;
 
