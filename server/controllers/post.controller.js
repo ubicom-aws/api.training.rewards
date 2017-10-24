@@ -117,9 +117,6 @@ function list(req, res, next) {
     query = {
       ...query,
       reviewed: false,
-      pending: {
-        $ne : true,
-      },
     }
   }
 
