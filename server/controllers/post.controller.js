@@ -58,14 +58,20 @@ function update(req, res, next) {
 
           if (reviewed) {
             post.reviewed = true;
+            post.pending = false;
+            post.flagged = false;
           }
 
           if (flagged) {
             post.flagged = true;
+            post.reviewed = false;
+            post.pending = false;
           }
 
           if (pending) {
             post.pending = true;
+            post.reviewed = false;
+            post.flagged = false;
           }
 
           if (moderator) {
@@ -117,6 +123,9 @@ function list(req, res, next) {
     query = {
       ...query,
       reviewed: false,
+      moderator: {
+        $ne: moderator,
+      }
     }
   }
 
@@ -124,6 +133,7 @@ function list(req, res, next) {
     query = {
       ...query,
       pending: true,
+      moderator,
     }
   }
 
@@ -173,13 +183,6 @@ function list(req, res, next) {
     query = {
       ...query,
       author
-    };
-  }
-
-  if (moderator && moderator !== 'any') {
-    query = {
-      ...query,
-      moderator,
     };
   }
 
