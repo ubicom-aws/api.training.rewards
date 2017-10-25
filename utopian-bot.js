@@ -160,28 +160,23 @@ conn.once('open', function ()
 
                                       let vote = 0;
 
-
+                                      // we love devs
                                       if (post.json_metadata.type === 'development') {
-                                        vote = vote + 15;
+                                        vote = vote + 30;
                                         achievements.push('I am a bot...I love developers... <3');
                                       }
 
                                       // POSITIVE VOTES
                                       if (tagsInAverage || tagsMoreThanAverage) vote++;
 
-                                      if(linksInAverage) {
-                                        vote = vote + 2.5;
-                                      };
-                                      if (linksMoreThanAverage) {
-                                        // length of the links bigger than average in its category. The contribution is informative
-                                        vote = vote + 2.5;
-                                      }
+
                                       if(bodyInAverage) {
-                                        vote = vote + 5;
+                                        vote = vote + 10;
+                                        achievements.push('Good amount of information. Thank you!');
                                       };
                                       if (bodyBiggerThanAverage) {
                                         // length of the body bigger than average in its category. The contribution is informative
-                                        if (bodyLength - 1000 > average_posts_length) {
+                                        if (bodyLength - 1500 > average_posts_length) {
                                           vote = vote + 5;
                                         }
                                         if (bodyLength - 3000 > average_posts_length) {
@@ -190,48 +185,35 @@ conn.once('open', function ()
                                         if (bodyLength - 5000 > average_posts_length) {
                                           vote = vote + 5;
                                         }
-                                        achievements.push('You are writing more than the average for this category. Good job!');
+                                        achievements.push('A very informative contribution. Good job!');
                                       };
-                                      if(imagesInAverage) {
-                                        vote = vote + 5;
-                                      };
-                                      if (imagesMoreThanAverage) {
-                                        // length of the images bigger than average in its category. The contribution is informative
-                                        if (images - 1 > average_images_per_post) {
-                                          vote = vote + 5;
-                                        }
-                                        if (images - 2 > average_images_per_post) {
-                                          vote = vote + 5;
-                                        }
-                                        if (images - 3 > average_images_per_post) {
-                                          vote = vote + 5;
-                                        }
-                                        achievements.push('You are using more images than the average for this category. Great!');
-                                      };
+
                                       if (votesInAverage) {
-                                        vote = vote + 5;
+                                        vote = vote + 10;
+                                        achievements.push('Votes on this contribution are going well. Nice!');
                                       }
                                       if (votesMoreThanAverage) {
                                         // the contribution is having more than average votes
                                         vote = vote + 5;
 
-                                        if (post.net_votes - 10 > average_likes_per_post) {
+                                        if (post.net_votes - 5 > average_likes_per_post) {
+                                          vote = vote + 5;
+                                        }
+                                        if (post.net_votes - 15 > average_likes_per_post) {
                                           vote = vote + 5;
                                         }
                                         if (post.net_votes - 30 > average_likes_per_post) {
                                           vote = vote + 5;
                                         }
-                                        if (post.net_votes - 50 > average_likes_per_post) {
-                                          vote = vote + 5;
-                                        }
                                         achievements.push('You are having more votes than average for this category. Nice!');
                                       };
 
-                                      if (post.net_votes > followers.follower_count) {
-                                        // giving a tip for account swith small followers or 0
-                                        vote = vote + 5;
-                                      }
 
+                                      if (post.net_votes > followers.follower_count && follower_count > 0) {
+                                        // giving a tip for account swith small followers or 0
+                                        vote = vote + 10;
+                                        achievements.push('You just got more votes than your total number of followers. Rock Star!');
+                                      }
                                       if (post.net_votes > followers.follower_count / 4 && followers.follower_count > 100) {
                                         // the post is voted by many considering the total number of followers
                                         vote = vote + 5;
@@ -247,7 +229,7 @@ conn.once('open', function ()
 
                                       if (payoutDetails.potentialPayout > totalGenerating) {
                                         // the contribution is generating big payouts
-                                        vote = vote + 10;
+                                        vote = vote + 20;
                                         if (payoutDetails.potentialPayout - 10 > totalGenerating) {
                                           vote = vote + 5;
                                         }
@@ -255,10 +237,10 @@ conn.once('open', function ()
                                           vote = vote + 5;
                                         }
                                         if (payoutDetails.potentialPayout - 50 > totalGenerating) {
-                                          vote = vote + 5;
+                                          vote = vote + 10;
                                         }
                                         if (payoutDetails.potentialPayout - 100 > totalGenerating) {
-                                          vote = vote + 5;
+                                          vote = vote + 20;
                                         }
                                         achievements.push('You are generating more rewards than average for this category. Super!');
                                       }
@@ -294,18 +276,18 @@ conn.once('open', function ()
                                       // number of contributions in total
                                       if (contributionsCount >= 3) {
                                         // git for being productive
-                                        vote = vote + 5;
+                                        vote = vote + 10;
                                         if (contributionsCount >= 10) {
                                           // git for being productive
                                           vote = vote + 5;
                                         }
-                                        if (contributionsCount >= 20) {
+                                        if (contributionsCount >= 30) {
                                           // git for being productive
-                                          vote = vote + 5;
+                                          vote = vote + 15;
                                         }
                                         if (contributionsCount >= 50) {
                                           // git for being productive
-                                          vote = vote + 5;
+                                          vote = vote + 20;
                                         }
                                         achievements.push('Seems like you contribute quite often. AMAZING!');
                                       }
@@ -313,16 +295,16 @@ conn.once('open', function ()
 
                                       // average of votes this user has on all his contributions
                                       if (contributionsTotalVotesAverage > 15) {
-                                        vote = vote + 5;
+                                        vote = vote + 15;
 
                                         if (contributionsTotalVotesAverage > 35) {
                                           vote = vote + 5;
                                         }
                                         if (contributionsTotalVotesAverage > 50) {
-                                          vote = vote + 5;
+                                          vote = vote + 10;
                                         }
                                         if (contributionsTotalVotesAverage > 100) {
-                                          vote = vote + 5;
+                                          vote = vote + 30;
                                         }
 
                                         achievements.push('You have a good amount of votes on your contributions. Good job!');
@@ -330,13 +312,14 @@ conn.once('open', function ()
 
                                       if (contributionsTotalVotesAverage > categoryStats.average_likes_per_post) {
                                         // the user has more votes than average on his contributions in total
-                                        vote = vote + 5;
+                                        vote = vote + 20;
                                         achievements.push('In total you have more votes than average for this category. Bravo!');
                                       }
 
-                                      if (achievements.length >= 4) {
+                                      if (achievements.length >= 5) {
                                         // WOW a lot of achievements. Better to give a gift
-                                        vote = vote + 15;
+                                        vote = vote + 20;
+                                        achievements.push('You have just unlocked 5 achievements. Yeah!');
                                       }
 
                                       // NEGATIVE VOTES
@@ -348,7 +331,7 @@ conn.once('open', function ()
                                       if (tagsLessThanAverage) vote--;
                                       if (linksLessThanAverage) vote--;
 
-                                      if (bodyLessThanAverage && imagesLessThanAverage) {
+                                      if (bodyLessThanAverage) {
                                         if(average_posts_length - bodyLength > 1000) {
                                           vote--;
                                         }
@@ -361,23 +344,7 @@ conn.once('open', function ()
                                         if(average_posts_length - bodyLength > 10000) {
                                           vote = vote - 5;
                                         }
-                                        suggestions.push('You are writing less than average for this category. Next time write a bit more.');
-                                      }
-
-                                      if (imagesLessThanAverage && bodyLessThanAverage) {
-                                        if (images && images + 1 < average_images_per_post) {
-                                          vote = vote - 5;
-                                        }
-                                        if (images && images + 2 < average_images_per_post) {
-                                          vote = vote - 5;
-                                        }
-                                        if (images && images + 3 < average_images_per_post) {
-                                          vote = vote - 5;
-                                        }
-                                        if (images && images + 4 < average_images_per_post) {
-                                          vote = vote - 5;
-                                        }
-                                        suggestions.push('In this post you are using less images than average for this category. Put some more next time!');
+                                        suggestions.push('Your contribution is less informative than others in this category.');
                                       }
 
                                       let foundBots = 0;
