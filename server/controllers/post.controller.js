@@ -98,13 +98,13 @@ function update(req, res, next) {
 
 function list(req, res, next) {
   /*
-    section : author | project | all
-    type: ideas | code | graphics | social | all
-    sortBy: created | votes | reward
-    filterBy: active | review | any,
-    status: pending | flagged | any
+   section : author | project | all
+   type: ideas | code | graphics | social | all
+   sortBy: created | votes | reward
+   filterBy: active | review | any,
+   status: pending | flagged | any
    */
-  const { limit, skip, section = 'all', type = 'all', sortBy = 'created', filterBy = 'any', status = 'any', projectId = null, platform = null, author = null, moderator = 'any' } = req.query;
+  const { limit, skip, section = 'all', type = 'all', sortBy = 'created', filterBy = 'any', status = 'any', projectId = null, platform = null, author = null, moderator = 'any', bySimilarity = null } = req.query;
   const cashoutTime = '1969-12-31T23:59:59';
 
   let sort = { created: -1 };
@@ -114,6 +114,15 @@ function list(req, res, next) {
       $ne : true,
     },
   };
+
+  if (bySimilarity) {
+    query = {
+      ...query,
+      body: {
+        $regex: bySimilarity, $options: 'i'
+      }
+    }
+  }
 
   if (sortBy === 'votes') {
     sort = { net_votes : -1 };
