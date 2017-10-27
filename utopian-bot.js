@@ -20,6 +20,7 @@ conn.once('open', function ()
   const botAccount = process.env.BOT;
   const refreshToken = process.env.REFRESH_TOKEN;
   const secret = process.env.CLIENT_SECRET;
+  const forced = process.env.FORCED === 'true' || false;
 
   console.log("-----BOT-------", botAccount);
   console.log("-----TOKEN-------", refreshToken);
@@ -56,7 +57,7 @@ conn.once('open', function ()
           const secondsago = (new Date().getTime() - new Date(botStatus.last_vote_time + "Z").getTime()) / 1000;
           const votingPower = botStatus.voting_power + (10000 * secondsago / 432000);
 
-          if(votingPower <= 6000) {
+          if(votingPower <= 6000 && !forced) {
             console.log("UPS I AM SO TIRED TODAY. VOTED TOO MUCH", votingPower);
             conn.close();
             process.exit(0);

@@ -1,4 +1,7 @@
 import User from '../models/user.model';
+import querystring from 'querystring';
+import request from 'superagent';
+
 
 /**
  * Load user and append to req.
@@ -20,6 +23,25 @@ function get(req, res) {
   return res.json(req.user);
 }
 
+function getProjects (req, res, next) {
+  const user = req.user;
+
+  request.get('https://api.github.com/user/repos')
+    .query({access_token: user.github.token})
+    .end(function(err, response){
+      if(!err) {
+        const repos = response.body;
+        if (repos.length > 0) {
+          res.json(repos.filter(repo => repo.owner.login === user.github.account));
+        } else {
+          res.status(404);
+        }
+      } else {
+        res.status(403)
+      }
+    })
+}
+
 /**
  * Create new user
  * @property {string} req.body.username - The username of user.
@@ -27,14 +49,62 @@ function get(req, res) {
  * @returns {User}
  */
 function create(req, res, next) {
-  const user = new User({
-    username: req.body.username,
-    mobileNumber: req.body.mobileNumber
-  });
+  const { account, code, state } = req.body;
 
-  user.save()
-    .then(savedUser => res.json(savedUser))
-    .catch(e => next(e));
+  if (code && state) {
+    request.post('https://github.com/login/oauth/access_token')
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json')
+      .send({
+        code,
+        state,
+        client_id: process.env.UTOPIAN_GITHUB_CLIENT_ID,
+        client_secret: process.env.UTOPIAN_GITHUB_SECRET,
+        redirect_uri: process.env.UTOPIAN_GITHUB_REDIRECT_URL,
+      })
+      .then(tokenRes => {
+        const response = tokenRes.body;
+        if(response.access_token) {
+          const access_token = response.access_token;
+
+          request.get('https://api.github.com/user')
+            .query({access_token})
+            .end(function(err, githubUserRes){
+              const response = githubUserRes.body;
+              if (response.login) {
+                const githubUser = response.login;
+
+                User.get(account)
+                  .then((user) => {
+                    user.github = {
+                      account: githubUser,
+                      token: access_token,
+                    };
+                    user.save()
+                      .then(savedUser => res.json(savedUser))
+                      .catch(e => next(e));
+                  }).catch(() => {
+                  const newUser = new User({
+                    account,
+                    github: {
+                      account: githubUser,
+                      token: access_token,
+                    }
+                  });
+                  newUser.save()
+                    .then(savedUser => res.json(savedUser))
+                    .catch(e => next(e));
+                });
+              }else {
+                res.status(500);
+              }
+            });
+        } else {
+          res.status(500);
+        }
+      })
+      .catch(e => res.status(500))
+  }
 }
 
 /**
@@ -77,4 +147,4 @@ function remove(req, res, next) {
     .catch(e => next(e));
 }
 
-export default { load, get, create, update, list, remove };
+export default { load, get, getProjects, create, update, list, remove };

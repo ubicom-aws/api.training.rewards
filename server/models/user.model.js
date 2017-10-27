@@ -7,14 +7,13 @@ import APIError from '../helpers/APIError';
  * User Schema
  */
 const UserSchema = new mongoose.Schema({
-  username: {
+  account: {
     type: String,
     required: true
   },
-  mobileNumber: {
-    type: String,
-    required: true,
-    match: [/^[1-9][0-9]{9}$/, 'The value of path {PATH} ({VALUE}) is not a valid mobile number.']
+  github: {
+    account: String,
+    token: String,
   },
   createdAt: {
     type: Date,
@@ -44,8 +43,8 @@ UserSchema.statics = {
    * @param {ObjectId} id - The objectId of user.
    * @returns {Promise<User, APIError>}
    */
-  get(id) {
-    return this.findById(id)
+  get(account) {
+    return this.findOne({account})
       .exec()
       .then((user) => {
         if (user) {

@@ -174,10 +174,19 @@ function list(req, res, next) {
   }
 
   if (type !== 'all') {
-    query = {
-      ...query,
-      'json_metadata.type': type,
-    };
+    if (type !== 'announcements') {
+      query = {
+        ...query,
+        'json_metadata.type': type,
+      };
+    } else {
+      query = {
+        ...query,
+        'json_metadata.type': {
+          $regex : (/announcement-/i)
+        }
+      };
+    }
   }
 
   if (section === 'project') {

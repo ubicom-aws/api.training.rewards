@@ -24,7 +24,10 @@ const envVarsSchema = Joi.object({
   MONGO_HOST: Joi.string().required()
     .description('Mongo DB host url'),
   MONGO_PORT: Joi.number()
-    .default(27017)
+    .default(27017),
+  UTOPIAN_GITHUB_SECRET: Joi.string().required(),
+  UTOPIAN_GITHUB_CLIENT_ID: Joi.string().required(),
+  UTOPIAN_GITHUB_REDIRECT_URL: Joi.string().required(),
 }).unknown()
   .required();
 
