@@ -358,7 +358,7 @@ conn.once('open', function ()
                                       if (foundBots > 0) suggestions.push('Utopian has detected ' + foundBots + ' bot votes. I am the only bot you should love!!');
 
                                       vote = Math.round(vote);
-                                      if(vote < 0) vote = 1;
+                                      if(vote <= 0) vote = 1;
                                       if(vote > 100) vote = 100;
 
 
