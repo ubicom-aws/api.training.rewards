@@ -39,6 +39,14 @@ const StatsSchema = new mongoose.Schema({
     documentation: categoriesStats,
     analysis: categoriesStats,
     social: categoriesStats,
+    'announcement-ideas': categoriesStats,
+    'announcement-development': categoriesStats,
+    'announcement-bug-hunting': categoriesStats,
+    'announcement-translations': categoriesStats,
+    'announcement-graphics': categoriesStats,
+    'announcement-documentation': categoriesStats,
+    'announcement-analysis': categoriesStats,
+    'announcement-social': categoriesStats,
   },
   utopian_votes: [
     {
@@ -58,12 +66,12 @@ StatsSchema.statics = {
     return this.findOne()
       .exec()
       .then((stats) => {
-          if (stats) {
-            return stats;
-          }
-          const err = new APIError('Cannot retrieve stats', httpStatus.NOT_FOUND);
-          return Promise.reject(err);
-        });
+        if (stats) {
+          return stats;
+        }
+        const err = new APIError('Cannot retrieve stats', httpStatus.NOT_FOUND);
+        return Promise.reject(err);
+      });
   },
 };
 
