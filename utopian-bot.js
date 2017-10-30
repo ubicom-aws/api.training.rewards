@@ -124,17 +124,14 @@ conn.once('open', function ()
 	                    									'bago',
 										                    'drotto',
 										                    'boostupvote',
-										                    'livingfree',
 										                    'inchonbitcoin',
 			                    							'teamsteem',
-	                    									'sweetsssj',
 									                    	'ramta',
 										                    'done',
 									                    	'famunger',
 										                    'moses153',
 										                    'russiann',
 									                    	'ramta',
-								                    		'htliao',
                                       ];
                                       const reputation = steem.formatter.reputation(account.reputation);
                                       const posting_rewards = account.posting_rewards;
