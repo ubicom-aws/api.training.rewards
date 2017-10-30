@@ -70,15 +70,16 @@ function create(req, res, next) {
           request.get('https://api.github.com/user')
             .query({access_token})
             .end(function(err, githubUserRes){
-              const response = githubUserRes.body;
-              if (response.login) {
-                const githubUser = response.login;
+              const githubUser = githubUserRes.body;
 
+              if (githubUser.login) {
+                const githubUserName = githubUser.login;
                 User.get(account)
                   .then((user) => {
                     user.github = {
-                      account: githubUser,
+                      account: githubUserName,
                       token: access_token,
+                      ...githubUser,
                     };
                     user.save()
                       .then(savedUser => res.json(savedUser))
@@ -87,8 +88,9 @@ function create(req, res, next) {
                   const newUser = new User({
                     account,
                     github: {
-                      account: githubUser,
+                      account: githubUserName,
                       token: access_token,
+                      ...githubUser,
                     }
                   });
                   newUser.save()

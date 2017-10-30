@@ -50,6 +50,7 @@ conn.once('open', function ()
                   // making sure the repository does not get deleted
                   if (!updatedPost.json_metadata.repository) updatedPost.json_metadata.repository = post.json_metadata.repository;
                   if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
+                  if (!updatedPost.json_metadata.pullRequests && post.json_metadata.pullRequests) updatedPost.json_metadata.pullRequests = post.json_metadata.pullRequests;
 
                   for (var prop in updatedPost) {
                     if (updatedPost[prop] !== post[prop]) {

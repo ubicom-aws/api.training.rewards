@@ -11,10 +11,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  github: {
-    account: String,
-    token: String,
-  },
+  github: Object,
   createdAt: {
     type: Date,
     default: Date.now

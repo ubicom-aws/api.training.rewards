@@ -1,5 +1,7 @@
 import Post from '../models/post.model';
+import User from '../models/user.model';
 import steemAPI from '../steemAPI';
+import request from 'superagent';
 
 function get(req, res, next) {
   Post.get(req.params.author, req.params.permlink)
@@ -55,11 +57,47 @@ function update(req, res, next) {
           // making sure the repository does not get deleted
           if (!updatedPost.json_metadata.repository) updatedPost.json_metadata.repository = post.json_metadata.repository;
           if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
+          if (!updatedPost.json_metadata.pullRequests && post.json_metadata.pullRequests) updatedPost.json_metadata.pullRequests = post.json_metadata.pullRequests;
 
           if (reviewed) {
             post.reviewed = true;
             post.pending = false;
             post.flagged = false;
+
+            User
+              .get(post.author)
+              .then(user => {
+                if (user.github && user.github.account) {
+                    if (post.json_metadata.type === 'bug-hunting' || post.json_metadata.type === 'ideas') {
+                      request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
+                        .set('Content-Type', 'application/json')
+                        .set('Accept', 'application/json')
+                        .set('Authorization', `token ${user.github.token}`)
+                        .send({
+                          title: post.title,
+                          body: post.body,
+                        })
+                        .catch(e => console.log(e))
+                    }
+                    if (post.json_metadata.type === 'development' || post.json_metadata.type === 'documentation') {
+                      if (post.json_metadata.pullRequests && post.json_metadata.pullRequests.length > 0) {
+                        post.json_metadata.pullRequests.forEach((pr, index) => {
+                          setTimeout(function() {
+                            request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues/${pr.number}/comments`)
+                              .set('Content-Type', 'application/json')
+                              .set('Accept', 'application/json')
+                              .set('Authorization', `token ${user.github.token}`)
+                              .send({
+                                body: post.body,
+                              })
+                              .catch(e => console.log(e));
+                          }, index * 3000);
+                        });
+                      }
+                    }
+                }
+              })
+              .catch(e => console.log("user not found"))
           }
 
           if (flagged) {
