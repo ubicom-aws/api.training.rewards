@@ -94,6 +94,9 @@ conn.once('open', function ()
                                       const bots = [
                                         'voter',
                                         'booster',
+                                        'cleverbot',
+                                        'minnowpondblue',
+                                        'minnowpondred',
                                         'sneaky-ninja',
                                         'boomerang',
                                         'lovejuice',
