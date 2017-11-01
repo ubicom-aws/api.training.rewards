@@ -235,11 +235,11 @@ conn.once('open', function ()
                                         }
                                         if (bodyLength - 8000 > average_posts_length) {
                                           vote = vote + 5;
-                                          console.log('+5 body bigger - 4000');
+                                          console.log('+5 body bigger - 8000');
                                         }
                                         if (bodyLength - 16000 > average_posts_length) {
                                           vote = vote + 5;
-                                          console.log('+5 body bigger - 8000');
+                                          console.log('+5 body bigger - 16000');
                                         }
                                         achievements.push('A very informative contribution. Good job!');
                                       };
