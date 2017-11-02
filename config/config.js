@@ -28,6 +28,7 @@ const envVarsSchema = Joi.object({
   UTOPIAN_GITHUB_SECRET: Joi.string().required(),
   UTOPIAN_GITHUB_CLIENT_ID: Joi.string().required(),
   UTOPIAN_GITHUB_REDIRECT_URL: Joi.string().required(),
+  UTOPIAN_STEEMCONNECT_SECRET: Joi.string().required(),
 }).unknown()
   .required();
 

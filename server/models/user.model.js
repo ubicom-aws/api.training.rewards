@@ -12,6 +12,7 @@ const UserSchema = new mongoose.Schema({
     required: true
   },
   github: Object,
+  refresh_token: String,
   createdAt: {
     type: Date,
     default: Date.now
@@ -49,6 +50,24 @@ UserSchema.statics = {
         }
         const err = new APIError('No such user exists!', httpStatus.NOT_FOUND);
         return Promise.reject(err);
+      });
+  },
+  getByGithub(token) {
+    return this.findOne({'github.token': token})
+      .exec()
+      .then((githubUser) => {
+        if (!githubUser) {
+          const err = new APIError('No such github user exists!', httpStatus.NOT_FOUND);
+          return Promise.reject(err);
+        }
+
+        if (!githubUser.refresh_token) {
+          const err = new APIError('Must authorize', httpStatus.UNAUTHORIZED);
+          return Promise.reject(err);
+        }
+
+        return githubUser;
+
       });
   },
 
