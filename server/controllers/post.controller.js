@@ -68,8 +68,9 @@ function update(req, res, next) {
               .get(post.author)
               .then(user => {
                 if (user.github && user.github.account) {
-                    if (post.json_metadata.type === 'bug-hunting' || post.json_metadata.type === 'ideas') {
-                      request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
+                    //if (post.json_metadata.type === 'bug-hunting' || post.json_metadata.type === 'ideas') {
+                      if (post.json_metadata.type === 'bug-hunting') {
+                        request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
                         .set('Content-Type', 'application/json')
                         .set('Accept', 'application/json')
                         .set('Authorization', `token ${user.github.token}`)
