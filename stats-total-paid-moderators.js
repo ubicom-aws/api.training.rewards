@@ -46,7 +46,8 @@ conn.once('open', function ()
                     posts.forEach(post => {
                       const beneficiary = R.find(R.propEq('account', moderator.account))(post.beneficiaries);
                       const payoutDetails = calculatePayout(post);
-                      const payoutModerator = (payoutDetails.authorPayouts * (beneficiary.weight / 100)) / 100;
+                      const authorPayouts = payoutDetails.authorPayouts || 0;
+                      const payoutModerator = (authorPayouts * (beneficiary.weight / 100)) / 100;
 
                       total_paid_rewards = total_paid_rewards + payoutModerator;
                     });

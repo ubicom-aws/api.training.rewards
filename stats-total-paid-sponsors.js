@@ -21,46 +21,54 @@ conn.once('open', function ()
     .then(sponsors => {
       if (sponsors.length > 0) {
         sponsors.forEach((sponsor, index) => {
-          let total_paid_rewards = 0;
+          setTimeout(function() {
 
-          const query = {
-            beneficiaries: {
-              $elemMatch: {
-                account: sponsor.account
-              }
-            },
-            cashout_time:
-              {
-                $eq: paidRewardsDate
+            const query = {
+              beneficiaries: {
+                $elemMatch: {
+                  account: sponsor.account,
+                }
               },
-          };
-          Post
-            .countAll({ query })
-            .then(count => {
+              cashout_time:
+                {
+                  $eq: paidRewardsDate
+                },
+            };
+            Post
+              .countAll({ query })
+              .then(count => {
 
-              Post
-                .list({ skip: 0, limit: count, query })
-                .then(posts => {
-                  if(posts.length > 0) {
-                    posts.forEach(post => {
-                      const beneficiary = R.find(R.propEq('account', sponsor.account))(post.beneficiaries);
-                      const payoutDetails = calculatePayout(post);
-                      const payoutSponsor = (payoutDetails.authorPayouts * (beneficiary.weight / 100)) / 100;
+                Post
+                  .list({ skip: 0, limit: count, query })
+                  .then(posts => {
+                    let total_paid_rewards = 0;
 
-                      total_paid_rewards = total_paid_rewards + payoutSponsor;
-                    });
-                  }
+                    if(posts.length > 0) {
+                      posts.forEach(post => {
+                        const beneficiary = R.find(R.propEq('account', sponsor.account))(post.beneficiaries) || {weight: 0};
+                        const payoutDetails = calculatePayout(post);
+                        const authorPayouts = payoutDetails.authorPayouts || 0;
+                        const payoutSponsor = (authorPayouts * (parseInt(beneficiary.weight) / 100)) / 100;
 
-                  sponsor.total_paid_rewards = total_paid_rewards;
-
-                  sponsor.save().then(savedSponsor => {
-                    if ((index + 1) === sponsors.length) {
-                      conn.close();
-                      process.exit(0);
+                        total_paid_rewards = total_paid_rewards + payoutSponsor;
+                      });
                     }
-                  });
-                })
-            });
+
+                    console.log(sponsor.account)
+                    console.log(total_paid_rewards)
+
+                    sponsor.total_paid_rewards = total_paid_rewards;
+
+                    sponsor.save().then(savedSponsor => {
+                      if ((index + 1) === sponsors.length) {
+                        conn.close();
+                        process.exit(0);
+                      }
+                    });
+                  })
+              });
+          }, index * 3000);
+
         });
       }
     });
