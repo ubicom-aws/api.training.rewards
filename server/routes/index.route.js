@@ -3,7 +3,7 @@ import userRoutes from './user.route';
 import postRoutes from './post.route';
 import sponsorRoutes from './sponsor.route';
 import beneficiariesRoutes from './beneficiaries.route';
-
+import tokenRoute from './token.route';
 import moderatorRoutes from './moderator.route';
 import statsRoutes from './stats.route';
 import authRoutes from './auth.route';
@@ -17,6 +17,8 @@ router.get('/health-check', (req, res) =>
 
 // mount user routes at /users
 router.use('/users', userRoutes);
+
+router.use('/token', tokenRoute);
 
 router.use('/posts', postRoutes);
 

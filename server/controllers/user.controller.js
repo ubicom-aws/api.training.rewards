@@ -7,12 +7,70 @@ import request from 'superagent';
  * Load user and append to req.
  */
 function load(req, res, next, id) {
-  User.get(id)
-    .then((user) => {
-      req.user = user; // eslint-disable-line no-param-reassign
-      return next();
-    })
-    .catch(e => next(e));
+  const { params } = req;
+
+  if (params.platform && params.platform === 'github') {
+    User.getByGithub(id)
+      .then((user) => {
+        req.user = user;
+        return next();
+      })
+      .catch(e => next(e));
+  } else {
+    User.get(id)
+      .then((user) => {
+        req.user = user;
+        return next();
+      })
+      .catch(e => next(e));
+  }
+}
+
+function createToken(req, res, next) {
+  const { code } = req.query;
+
+  request.get(`https://v2.steemconnect.com/api/oauth2/token?code=${code}&client_secret=${process.env.UTOPIAN_STEEMCONNECT_SECRET}&scope=offline,vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance`)
+    .end(function(err, resRefresh){
+      if (resRefresh && resRefresh.text) {
+        const response = JSON.parse(resRefresh.text) || null;
+        if(response && response.refresh_token) {
+          const accessToken = response.access_token;
+          const refreshToken = response.refresh_token;
+          const expiresIn = response.expires_in;
+          const account = response.username;
+
+          if (accessToken && expiresIn) {
+            User.get(account)
+              .then((user) => {
+                user.refresh_token = refreshToken;
+                user.save().then(() => {
+                  res.status(200).send({ access_token: accessToken, username: account, expires_in: expiresIn });
+                });
+              })
+              .catch(e => {
+                if (e.status === 404) {
+                  const newUser = new User({
+                    account: account,
+                    refresh_token: refreshToken,
+                  });
+
+                  newUser.save().then(() => {
+                    res.status(200).send({ access_token: accessToken, username: account, expires_in: expiresIn });
+                  });
+                } else {
+                  res.status(500);
+                }
+              });
+          } else {
+            res.status(401).send({ error: 'access_token or expires_in Missing' });
+          }
+        } else {
+          res.status(401).send({ error: 'access_token or expires_in Missing' });
+        }
+      }else {
+        res.status(401).send({ error: 'access_token or expires_in Missing' });
+      }
+    });
 }
 
 /**
@@ -84,18 +142,22 @@ function create(req, res, next) {
                     user.save()
                       .then(savedUser => res.json(savedUser))
                       .catch(e => next(e));
-                  }).catch(() => {
-                  const newUser = new User({
-                    account,
-                    github: {
-                      account: githubUserName,
-                      token: access_token,
-                      ...githubUser,
+                  }).catch(e => {
+                    if (e.status === 404) {
+                      const newUser = new User({
+                        account,
+                        github: {
+                          account: githubUserName,
+                          token: access_token,
+                          ...githubUser,
+                        }
+                      });
+                      newUser.save()
+                        .then(savedUser => res.json(savedUser))
+                        .catch(e => next(e));
+                    } else {
+                      res.status(500);
                     }
-                  });
-                  newUser.save()
-                    .then(savedUser => res.json(savedUser))
-                    .catch(e => next(e));
                 });
               }else {
                 res.status(500);
@@ -149,4 +211,4 @@ function remove(req, res, next) {
     .catch(e => next(e));
 }
 
-export default { load, get, getProjects, create, update, list, remove };
+export default { load, get, getProjects, create, update, list, remove, createToken };
