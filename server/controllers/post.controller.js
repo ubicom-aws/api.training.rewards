@@ -17,10 +17,15 @@ function create(req, res, next) {
 
   steemAPI.getContent(author, permlink, (err, post) => {
     if (!err) {
+      // hard fix for edge cases where json_metadata is empty
+      const parsedJson = post.json_metadata && post.json_metadata !== '' ?
+        JSON.parse(post.json_metadata) :
+        {};
+
       const newPost = new Post({
         ...post,
         reviewed: false,
-        json_metadata: JSON.parse(post.json_metadata)
+        json_metadata: parsedJson,
       });
 
       newPost.save()
@@ -46,7 +51,9 @@ function update(req, res, next) {
       steemAPI.getContent(author, permlink, (err, updatedPost) => {
         if (!err) {
 
-          updatedPost.json_metadata = JSON.parse(updatedPost.json_metadata);
+          updatedPost.json_metadata = updatedPost.json_metadata && updatedPost.json_metadata !== '' ?
+            JSON.parse(updatedPost.json_metadata) :
+            {};
 
           // @UTOPIAN @TODO bad patches. Needs to have a specific place where the put the utopian data so it does not get overwritten
           if (!updatedPost.json_metadata.type && post.json_metadata.type) {
