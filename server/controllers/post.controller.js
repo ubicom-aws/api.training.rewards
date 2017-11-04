@@ -126,16 +126,16 @@ function update(req, res, next) {
                    });
                    }
                    } */
-                } else {
-                  post.save()
-                    .then(savedPost => res.json(savedPost))
-                    .catch(e => {
-                      console.log("ERROR REVIEWING POST", e);
-                      next(e);
-                    });
                 }
               })
-              .catch(e => console.log("user not found"));
+              .catch(e => {
+                post.save()
+                  .then(savedPost => res.json(savedPost))
+                  .catch(e => {
+                    console.log("ERROR REVIEWING POST", e);
+                    next(e);
+                  });
+              });
 
           } else {
 
