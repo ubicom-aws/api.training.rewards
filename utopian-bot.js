@@ -27,7 +27,7 @@ conn.once('open', function ()
   console.log("-----SECRET-------", secret);
 
   const now = new Date();
-  const limit = 30;
+  const limit = 60;
   const query = {
     reviewed: true,
     'active_votes.voter': { $ne: botAccount },
@@ -193,26 +193,26 @@ conn.once('open', function ()
                                         achievements.push('I am a bot...I love developers... <3');
                                       }
                                       if (post.json_metadata.type === 'bug-hunting') {
-                                        vote = vote + 10;
-                                        console.log('+10 bug hunter');
+                                        vote = vote + 5;
+                                        console.log('+5 bug hunter');
                                         achievements.push('I am a bot...I need someone spotting my bugs!');
                                       }
 
                                       if (post.json_metadata.type === 'translations') {
-                                        vote = vote + 20;
-                                        console.log('+20 translator');
+                                        vote = vote + 15;
+                                        console.log('+15 translator');
                                         achievements.push('You are helping this project go global! Appreciated!');
                                       }
 
                                       if (post.json_metadata.type === 'graphics') {
-                                        vote = vote + 20;
-                                        console.log('+20 graphic');
+                                        vote = vote + 10;
+                                        console.log('+10 graphic');
                                         achievements.push('Creativity makes the World a better place. Thanks!');
                                       }
 
                                       if (post.json_metadata.type === 'analysis') {
-                                        vote = vote + 20;
-                                        console.log('+20 analysis');
+                                        vote = vote + 15;
+                                        console.log('+15 analysis');
                                         achievements.push('Oh I love when we talk about data!');
                                       }
 
@@ -245,8 +245,8 @@ conn.once('open', function ()
                                       };
 
                                       if (votesInAverage) {
-                                        vote = vote + 10;
-                                        console.log('+10 votes in average');
+                                        vote = vote + 5;
+                                        console.log('+5 votes in average');
                                         achievements.push('Votes on this contribution are going well. Nice!');
                                       }
                                       if (votesMoreThanAverage) {
@@ -277,8 +277,8 @@ conn.once('open', function ()
 
                                       if (post.net_votes > followers.follower_count && followers.follower_count > 0) {
                                         // giving a tip for account swith small followers or 0
-                                        vote = vote + 10;
-                                        console.log('+10 votes bigger followers');
+                                        vote = vote + 5;
+                                        console.log('+5 votes bigger followers');
                                         achievements.push('You just got more votes than your total number of followers. Rock Star!');
                                       }
 
@@ -338,23 +338,23 @@ conn.once('open', function ()
                                       // number of contributions in total
                                       if (contributionsCount >= 5) {
                                         // git for being productive
-                                        vote = vote + 15;
-                                        console.log('+15 more 5 contr');
+                                        vote = vote + 5;
+                                        console.log('+5 more 5 contr');
 
-                                        if (contributionsCount >= 10) {
+                                        if (contributionsCount >= 15) {
                                           // git for being productive
                                           vote = vote + 5;
-                                          console.log('+5 more 10 contr');
+                                          console.log('+5 more 15 contr');
                                         }
                                         if (contributionsCount >= 30) {
                                           // git for being productive
-                                          vote = vote + 10;
+                                          vote = vote + 5;
                                           console.log('+15 more 30 contr');
                                         }
                                         if (contributionsCount >= 60) {
                                           // git for being productive
-                                          vote = vote + 20;
-                                          console.log('+20 more 50 contr');
+                                          vote = vote + 15;
+                                          console.log('+15 more 60 contr');
                                         }
                                         achievements.push('Seems like you contribute quite often. AMAZING!');
                                       }
@@ -362,7 +362,7 @@ conn.once('open', function ()
                                       // average of votes this user has on all his contributions
                                       if (contributionsTotalVotesAverage > 30) {
                                         vote = vote + 10;
-                                        console.log('+15 average votes total 30');
+                                        console.log('+10 average votes total 30');
 
                                         if (contributionsTotalVotesAverage > 60) {
                                           vote = vote + 5;
@@ -382,15 +382,15 @@ conn.once('open', function ()
 
                                       if (contributionsTotalVotesAverage > categoryStats.average_likes_per_post) {
                                         // the user has more votes than average on his contributions in total
-                                        vote = vote + 20;
-                                        console.log('+20 average votes bigger total category');
+                                        vote = vote + 15;
+                                        console.log('+15 average votes bigger total category');
                                         achievements.push('In total you have more votes than average for this category. Bravo!');
                                       }
 
                                       if (achievements.length > 5) {
                                         // WOW a lot of achievements. Better to give a gift
-                                        vote = vote + 15;
-                                        console.log('+15 5 achievements');
+                                        vote = vote + 10;
+                                        console.log('+10 5 achievements');
                                         achievements.push(`You have just unlocked ${achievements.length} achievements. Yeah!`);
                                       }
 
@@ -422,7 +422,7 @@ conn.once('open', function ()
                                       let foundBots = 0;
                                       post.active_votes.forEach((voted, index) => {
                                         if (bots.indexOf(voted.voter) > -1) {
-                                          vote = vote - 2.5;
+                                          vote = vote - 3;
                                           foundBots++;
                                         }
                                       });
