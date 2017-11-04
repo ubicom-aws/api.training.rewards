@@ -51,7 +51,6 @@ function update(req, res, next) {
     .then((post) => {
       steemAPI.getContent(author, permlink, (err, updatedPost) => {
         if (!err) {
-
           updatedPost.json_metadata = updatedPost.json_metadata && updatedPost.json_metadata !== '' ?
             JSON.parse(updatedPost.json_metadata) :
             {};
@@ -66,6 +65,11 @@ function update(req, res, next) {
           if (!updatedPost.json_metadata.repository) updatedPost.json_metadata.repository = post.json_metadata.repository;
           if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
           if (!updatedPost.json_metadata.pullRequests && post.json_metadata.pullRequests) updatedPost.json_metadata.pullRequests = post.json_metadata.pullRequests;
+          if (!updatedPost.json_metadata.issue && post.json_metadata.issue) updatedPost.json_metadata.issue = post.json_metadata.issue;
+
+          if (moderator) {
+            post.moderator = moderator;
+          }
 
           if (reviewed) {
             post.reviewed = true;
@@ -75,71 +79,113 @@ function update(req, res, next) {
             User
               .get(post.author)
               .then(user => {
-                if (user.github && user.github.account) {
+                if (user && user.github && user.github.account) {
+                  if (post.json_metadata.type === 'bug-hunting') {
                     //if (post.json_metadata.type === 'bug-hunting' || post.json_metadata.type === 'ideas') {
-                      if (post.json_metadata.type === 'bug-hunting') {
-                        request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
-                        .set('Content-Type', 'application/json')
-                        .set('Accept', 'application/json')
-                        .set('Authorization', `token ${user.github.token}`)
-                        .send({
-                          title: post.title,
-                          body: post.body,
-                        })
-                        .catch(e => console.log(e))
-                    }
-                    if (post.json_metadata.type === 'development' || post.json_metadata.type === 'documentation') {
-                      if (post.json_metadata.pullRequests && post.json_metadata.pullRequests.length > 0) {
-                        post.json_metadata.pullRequests.forEach((pr, index) => {
-                          setTimeout(function() {
-                            request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues/${pr.number}/comments`)
-                              .set('Content-Type', 'application/json')
-                              .set('Accept', 'application/json')
-                              .set('Authorization', `token ${user.github.token}`)
-                              .send({
-                                body: post.body,
-                              })
-                              .catch(e => console.log(e));
-                          }, index * 3000);
-                        });
-                      }
-                    }
+                    request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
+                      .set('Content-Type', 'application/json')
+                      .set('Accept', 'application/json')
+                      .set('Authorization', `token ${user.github.token}`)
+                      .send({
+                        title: post.title,
+                        body: post.body,
+                      })
+                      .then(resGithub => {
+                        const issue = resGithub.body;
+                        const { html_url, number, id, title } = issue;
+
+                        post.json_metadata.issue = {
+                          url: html_url,
+                          number,
+                          id,
+                          title,
+                        };
+
+                        post.save()
+                          .then(savedPost => res.json(savedPost))
+                          .catch(e => {
+                            console.log("ERROR REVIEWING POST", e);
+                            next(e);
+                          });
+                      })
+                      .catch(e => console.log(e))
+                  }
+                  /*
+                   if (post.json_metadata.type === 'development' || post.json_metadata.type === 'documentation') {
+                   if (post.json_metadata.pullRequests && post.json_metadata.pullRequests.length > 0) {
+                   post.json_metadata.pullRequests.forEach((pr, index) => {
+                   setTimeout(function() {
+                   request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues/${pr.number}/comments`)
+                   .set('Content-Type', 'application/json')
+                   .set('Accept', 'application/json')
+                   .set('Authorization', `token ${user.github.token}`)
+                   .send({
+                   body: post.body,
+                   })
+                   .catch(e => console.log(e));
+                   }, index * 3000);
+                   });
+                   }
+                   } */
+                } else {
+                  post.save()
+                    .then(savedPost => res.json(savedPost))
+                    .catch(e => {
+                      console.log("ERROR REVIEWING POST", e);
+                      next(e);
+                    });
                 }
               })
-              .catch(e => console.log("user not found"))
-          }
+              .catch(e => console.log("user not found"));
 
-          if (flagged) {
-            post.flagged = true;
-            post.reviewed = false;
-            post.pending = false;
-          }
+          } else {
 
-          if (pending) {
-            post.pending = true;
-            post.reviewed = false;
-            post.flagged = false;
-          }
-
-          if (moderator) {
-            post.moderator = moderator;
-          }
-
-          for (var prop in updatedPost) {
-            if (updatedPost[prop] !== post[prop]) {
-              post[prop] = updatedPost[prop];
+            if (flagged) {
+              post.flagged = true;
+              post.reviewed = false;
+              post.pending = false;
             }
-          }
 
-          post.save()
-            .then(savedPost => res.json(savedPost))
-            .catch(e => {
-              console.log("ERROR UPDATING POST", e);
-              next(e);
-            });
+            if (pending) {
+              post.pending = true;
+              post.reviewed = false;
+              post.flagged = false;
+            }
+
+            for (var prop in updatedPost) {
+              if (updatedPost[prop] !== post[prop]) {
+                post[prop] = updatedPost[prop];
+              }
+            }
+
+            post.save()
+              .then(savedPost => res.json(savedPost))
+              .catch(e => {
+                console.log("ERROR UPDATING POST", e);
+                next(e);
+              });
+          }
         }
       });
     })
+    .catch(e => next(e));
+}
+
+function listByIssue (req, res, next) {
+  const { id } = req.query;
+
+  const query = {
+    reviewed: true,
+    flagged: {
+      $ne : true,
+    },
+    'json_metadata.issue.id': id
+  };
+
+  Post.list({ limit: 1, skip: 0, query })
+    .then(post => res.json({
+      ...post
+    }))
     .catch(e => next(e));
 }
 
@@ -271,4 +317,4 @@ function remove(req, res, next) {
     .catch(e => next(e));
 }
 
-export default { get, create, update, list, remove };
+export default { get, create, update, list, listByIssue, remove };
