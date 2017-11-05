@@ -108,6 +108,13 @@ function update(req, res, next) {
                           });
                       })
                       .catch(e => console.log(e))
+                  } else {
+                    post.save()
+                      .then(savedPost => res.json(savedPost))
+                      .catch(e => {
+                        console.log("ERROR REVIEWING POST", e);
+                        next(e);
+                      });
                   }
                   /*
                    if (post.json_metadata.type === 'development' || post.json_metadata.type === 'documentation') {
@@ -129,6 +136,7 @@ function update(req, res, next) {
                 }
               })
               .catch(e => {
+                // no user found
                 post.save()
                   .then(savedPost => res.json(savedPost))
                   .catch(e => {
