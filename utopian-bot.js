@@ -134,7 +134,11 @@ conn.once('open', function ()
 										                    'moses153',
 										                    'russiann',
 									                    	'ramta',
-								                    		'htliao',
+                                        'htliao',
+                                        'pushup',
+                                        'upgoater',
+                                        'appreciator',
+                                        'minnowsupport',
                                       ];
                                       const reputation = steem.formatter.reputation(account.reputation);
                                       const posting_rewards = account.posting_rewards;
