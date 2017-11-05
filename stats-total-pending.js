@@ -32,7 +32,8 @@ conn.once('open', function ()
 
               posts.forEach((post, index) => {
                 const payoutDetails = calculatePayout(post);
-                total_pending_rewards = total_pending_rewards + payoutDetails.potentialPayout;
+                const potentialPayout = payoutDetails.potentialPayout || 0;
+                total_pending_rewards = total_pending_rewards + potentialPayout;
               });
 
               stats.total_pending_rewards = total_pending_rewards;

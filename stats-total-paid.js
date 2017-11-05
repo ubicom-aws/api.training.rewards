@@ -34,8 +34,8 @@ conn.once('open', function ()
 
               posts.forEach((post, index) => {
                 const payoutDetails = calculatePayout(post);
-                const authorPayouts = payoutDetails.authorPayouts;
-                const curatorPayouts = payoutDetails.curatorPayouts;
+                const authorPayouts = payoutDetails.authorPayouts || 0;
+                const curatorPayouts = payoutDetails.curatorPayouts || 0;
                 const sumPayouts = authorPayouts + curatorPayouts;
 
                 total_paid_rewards = total_paid_rewards + sumPayouts;
@@ -50,7 +50,7 @@ conn.once('open', function ()
               stats.save().then(savedStats => {
                 conn.close();
                 process.exit(0);
-              });
+              })
 
             });
           }
