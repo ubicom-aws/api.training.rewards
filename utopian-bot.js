@@ -155,6 +155,11 @@ conn.once('open', function ()
 										                    'moses153',
 										                    'russiann',
 									                    	'ramta',
+                                        'htliao',
+                                        'pushup',
+                                        'upgoater',
+                                        'appreciator',
+                                        'minnowsupport',
                                       ];
                                       const reputation = steem.formatter.reputation(account.reputation);
 
