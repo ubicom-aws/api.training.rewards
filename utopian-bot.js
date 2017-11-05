@@ -26,8 +26,33 @@ conn.once('open', function ()
   console.log("-----TOKEN-------", refreshToken);
   console.log("-----SECRET-------", secret);
 
+
+  function checkVotingPower (start = false, callback) {
+    const limitPower = start ? 8000 : 6000;
+    steem.api.getAccounts([botAccount], function(err, accounts) {
+      if (!err) {
+        const botStatus = accounts[0];
+
+        const secondsago = (new Date().getTime() - new Date(botStatus.last_vote_time + "Z").getTime()) / 1000;
+        const votingPower = botStatus.voting_power + (10000 * secondsago / 432000);
+
+        if (votingPower <= limitPower && !forced) {
+          console.log("UPS I AM SO TIRED TODAY. VOTED TOO MUCH", votingPower);
+          conn.close();
+          process.exit(0);
+          return;
+        }
+
+        callback(votingPower);
+        return;
+      }
+      console.log("VOTING PW ERROR", err);
+      conn.close();
+      process.exit(0);
+    });
+  }
+
   const now = new Date();
-  const limit = 60;
   const query = {
     reviewed: true,
     'active_votes.voter': { $ne: botAccount },
@@ -42,36 +67,35 @@ conn.once('open', function ()
   request
     .get(`https://v2.steemconnect.com/api/oauth2/token?refresh_token=${refreshToken}&client_secret=${secret}&scope=vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance,offline`)
     .end((err, res) => {
-      if (res.body.access_token) {
-        SteemConnect.setAccessToken(res.body.access_token);
-      } else {
+      if (!res.body.access_token) {
+        console.log("COULD NOT GET ACCESS TOKEN");
         conn.close();
         process.exit(0);
         return;
       }
+      if (res.body.access_token) {
+        SteemConnect.setAccessToken(res.body.access_token);
+      }
+      checkVotingPower(true, function(){
+        Stats.get()
+          .then(stats => {
+            const { categories } = stats;
+            Post
+              .countAll({ query })
+              .then(limit => {
+                Post
+                  .list({ skip: 0, limit: limit, query, sort: { pending_payout_value: -1 } })
+                  .then(posts => {
 
-      steem.api.getAccounts([botAccount], function(err, accounts){
-        if (!err) {
-          const botStatus = accounts[0];
+                    if(!posts.length) {
+                      console.log("NO POSTS");
+                      conn.close();
+                      process.exit(0);
+                      return;
+                    }
 
-          const secondsago = (new Date().getTime() - new Date(botStatus.last_vote_time + "Z").getTime()) / 1000;
-          const votingPower = botStatus.voting_power + (10000 * secondsago / 432000);
+                    console.log("FOUND POSTS TO VOTE: ", limit);
 
-          if(votingPower <= 8000 && !forced) {
-            console.log("UPS I AM SO TIRED TODAY. VOTED TOO MUCH", votingPower);
-            conn.close();
-            process.exit(0);
-            return;
-          }
-
-          Stats.get()
-            .then(stats => {
-              const { categories } = stats;
-
-              Post
-                .list({ skip: 0, limit: limit, query, sort: { net_votes: -1 } })
-                .then(posts => {
-                  if(posts.length > 0) {
                     posts.forEach((post, allPostsIndex) => {
                       steem.api.getAccounts([post.author], (err, accounts) => {
                         if (!err) {
@@ -84,7 +108,6 @@ conn.once('open', function ()
                                 id: { $ne: post.id },
                                 author: post.author,
                               };
-
 
                               Post
                                 .countAll({ query: contributionsQuery })
@@ -116,29 +139,27 @@ conn.once('open', function ()
                                         'frontrunner',
                                         'steemvoter',
                                         'morwhale',
-	                    									'whalereward',
-	                    									'polsza',
-			                    							'reblogger',
-	      									              'pharesim',
-										                    'resteem.bot',
-	                    									'bago',
-										                    'drotto',
-										                    'boostupvote',
-										                    'livingfree',
-										                    'inchonbitcoin',
-			                    							'teamsteem',
-	                    									'sweetsssj',
-									                    	'ramta',
-										                    'done',
-									                    	'famunger',
-										                    'moses153',
-										                    'russiann',
-									                    	'ramta',
-								                    		'htliao',
+                                        'whalereward',
+                                        'polsza',
+                                        'reblogger',
+                                        'pharesim',
+                                        'resteem.bot',
+                                        'bago',
+                                        'drotto',
+                                        'boostupvote',
+                                        'livingfree',
+                                        'inchonbitcoin',
+                                        'teamsteem',
+                                        'sweetsssj',
+                                        'ramta',
+                                        'done',
+                                        'famunger',
+                                        'moses153',
+                                        'russiann',
+                                        'ramta',
+                                        'htliao',
                                       ];
                                       const reputation = steem.formatter.reputation(account.reputation);
-                                      const posting_rewards = account.posting_rewards;
-                                      const curation_rewards = account.curation_rewards;
 
                                       const categoryStats = categories[post.json_metadata.type];
                                       let contributionsTotalVotes = 0;
@@ -150,31 +171,20 @@ conn.once('open', function ()
                                       const bodyBiggerThanAverage = bodyLength > average_posts_length;
                                       const bodyLessThanAverage = bodyLength < average_posts_length;
                                       // if it does not meet the average for only 1000 chars, still considering it average
-                                      const bodyInAverage = bodyLength === average_posts_length || bodyLength + 1000 >= average_posts_length;
+                                      const bodyInAverage = bodyLength === average_posts_length || bodyLength + 500 >= average_posts_length || bodyLength >= average_posts_length - 500;
 
                                       const tags = post.json_metadata.tags.length;
                                       const average_tags_per_post = Math.round(categoryStats.average_tags_per_post);
                                       const tagsMoreThanAverage = tags > average_tags_per_post;
                                       const tagsLessThanAverage = tags < average_tags_per_post;
-                                      // if it does not meet the average for only 1 tag, still considering it average
-                                      const tagsInAverage = tags === average_tags_per_post || tags + 1 === average_tags_per_post;
-
-                                      const images = post.json_metadata.image ? post.json_metadata.image.length : (post.body.match(/<img/g) || []).length;
-                                      const average_images_per_post = Math.round(categoryStats.average_images_per_post);
-                                      const imagesMoreThanAverage = images > average_images_per_post;
-                                      const imagesLessThanAverage = images < average_images_per_post;
-                                      // if it does not meet the average for only 1 image, still considering it average
-                                      const imagesInAverage = images === average_images_per_post || images + 1 === average_images_per_post;
+                                      const tagsInAverage = tags === average_tags_per_post;
 
                                       const links = post.json_metadata.links ? post.json_metadata.links.length : 0;
                                       const average_links_per_post = Math.round(categoryStats.average_links_per_post);
-                                      const linksMoreThanAverage = links > average_links_per_post;
                                       const linksLessThanAverage = links < average_links_per_post;
-                                      // if it does not meet the average for only 1 link, still considering it average
-                                      const linksInAverage = links === average_links_per_post || links + 1 === average_links_per_post;
 
                                       const average_likes_per_post = Math.round(categoryStats.average_likes_per_post);
-                                      const votesInAverage = post.net_votes === average_likes_per_post || post.net_votes + 5 >= average_likes_per_post;
+                                      const votesInAverage = post.net_votes === average_likes_per_post || post.net_votes + 5 >= average_likes_per_post || post.net_votes >= average_likes_per_post - 5;
                                       const votesMoreThanAverage = post.net_votes > average_likes_per_post;
 
                                       const payoutDetails = calculatePayout(post);
@@ -199,8 +209,8 @@ conn.once('open', function ()
                                       }
 
                                       if (post.json_metadata.type === 'translations') {
-                                        vote = vote + 15;
-                                        console.log('+15 translator');
+                                        vote = vote + 10;
+                                        console.log('+10 translator');
                                         achievements.push('You are helping this project go global! Appreciated!');
                                       }
 
@@ -211,8 +221,8 @@ conn.once('open', function ()
                                       }
 
                                       if (post.json_metadata.type === 'analysis') {
-                                        vote = vote + 15;
-                                        console.log('+15 analysis');
+                                        vote = vote + 10;
+                                        console.log('+10 analysis');
                                         achievements.push('Oh I love when we talk about data!');
                                       }
 
@@ -241,18 +251,18 @@ conn.once('open', function ()
                                           vote = vote + 5;
                                           console.log('+5 body bigger - 8000');
                                         }
-                                        achievements.push('A very informative contribution. Good job!');
+                                        achievements.push('Much more informative than others in this category. Good job!');
                                       };
 
                                       if (votesInAverage) {
-                                        vote = vote + 5;
-                                        console.log('+5 votes in average');
+                                        vote++;
+                                        console.log('+1 votes in average');
                                         achievements.push('Votes on this contribution are going well. Nice!');
                                       }
                                       if (votesMoreThanAverage) {
                                         // the contribution is having more than average votes
-                                        vote = vote + 5;
-                                        console.log('+5 votes more than average');
+                                        vote = vote++;
+                                        console.log('+1 votes more than average');
 
                                         if (post.net_votes - 20 > average_likes_per_post) {
                                           vote = vote + 5;
@@ -270,8 +280,8 @@ conn.once('open', function ()
                                       };
 
                                       if(followers.follower_count < 250) {
-                                        vote = vote + 10;
-                                        console.log('+10 less than 200 followers');
+                                        vote = vote + 5;
+                                        console.log('+5 less than 250 followers');
                                         achievements.push('You have less than 250 followers. Just gave you a gift ;)');
                                       }
 
@@ -284,8 +294,8 @@ conn.once('open', function ()
 
                                       if (payoutDetails.potentialPayout > totalGenerating) {
                                         // the contribution is generating big payouts
-                                        vote = vote + 15;
-                                        console.log('+15 payout bigger');
+                                        vote = vote + 10;
+                                        console.log('+10 payout bigger');
 
                                         if (payoutDetails.potentialPayout - 20 > totalGenerating) {
                                           vote = vote + 5;
@@ -313,33 +323,19 @@ conn.once('open', function ()
                                       if(reputation >= 70) vote++;
                                       if(reputation >= 80) vote++;
 
-                                      // rewards for posting
-                                      if (posting_rewards > 10000) vote++;
-                                      if (posting_rewards > 500000) vote++;
-                                      if (posting_rewards > 1000000) vote++;
-                                      if (posting_rewards > 10000000) vote++;
-                                      if (posting_rewards > 100000000) vote++;
-
-                                      // rewards for curating. More important than posting
-                                      if (curation_rewards > 10000) vote++;
-                                      if (curation_rewards > 50000) vote++;
-                                      if (curation_rewards > 100000) vote++;
-                                      if (curation_rewards > 1000000) vote++;
-                                      if (curation_rewards > 10000000) vote++;
-
                                       if (contributionsCount === 0) {
                                         // this is the first contribution of the user accepted in the Utopian feed
                                         // give the user a little gift
-                                        vote = vote + 15;
-                                        console.log('+15 first contribution');
+                                        vote = vote + 10;
+                                        console.log('+10 first contribution');
                                         achievements.push('This is your first accepted contribution here in Utopian. Welcome!');
                                       }
 
                                       // number of contributions in total
                                       if (contributionsCount >= 5) {
                                         // git for being productive
-                                        vote = vote + 5;
-                                        console.log('+5 more 5 contr');
+                                        vote = vote++;
+                                        console.log('+1 more 5 contr');
 
                                         if (contributionsCount >= 15) {
                                           // git for being productive
@@ -382,8 +378,8 @@ conn.once('open', function ()
 
                                       if (contributionsTotalVotesAverage > categoryStats.average_likes_per_post) {
                                         // the user has more votes than average on his contributions in total
-                                        vote = vote + 15;
-                                        console.log('+15 average votes bigger total category');
+                                        vote = vote + 10;
+                                        console.log('+10 average votes bigger total category');
                                         achievements.push('In total you have more votes than average for this category. Bravo!');
                                       }
 
@@ -459,63 +455,63 @@ conn.once('open', function ()
                                       console.log("------------------------", post.author);
 
                                       setTimeout(function() {
+                                        checkVotingPower(false, function() {
 
-                                        achievements.forEach(achievement => console.log(achievement));
-                                        suggestions.forEach(suggestion => console.log(suggestion));
+                                          achievements.forEach(achievement => console.log(achievement));
+                                          suggestions.forEach(suggestion => console.log(suggestion));
 
-                                        const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
+                                          const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
 
-                                        const comment = () => {
-                                          SteemConnect.comment(
-                                            post.author,
-                                            post.permlink,
-                                            botAccount,
-                                            createCommentPermlink(post.author, post.permlink),
-                                            '',
-                                            commentBody,
-                                            jsonMetadata,
-                                          ).then(() => {
-                                            console.log("COMMENT SUBMITTED FROM THEN");
-                                            if (allPostsIndex + 1 === posts.length) {
-                                              conn.close();
-                                              process.exit(0);
-                                            }
-                                          }).catch(e => {
-                                            if (e.error_description == undefined) {
+                                          const comment = () => {
+                                            SteemConnect.comment(
+                                              post.author,
+                                              post.permlink,
+                                              botAccount,
+                                              createCommentPermlink(post.author, post.permlink),
+                                              '',
+                                              commentBody,
+                                              jsonMetadata,
+                                            ).then(() => {
                                               console.log("COMMENT SUBMITTED FROM THEN");
-                                            } else {
-                                              console.log("COMMENT ERROR", e);
+                                              if (allPostsIndex + 1 === posts.length) {
+                                                conn.close();
+                                                process.exit(0);
+                                              }
+                                            }).catch(e => {
+                                              if (e.error_description == undefined) {
+                                                console.log("COMMENT SUBMITTED FROM THEN");
+                                              } else {
+                                                console.log("COMMENT ERROR", e);
+                                              }
+                                            });
+                                          };
+
+                                          SteemConnect.vote(botAccount, post.author, post.permlink, vote * 100)
+                                            .then(() => {
+                                              console.log("NOW SUBMITTING COMMENT FROM THEN");
+                                              comment();
+                                            }).catch(e => {
+                                            // I think there is a problem with sdk. Always gets in the catch
+                                            if (e.error_description == undefined) {
+
+                                              stats.utopian_votes = [
+                                                ...stats.utopian_votes,
+                                                {
+                                                  date: new Date().toISOString(),
+                                                  weight: vote * 100,
+                                                  permlink: post.permlink,
+                                                  author: post.author,
+                                                }
+                                              ];
+
+                                              stats.save();
+
+                                              console.log("NOW SUBMITTING COMMENT FROM CATCH");
+                                              comment();
                                             }
                                           });
-                                        };
-
-                                        SteemConnect.vote(botAccount, post.author, post.permlink, vote * 100)
-                                          .then(() => {
-                                            console.log("NOW SUBMITTING COMMENT FROM THEN");
-                                            comment();
-                                          }).catch(e => {
-                                          // I think there is a problem with sdk. Always gets in the catch
-                                          if (e.error_description == undefined) {
-
-                                            stats.utopian_votes = [
-                                              ...stats.utopian_votes,
-                                              {
-                                                date: new Date().toISOString(),
-                                                weight: vote * 100,
-                                                permlink: post.permlink,
-                                                author: post.author,
-                                              }
-                                            ];
-
-                                            stats.save();
-
-                                            console.log("NOW SUBMITTING COMMENT FROM CATCH");
-                                            comment();
-                                          }
                                         });
-
                                       }, allPostsIndex === 0 || 30000 * allPostsIndex);
-
                                     });
                                 });
                             });
@@ -523,14 +519,9 @@ conn.once('open', function ()
                         }
                       });
                     });
-                  } else {
-                    console.log("NO POSTS");
-                    conn.close();
-                    process.exit(0);
-                  }
-                });
-            });
-        }
+                  });
+              });
+          });
       });
     });
 });
