@@ -130,6 +130,9 @@ conn.once('open', function ()
                                         'bellyrub',
                                         'minnowbooster',
                                         'randowhale',
+                                        'randowhale0',
+                                        'randowhale1',
+                                        'randowhaletrail',
                                         'minnowpond',
                                         'resteembot',
                                         'originalworks',
@@ -160,6 +163,11 @@ conn.once('open', function ()
                                         'upgoater',
                                         'appreciator',
                                         'minnowsupport',
+                                        'banjo',
+                                        'cheetah',
+                                        'qurator',
+                                        'spinbot',
+                                        'ninja-whale',
                                       ];
                                       const reputation = steem.formatter.reputation(account.reputation);
 
