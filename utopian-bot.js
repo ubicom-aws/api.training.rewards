@@ -149,7 +149,6 @@ conn.once('open', function ()
 										                    'boostupvote',
 										                    'inchonbitcoin',
 			                    							'teamsteem',
-									                    	'ramta',
 										                    'done',
 									                    	'famunger',
 										                    'moses153',
@@ -160,6 +159,10 @@ conn.once('open', function ()
                                         'upgoater',
                                         'appreciator',
                                         'minnowsupport',
+                                        'qurator',
+  							                    		'mahdiyari',
+                                        'officialfuzzy',
+  							                    		'fuzzyvest',
                                       ];
                                       const reputation = steem.formatter.reputation(account.reputation);
 
