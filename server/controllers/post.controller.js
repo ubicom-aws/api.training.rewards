@@ -107,7 +107,15 @@ function update(req, res, next) {
                             next(e);
                           });
                       })
-                      .catch(e => console.log(e))
+                      .catch(e => {
+                        console.log("ERROR GITHUB");
+                        post.save()
+                          .then(savedPost => res.json(savedPost))
+                          .catch(e => {
+                            console.log("ERROR REVIEWING POST", e);
+                            next(e);
+                          });
+                      })
                   } else {
                     post.save()
                       .then(savedPost => res.json(savedPost))
