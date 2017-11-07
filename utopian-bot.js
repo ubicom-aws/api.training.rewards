@@ -82,7 +82,7 @@ conn.once('open', function ()
             const { categories } = stats;
 
             Post
-              .list({ skip: 0, limit: 35, query, sort: { pending_payout_value: -1 } })
+              .list({ skip: 0, limit: 40, query, sort: { pending_payout_value: -1 } })
               .then(posts => {
 
                 if(!posts.length) {
