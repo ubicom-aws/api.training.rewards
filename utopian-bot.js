@@ -92,7 +92,7 @@ conn.once('open', function ()
                   return;
                 }
 
-                console.log("FOUND POSTS TO VOTE: ", limit);
+                console.log("FOUND POSTS TO VOTE: ", posts.length);
 
                 posts.forEach((post, allPostsIndex) => {
                   steem.api.getAccounts([post.author], (err, accounts) => {
@@ -556,7 +556,7 @@ conn.once('open', function ()
                                         }
                                       });
                                     });
-                                  }, allPostsIndex === 0 || 30000 * allPostsIndex);
+                                  }, allPostsIndex === 0 ? 120000 : 120000 * allPostsIndex);
                                 });
                             });
                         });
