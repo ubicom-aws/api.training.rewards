@@ -222,6 +222,8 @@ conn.once('open', function ()
                                     'mahdiyari',
                                     'officialfuzzy',
                                     'fuzzyvest',
+                                    'arama',
+                                    'make-a-whale',
                                   ];
                                   const reputation = steem.formatter.reputation(account.reputation);
 
