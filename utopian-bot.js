@@ -482,7 +482,7 @@ conn.once('open', function ()
                                   let foundBots = 0;
                                   post.active_votes.forEach((voted, index) => {
                                     if (bots.indexOf(voted.voter) > - 1) {
-                                      vote = vote - 0.5;
+                                      vote = vote - 1;
                                       foundBots++;
                                     }
                                   });
@@ -503,12 +503,12 @@ conn.once('open', function ()
 
                                   if (suggestions.length > 0) {
                                     commentBody += '#### Suggestions https://utopian.io/rules\n';
-                                    suggestions.forEach(suggestion => commentBody += `-${suggestion}\n`);
+                                    suggestions.forEach(suggestion => commentBody += `- ${suggestion}\n`);
                                   }
 
                                   if (achievements.length > 0) {
                                     commentBody += '#### Achievements\n';
-                                    achievements.forEach(achievement => commentBody += `-${achievement}\n`);
+                                    achievements.forEach(achievement => commentBody += `- ${achievement}\n`);
                                   }
 
                                   commentBody += '**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join us on Discord https://discord.gg/Pc8HG9x**';
