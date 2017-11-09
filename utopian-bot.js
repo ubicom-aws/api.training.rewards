@@ -482,7 +482,7 @@ conn.once('open', function ()
                                   let foundBots = 0;
                                   post.active_votes.forEach((voted, index) => {
                                     if (bots.indexOf(voted.voter) > - 1) {
-                                      vote = vote - 1.5;
+                                      vote = vote - 0.5;
                                       foundBots++;
                                     }
                                   });
@@ -511,7 +511,7 @@ conn.once('open', function ()
                                     achievements.forEach(achievement => commentBody += `-${achievement}\n`);
                                   }
 
-                                  commentBody += '**Up-vote this comment to grow my power and help Open Source contributions like this one.**';
+                                  commentBody += '**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join us on Discord https://discord.gg/Pc8HG9x**';
 
                                   console.log("-----VOTING AUTHOR-------", post.author);
                                   console.log("VOTING PERMLINK", post.permlink);
