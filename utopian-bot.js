@@ -199,7 +199,6 @@ conn.once('open', function ()
                                     'steemprentice',
                                     'steemthat',
                                     'steemvoter',
-                                    'qurator',
                                     'mahdiyari',
                                     'officialfuzzy',
                                     'fuzzyvest',
