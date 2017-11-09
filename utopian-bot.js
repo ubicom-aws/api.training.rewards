@@ -481,8 +481,8 @@ conn.once('open', function ()
 
                                   let foundBots = 0;
                                   post.active_votes.forEach((voted, index) => {
-                                    if (bots.indexOf(voted.voter) > -1) {
-                                      vote = vote - 2.5;
+                                    if (bots.indexOf(voted.voter) > - 1) {
+                                      vote = vote - 1.5;
                                       foundBots++;
                                     }
                                   });
