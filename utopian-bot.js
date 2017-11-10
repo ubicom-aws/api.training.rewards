@@ -99,7 +99,7 @@ conn.once('open', function ()
         console.log('Voting Power for High Quality:',total_vote_high,'Unused VP:',unused_vp);
         const low_qual_post_vote=Math.min(VOTE_THRESHOLD,Math.round((unused_vp+100)/low_qual_post.length));
         console.log(low_qual_post.length,'low quality posts will be voted at',low_qual_post_vote);
-        low_qual_post.forEach(function(post){post.real_vote=low_qual_post_vote*post.vote/MIN_VOTE_QUAL;});
+        low_qual_post.forEach(function(post){post.real_vote=(low_qual_post_vote*post.vote/MIN_VOTE_QUAL).toFixed(1);});
         console.log("Total used voting power:",total_vote_high+low_qual_post_vote*low_qual_post.length);
         processed_posts.push.apply(processed_posts,high_qual_post.concat(low_qual_post));
        // console.log(processed_posts);
