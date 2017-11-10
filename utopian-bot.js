@@ -354,6 +354,9 @@ conn.once('open', function ()
                                             'fuzzyvest',
                                             'arama',
                                             'make-a-whale',
+                                            'cnbuddy',
+                                            'gentlebot',
+                                            'glitterbooster'
                                         ];
                                       const reputation = steem.formatter.reputation(account.reputation);
 
