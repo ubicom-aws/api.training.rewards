@@ -348,7 +348,22 @@ conn.once('open', function ()
                                         'make-a-whale',
                                         'cnbuddy',
                                         'gentlebot',
-                                        'glitterbooster'
+                                        'glitterbooster',
+                                        'steemedia',
+                                        'wahyurahadiann',
+                                        'blackwidow7',
+                                        'tabea',
+                                        'timbalabuch',
+                                        'edrivegom',
+                                        'qwasert',
+                                        'gamerveda',
+                                        'whatamidoing',
+                                        'stephen.king989',
+                                        'decibel',
+                                        'myday',
+                                        'gindor',
+                                        'bp423',
+                                        'boostupvote'
                                       ];
                                       const reputation = steem.formatter.reputation(account.reputation);
 
