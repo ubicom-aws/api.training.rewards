@@ -23,7 +23,7 @@ conn.once('open', function ()
   const secret = process.env.CLIENT_SECRET;
   const forced = process.env.FORCED === 'true' || false;
 
- /*   const botAccount = "utopian-io";
+    /*const botAccount = "utopian-io";
     const refreshToken = "";
     const secret = "";
     const forced = true;*/
@@ -137,8 +137,9 @@ conn.once('open', function ()
                  commentBody,
                  jsonMetadata);
              console.log(post.real_vote * 100);
-             const comment = () => {
-             SteemConnect.comment(
+                ///*
+                 const comment = () => {
+            SteemConnect.comment(
              post.author,
              post.permlink,
              botAccount,
@@ -184,7 +185,7 @@ conn.once('open', function ()
              console.log("NOW SUBMITTING COMMENT FROM CATCH");
              comment();
              }
-             });
+             });;//*/
 
              }, i === 0 || 30000 * i);
         });
@@ -192,6 +193,7 @@ conn.once('open', function ()
 
 
     }
+    ///*
   request
     .get(`https://v2.steemconnect.com/api/oauth2/token?refresh_token=${refreshToken}&client_secret=${secret}&scope=vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance,offline`)
     .end((err, res) => {
@@ -204,6 +206,7 @@ conn.once('open', function ()
       if (res.body.access_token) {
         SteemConnect.setAccessToken(res.body.access_token);
       }
+      //*/
       checkVotingPower(true, function(){
         Stats.get()
           .then(stats => {
@@ -243,53 +246,115 @@ conn.once('open', function ()
                                   Post
                                     .list({ skip: 0, limit: contributionsCount, query })
                                     .then(contributions => {
-                                      const bots = [
-                                        'voter',
-                                        'booster',
-                                        'cleverbot',
-                                        'minnowpondblue',
-                                        'minnowpondred',
-                                        'sneaky-ninja',
-                                        'boomerang',
-                                        'lovejuice',
-                                        'buildawhale',
-                                        'minnowhelper',
-                                        'discordia',
-                                        'bellyrub',
-                                        'minnowbooster',
-                                        'randowhale',
-                                        'minnowpond',
-                                        'resteembot',
-                                        'originalworks',
-                                        'treeplanter',
-                                        'followforupvotes',
-                                        'steemthat',
-                                        'frontrunner',
-                                        'steemvoter',
-                                        'morwhale',
-	                    									'whalereward',
-	                    									'polsza',
-			                    							'reblogger',
-	      									              'pharesim',
-										                    'resteem.bot',
-	                    									'bago',
-										                    'drotto',
-										                    'boostupvote',
-										                    'inchonbitcoin',
-			                    							'teamsteem',
-									                    	'ramta',
-										                    'done',
-									                    	'famunger',
-										                    'moses153',
-										                    'russiann',
-									                    	'ramta',
-                                        'htliao',
-                                        'pushup',
-                                        'upgoater',
-                                        'appreciator',
-                                        'minnowsupport',
-
-                                      ];
+                                        const bots = [
+                                            'analisa',
+                                            'animus',
+                                            'appreciator',
+                                            'bago',
+                                            'whatupgg',
+                                            'burdok213',
+                                            'besttocome215',
+                                            'drakkald',
+                                            'heelpopulair',
+                                            'portoriko',
+                                            'blimbossem',
+                                            'weareone1',
+                                            'raidrunner',
+                                            'sniffo35',
+                                            'ikwindje',
+                                            'bierkaart',
+                                            'waardanook',
+                                            'zdashmash',
+                                            'misterwister',
+                                            'ipuffyou',
+                                            'wildoekwind',
+                                            'scharmebran',
+                                            'siliwilly',
+                                            'prambarbara',
+                                            'banjo',
+                                            'barrie',
+                                            'bellyrub',
+                                            'boomerang',
+                                            'booster',
+                                            'boostupvote',
+                                            'bowlofbitcoin',
+                                            'buildawhale',
+                                            'cleverbot',
+                                            'counterbot',
+                                            'cryptoowl',
+                                            'cub1',
+                                            'curationrus',
+                                            'dirty.hera',
+                                            'discordia',
+                                            'done',
+                                            'drotto',
+                                            'emilhoch',
+                                            'eoscrusher',
+                                            'famunger',
+                                            'feedyourminnows',
+                                            'followforupvotes',
+                                            'frontrunner',
+                                            'gamerpool',
+                                            'gaming-hangouts',
+                                            'givemedatsteem',
+                                            'givemesteem1',
+                                            'gonewhaling',
+                                            'gotvotes',
+                                            'gpgiveaways',
+                                            'helpfulcrypto',
+                                            'idioticbot',
+                                            'ilvacca',
+                                            'inchonbitcoin',
+                                            'lovejuice',
+                                            'makindatsteem',
+                                            'minnowbooster',
+                                            'minnowhelper',
+                                            'minnowpond',
+                                            'minnowpondblue',
+                                            'minnowpondred',
+                                            'minnowsupport',
+                                            'morwhale',
+                                            'moses153',
+                                            'msp-lovebot',
+                                            'msp-shanehug',
+                                            'ninja-whale',
+                                            'ninjawhale',
+                                            'originalworks',
+                                            'pharesim',
+                                            'polsza',
+                                            'pumpingbitcoin',
+                                            'pushup',
+                                            'qurator',
+                                            'ramta',
+                                            'randovote',
+                                            'randowhale',
+                                            'randowhale0',
+                                            'randowhale1',
+                                            'randowhaletrail',
+                                            'randowhaling',
+                                            'reblogger',
+                                            'resteem.bot',
+                                            'resteembot',
+                                            'russiann',
+                                            'scamnotifier',
+                                            'sneaky-ninja',
+                                            'spinbot',
+                                            'steemholder',
+                                            'steemit-gamble',
+                                            'steemit-hangouts',
+                                            'steemmaker',
+                                            'steemmemes',
+                                            'steemminers',
+                                            'steemode',
+                                            'steemprentice',
+                                            'steemthat',
+                                            'steemvoter',
+                                            'mahdiyari',
+                                            'officialfuzzy',
+                                            'fuzzyvest',
+                                            'arama',
+                                            'make-a-whale',
+                                        ];
                                       const reputation = steem.formatter.reputation(account.reputation);
 
                                       const categoryStats = categories[post.json_metadata.type];
@@ -549,7 +614,7 @@ conn.once('open', function ()
                                       let foundBots = 0;
                                       post.active_votes.forEach((voted, index) => {
                                         if (bots.indexOf(voted.voter) > -1) {
-                                          vote = vote - 3;
+                                          vote = vote - 1;
                                           foundBots++;
                                         }
                                       });
@@ -581,6 +646,7 @@ conn.once('open', function ()
                   });
               });
           });
+   //*/
       });
     });
 });
