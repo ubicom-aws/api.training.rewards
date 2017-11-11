@@ -206,7 +206,7 @@ conn.once('open', function ()
               .countAll({ query })
               .then(limit => {
                 Post
-                  .list({ skip: 0, limit: limit, query, sort: { pending_payout_value: -1 } })
+                  .list({ skip: 0, limit: limit, query, sort: { net_votes: -1 } })
                   .then(posts => {
 
                     if(!posts.length) {

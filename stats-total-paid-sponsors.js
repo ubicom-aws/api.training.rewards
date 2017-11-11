@@ -20,7 +20,7 @@ conn.once('open', function ()
   Sponsor.list()
     .then(sponsors => {
       if (sponsors.length > 0) {
-        sponsors.forEach((sponsor, index) => {
+        sponsors.forEach((sponsor, sponsorsIndex) => {
           setTimeout(function() {
 
             const query = {
@@ -54,21 +54,17 @@ conn.once('open', function ()
                       });
                     }
 
-                    console.log(sponsor.account)
-                    console.log(total_paid_rewards)
-
                     sponsor.total_paid_rewards = total_paid_rewards;
 
                     sponsor.save().then(savedSponsor => {
-                      if ((index + 1) === sponsors.length) {
+                      if ((sponsorsIndex + 1) === sponsors.length) {
                         conn.close();
                         process.exit(0);
                       }
                     });
                   })
               });
-          }, index * 3000);
-
+          }, sponsorsIndex * 30000);
         });
       }
     });
