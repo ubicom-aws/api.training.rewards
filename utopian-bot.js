@@ -444,7 +444,6 @@ conn.once('open', function ()
 
                                       if(bodyInAverage) {
                                         vote = vote + 2.5;
-                                        suggestions.push('Average amount of information. Good but you can do better!');
                                       };
                                       if (bodyBiggerThanAverage) {
                                         // length of the body bigger than average in its category. The contribution is informative
