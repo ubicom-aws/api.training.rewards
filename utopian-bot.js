@@ -29,7 +29,7 @@ conn.once('open', function ()
 
 
   function checkVotingPower (callback) {
-    const limitPower = 9000;
+    const limitPower = 9500;
     steem.api.getAccounts([botAccount], function(err, accounts) {
       if (!err) {
         const botStatus = accounts[0];
