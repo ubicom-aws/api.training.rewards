@@ -201,6 +201,19 @@ const PostSchema = new mongoose.Schema({
   },
 });
 
+PostSchema.index(
+  {
+    "body": "text",
+    "title": "text"
+  },
+  {
+    "weights": {
+      "body": 2,
+      "title": 5
+    }
+  }
+)
+
 PostSchema.method({
 });
 
@@ -219,8 +232,9 @@ PostSchema.statics = {
   countAll({ query = {} } = {}) {
     return this.count(query).exec();
   },
-  list({ skip = 0, limit = 50, query = {}, sort = { created: -1 }} = {}) {
+  list({ skip = 0, limit = 50, query = {}, sort = { created: -1 }, select = {}} = {}) {
     return this.find(query)
+      .select(select)
       .sort(sort)
       .skip(+skip)
       .limit(+limit)
