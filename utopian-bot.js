@@ -29,7 +29,7 @@ conn.once('open', function ()
 
 
   function checkVotingPower (callback) {
-    const limitPower = 9000;
+    const limitPower = 9500;
     steem.api.getAccounts([botAccount], function(err, accounts) {
       if (!err) {
         const botStatus = accounts[0];
@@ -206,7 +206,7 @@ conn.once('open', function ()
               .countAll({ query })
               .then(limit => {
                 Post
-                  .list({ skip: 0, limit: limit, query, sort: { pending_payout_value: -1 } })
+                  .list({ skip: 0, limit: limit, query, sort: { net_votes: -1 } })
                   .then(posts => {
 
                     if(!posts.length) {
@@ -263,6 +263,15 @@ conn.once('open', function ()
                                         'scharmebran',
                                         'siliwilly',
                                         'prambarbara',
+                                        'idioticbot',
+                                        'tarmaland',
+                                        'biskopakon',
+                                        'wistoepon',
+                                        'pimpoesala',
+                                        'maradaratar',
+                                        'wiseguyhuh',
+                                        'mahabrahma',
+                                        'dahrma',
                                         'banjo',
                                         'barrie',
                                         'bellyrub',
@@ -341,13 +350,11 @@ conn.once('open', function ()
                                         'steemprentice',
                                         'steemthat',
                                         'steemvoter',
-                                        'mahdiyari',
                                         'officialfuzzy',
                                         'fuzzyvest',
                                         'arama',
                                         'make-a-whale',
                                         'cnbuddy',
-                                        'gentlebot',
                                         'glitterbooster',
                                         'steemedia',
                                         'wahyurahadiann',
@@ -363,6 +370,10 @@ conn.once('open', function ()
                                         'myday',
                                         'gindor',
                                         'bp423',
+                                        'votey',
+                                        'viraltrend',
+                                        'deutschbot',
+                                        'davidding',
                                         'boostupvote'
                                       ];
                                       const reputation = steem.formatter.reputation(account.reputation);
@@ -433,7 +444,6 @@ conn.once('open', function ()
 
                                       if(bodyInAverage) {
                                         vote = vote + 2.5;
-                                        suggestions.push('Average amount of information. Good but you can do better!');
                                       };
                                       if (bodyBiggerThanAverage) {
                                         // length of the body bigger than average in its category. The contribution is informative

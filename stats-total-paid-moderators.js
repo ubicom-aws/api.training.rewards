@@ -21,53 +21,73 @@ conn.once('open', function ()
   Moderator.list()
     .then(moderators => {
       if (moderators.length > 0) {
-        moderators.forEach((moderator, index) => {
-          let total_paid_rewards = 0;
+        moderators.forEach((moderator, moderatorsIndex) => {
 
-          const query = {
-            beneficiaries: {
-              $elemMatch: {
-                account: moderator.account
-              }
-            },
-            cashout_time:
-              {
-                $eq: paidRewardsDate
+          setTimeout(function() {
+
+            let total_paid_rewards = 0;
+
+            const query = {
+              beneficiaries: {
+                $elemMatch: {
+                  account: moderator.account
+                }
               },
-          };
-          Post
-            .countAll({ query })
-            .then(count => {
+              cashout_time:
+                {
+                  $eq: paidRewardsDate
+                },
+            };
+            Post
+              .countAll({ query })
+              .then(count => {
 
-              Post
-                .list({ skip: 0, limit: count, query })
-                .then(posts => {
-                  if(posts.length > 0) {
-                    posts.forEach(post => {
-                      const beneficiary = R.find(R.propEq('account', moderator.account))(post.beneficiaries);
-                      const payoutDetails = calculatePayout(post);
-                      const authorPayouts = payoutDetails.authorPayouts || 0;
-                      const payoutModerator = (authorPayouts * (beneficiary.weight / 100)) / 100;
+                if (moderator.account == 'elear') {
+                  console.log("POST COUNT ELEAR", count)
+                }
 
-                      total_paid_rewards = total_paid_rewards + payoutModerator;
-                    });
-                  }
+                Post
+                  .list({ skip: 0, limit: count, query })
+                  .then(posts => {
 
-                  Sponsor.get(moderator.account).then(sponsor => {
-                    if (sponsor) {
-                      moderator.total_paid_rewards = total_paid_rewards - sponsor.total_paid_rewards;
-                    } else {
-                      moderator.total_paid_rewards = total_paid_rewards;
+                    if (moderator.account == 'elear') {
+                      console.log("POST ELEARRRR", posts.length)
                     }
-                    moderator.save().then(savedModerator => {
-                      if ((index + 1) === moderators.length) {
-                        conn.close();
-                        process.exit(0);
-                      }
-                    });
-                  });
-                })
-            });
+
+                    if(posts.length > 0) {
+                      posts.forEach((post, postsIndex) => {
+                        const beneficiary = R.find(R.propEq('account', moderator.account))(post.beneficiaries);
+                        const payoutDetails = calculatePayout(post);
+                        const authorPayouts = payoutDetails.authorPayouts || 0;
+                        const payoutModerator = (authorPayouts * (beneficiary.weight / 100)) / 100;
+
+                        total_paid_rewards = total_paid_rewards + payoutModerator;
+                      });
+                    }
+
+                    Sponsor
+                      .get(moderator.account)
+                      .then(sponsor => {
+                        console.log("-----MODERATOR-----", moderator.account)
+                        console.log("POST COUNT", count);
+                        console.log("total_paid_rewards", total_paid_rewards)
+                        console.log("SPONSOR", sponsor ? sponsor.account : "NO");
+                        if (sponsor) {
+                          moderator.total_paid_rewards = sponsor.total_paid_rewards > total_paid_rewards ? sponsor.total_paid_rewards : total_paid_rewards;
+                        } else {
+                          moderator.total_paid_rewards = total_paid_rewards;
+                        }
+                        moderator.save().then(savedModerator => {
+                          if ((moderatorsIndex + 1) === moderators.length) {
+                            conn.close();
+                            process.exit(0);
+                          }
+                        });
+                      });
+
+                  })
+              });
+          }, moderatorsIndex * 30000);
         });
       }
     });
