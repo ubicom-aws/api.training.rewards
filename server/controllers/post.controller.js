@@ -238,7 +238,7 @@ function list(req, res, next) {
     }
     query = {
       $text: {
-        $search: ''+bySimilarity+''
+        $search: bySimilarity
         }
       },
       {
