@@ -298,7 +298,7 @@ function list(req, res, next) {
   }
 
   if (type !== 'all') {
-    if (type !== 'announcements') {
+    if (type !== 'tasks') {
       query = {
         ...query,
         'json_metadata.type': type,
@@ -307,7 +307,7 @@ function list(req, res, next) {
       query = {
         ...query,
         'json_metadata.type': {
-          $regex : (/announcement-/i)
+          $regex : (/task-/i)
         }
       };
     }

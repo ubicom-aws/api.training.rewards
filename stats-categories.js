@@ -26,8 +26,6 @@ conn.once('open', function ()
               const categories = {};
 
               posts.forEach((post, index) => {
-                const categoryType = post.json_metadata.type;
-
                 if (!categories[categoryType]) {
                   categories[categoryType] = {
                     total_posts: 0,
