@@ -30,6 +30,8 @@ conn.once('open', function ()
                 const categories = {};
 
                 posts.forEach((post, index) => {
+                  const categoryType = post.json_metadata.type;
+
                   if (!categories[categoryType]) {
                     categories[categoryType] = {
                       total_posts: 0,
@@ -54,8 +56,8 @@ conn.once('open', function ()
                   const categoryObj = categories[categoryType];
                   const isCashedout = post.cashout_time === '1969-12-31T23:59:59';
                   const payoutDetails = isCashedout ? calculatePayout(post) : null;
-                  const authorPayouts = isCashedout ? payoutDetails.authorPayouts : 0;
-                  const curatorPayouts = isCashedout ? payoutDetails.curatorPayouts : 0;
+                  const authorPayouts = isCashedout ? (payoutDetails.authorPayouts || 0) : 0;
+                  const curatorPayouts = isCashedout ? (payoutDetails.curatorPayouts || 0) : 0;
                   const images = post.json_metadata.image ? post.json_metadata.image.length : 0;
                   const links = post.json_metadata.links ? post.json_metadata.links.length : 0;
                   const tags = post.json_metadata.tags.length;
@@ -86,7 +88,10 @@ conn.once('open', function ()
                 stats.save().then(savedStats => {
                   process.exit(0);
                   conn.close();
-                });
+                }).catch(e => {
+                  console.log("ERROR");
+                  console.log(e);
+                })
               }
             });
         });

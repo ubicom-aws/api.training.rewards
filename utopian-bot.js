@@ -65,7 +65,7 @@ conn.once('open', function ()
     reviewed: true,
     'active_votes.voter': { $ne: botAccount },
     created: {
-      $lte: new Date(now.getTime() - 1*60*60*1000).toISOString()
+      $lte: new Date(now.getTime() - 4*60*60*1000).toISOString()
     },
     cashout_time: {
       $gt: paidRewardsDate,
