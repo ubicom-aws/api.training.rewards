@@ -216,6 +216,8 @@ function list(req, res, next) {
   const cashoutTime = '1969-12-31T23:59:59';
 
   let sort = { created: -1 };
+  let select = {}
+
   let query = {
     reviewed: true,
     flagged: {
@@ -224,12 +226,26 @@ function list(req, res, next) {
   };
 
   if (bySimilarity) {
-    query = {
-      ...query,
-      body: {
-        $regex: bySimilarity, $options: 'i'
+    select = {
+      "score": {
+        "$meta": "textScore"
       }
     }
+    sort = {
+      "score": {
+        "$meta": "textScore"
+      }
+    }
+    query = {
+      $text: {
+        $search: bySimilarity
+        }
+      },
+      {
+        score: {
+          $meta: "textScore"
+        }
+      }
   }
 
   if (sortBy === 'votes') {
@@ -282,7 +298,7 @@ function list(req, res, next) {
   }
 
   if (type !== 'all') {
-    if (type !== 'announcements') {
+    if (type !== 'tasks') {
       query = {
         ...query,
         'json_metadata.type': type,
@@ -291,7 +307,7 @@ function list(req, res, next) {
       query = {
         ...query,
         'json_metadata.type': {
-          $regex : (/announcement-/i)
+          $regex : (/task-/i)
         }
       };
     }
@@ -314,7 +330,7 @@ function list(req, res, next) {
 
   Post.countAll({ query })
     .then(count => {
-      Post.list({ limit, skip, query, sort })
+      Post.list({ limit, skip, query, sort, select })
         .then(posts => res.json({
           total: count,
           results: posts

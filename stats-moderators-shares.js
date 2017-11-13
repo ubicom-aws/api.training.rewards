@@ -10,78 +10,74 @@ mongoose.Promise = require('bluebird');
 mongoose.connect(`${config.mongo.host}`);
 
 const conn = mongoose.connection;
-conn.once('open', function ()
-{
-  const dedicatedPercentageModerators = 5;
-  const query = {
-    reviewed: true,
-    moderator: {
-      $exists : true
-    }
-  };
+conn.once('open', function () {
+  Stats.get()
+    .then(stats => {
+      // @TODO should be used to increment the stats based on last check, instead then rechecking from the start
+      const lastCheck = stats.stats_moderator_shares_last_check;
+      const now = new Date().toISOString();
+      const dedicatedPercentageModerators = 5;
 
-  Post
-    .countAll({ query })
-    .then(countPosts => {
+      const query = {
+        reviewed: true,
+        moderator: {
+          $exists: true
+        }
+      };
+
       Post
-        .list({ skip: 0, limit: countPosts, query })
-        .then(posts => {
-          if(posts.length > 0) {
-            posts.forEach((post, indexPost) => {
-                Moderator.get(post.moderator).then(moderator => {
-                  let moderatorObj = moderator;
-                  if (!moderator) {
-                    moderatorObj = new Moderator({
-                      account: post.moderator,
-                      total_paid_rewards: 0,
-                      should_receive_rewards: 0,
-                      total_moderated: 1,
-                      percentage_total_rewards_moderators: 0,
-                    })
-                  }
+        .countAll({query})
+        .then(countPosts => {
+          Moderator.list()
+            .then(moderators => {
+              if (moderators.length > 0) {
+                moderators.forEach((moderator, moderatorsIndex) => {
+                  setTimeout(function(){
+                    const queryTotalModerated = {
+                      moderator: moderator.account,
+                      reviewed: true,
+                    };
 
-                  const queryTotalModerated = {
-                    moderator: moderatorObj.account,
-                    reviewed: true,
-                  };
+                    Post
+                      .countAll({query: queryTotalModerated})
+                      .then(currentModerated => {
+                        const percentageTotalShares = (currentModerated / countPosts) * 100;
+                        const total_paid_authors = stats.total_paid_authors;
+                        const totalDedicatedModerators = (total_paid_authors * dedicatedPercentageModerators) / 100;
+                        const shouldHaveReceivedRewards = (percentageTotalShares * totalDedicatedModerators) / 100;
+                        const total_paid_rewards = moderator.total_paid_rewards;
 
-                  Post
-                    .countAll({ query: queryTotalModerated })
-                    .then(currentModerated => {
-                      Stats.get()
-                        .then(stats => {
-                          const percentageTotalShares = (currentModerated / countPosts) * 100;
-                          const total_paid_authors = stats.total_paid_authors;
-                          const totalDedicatedModerators = (total_paid_authors * dedicatedPercentageModerators) / 100;
-                          const shouldHaveReceivedRewards = (percentageTotalShares * totalDedicatedModerators) / 100;
-                          const total_paid_rewards = moderatorObj.total_paid_rewards;
+                        if (shouldHaveReceivedRewards >= total_paid_rewards) {
+                          const mustReceiveRewards = shouldHaveReceivedRewards - total_paid_rewards;
+                          moderator.should_receive_rewards = mustReceiveRewards;
+                        }
 
-                          if (shouldHaveReceivedRewards > total_paid_rewards) {
-                            const mustReceiveRewards = shouldHaveReceivedRewards - total_paid_rewards;
-                            moderatorObj.should_receive_rewards = mustReceiveRewards;
-                          }
+                        if (shouldHaveReceivedRewards <= total_paid_rewards) {
+                          const waitForNextRewards = 0;
+                          moderator.should_receive_rewards = waitForNextRewards;
+                        }
 
-                          if (shouldHaveReceivedRewards < total_paid_rewards) {
-                            const waitForNextRewards = 0;
-                            moderatorObj.should_receive_rewards = waitForNextRewards;
-                          }
+                        moderator.total_moderated = currentModerated;
+                        moderator.percentage_total_rewards_moderators = percentageTotalShares;
 
-                          moderatorObj.total_moderated = currentModerated;
-                          moderatorObj.percentage_total_rewards_moderators = percentageTotalShares;
-
-                          moderatorObj.save(savedModerator => {
-                            if ((indexPost + 1) === posts.length) {
+                        moderator.save(savedModerator => {
+                          if ((moderatorsIndex + 1) === moderators.length) {
+                            stats.stats_moderator_shares_last_check = now;
+                            stats.save().then(() => {
                               conn.close();
                               process.exit(0);
-                            }
-                          });
+                            });
+                          }
                         });
-                    });
+                      });
+                  }, moderatorsIndex * 3000)
                 });
+              }
             });
-          } else {
-            process.exit(0);
-          }
         });
-    });
+    }).catch(e => {
+    console.log("ERROR STATS", e);
+    conn.close();
+    process.exit(0);
+  });
 });
