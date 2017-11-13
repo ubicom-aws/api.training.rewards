@@ -283,6 +283,7 @@ conn.once('open', function ()
                                         'boostupvote',
                                         'bowlofbitcoin',
                                         'buildawhale',
+                                        'businessbot',
                                         'cleverbot',
                                         'counterbot',
                                         'cryptoowl',
@@ -381,6 +382,9 @@ conn.once('open', function ()
                                         'viraltrend',
                                         'deutschbot',
                                         'davidding',
+                                        'stackin',
+                                        'themanualbot',
+                                        'steem-untalented',
                                         'boostupvote'
                                       ];
                                       const reputation = steem.formatter.reputation(account.reputation);
