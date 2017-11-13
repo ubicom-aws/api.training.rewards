@@ -50,14 +50,23 @@ SponsorSchema.statics = {
     return this.find()
       .exec();
   },
-  listBeneficiaries() {
-    return this.find({
+  listBeneficiaries(exclude = false) {
+    let query = {
       vesting_shares: {
         '$gt': 0
+      },
+    };
+    if (exclude && exclude.length) {
+      query = {
+        ...query,
+        account: {
+          $nin: exclude
+        }
       }
-    })
+    }
+    return this.find(query)
       .sort({ should_receive_rewards: -1 })
-      .limit(7)
+      .limit(6)
       .exec();
   }
 };

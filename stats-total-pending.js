@@ -12,22 +12,25 @@ mongoose.connect(`${config.mongo.host}`);
 const conn = mongoose.connection;
 conn.once('open', function ()
 {
-  const paidRewardsDate = '1969-12-31T23:59:59';
-  const query = {
-    cashout_time:
-      {
-        $gt: paidRewardsDate
-      },
-  };
+  Stats.get().then(stats => {
+    // @TODO should be used to increment the stats based on last check, instead then rechecking from the start
+    const lastCheck = stats.stats_total_pending_last_check;
+    const now = new Date().toISOString();
+    const paidRewardsDate = '1969-12-31T23:59:59';
+    const query = {
+      cashout_time:
+        {
+          $gt: paidRewardsDate
+        },
+    };
 
-  Post
-    .countAll({ query })
-    .then(count => {
-      Post
-        .list({ skip: 0, limit: count, query })
-        .then(posts => {
-          if(posts.length > 0) {
-            Stats.get().then(stats => {
+    Post
+      .countAll({ query })
+      .then(count => {
+        Post
+          .list({ skip: 0, limit: count, query })
+          .then(posts => {
+            if(posts.length > 0) {
               let total_pending_rewards = 0;
 
               posts.forEach((post, index) => {
@@ -37,12 +40,18 @@ conn.once('open', function ()
               });
 
               stats.total_pending_rewards = total_pending_rewards;
+              stats.stats_total_pending_last_check = now;
+
               stats.save().then(savedStats => {
                 conn.close();
                 process.exit(0);
               });
-            });
-          }
-        })
-    })
+            }
+          })
+      })
+  }).catch(e => {
+    console.log("ERROR STATS", e);
+    conn.close();
+    process.exit(0);
+  });
 });

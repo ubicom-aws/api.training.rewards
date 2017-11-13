@@ -72,7 +72,7 @@ ModeratorSchema.statics = {
 
     return this.find(query)
       .sort({ should_receive_rewards: -1 })
-      .limit(1)
+      .limit(2)
       .exec();
   }
 };
