@@ -71,7 +71,7 @@ conn.once('open', function ()
       $gt: paidRewardsDate,
     },
   };
-  function sortContributions(stats){
+  function sortContributions(){
     //console.log('---------LOOP OVER------------\n',post_vote);
     post_vote = post_vote.filter(function(elt){return (Date.now()-new Date(elt.created)- new Date().getTimezoneOffset())<1000*3600*24*6});
     const high_qual_post=post_vote.filter(function(elt){return elt.vote>=MIN_VOTE_QUAL;});
@@ -160,19 +160,6 @@ conn.once('open', function ()
           }).catch(e => {
           // I think there is a problem with sdk. Always gets in the catch
           if (e.error_description == undefined) {
-
-            stats.utopian_votes = [
-              ...stats.utopian_votes,
-              {
-                date: new Date().toISOString(),
-                weight: post.real_vote * 100,
-                permlink: post.permlink,
-                author: post.author,
-              }
-            ];
-
-            stats.save();
-
             console.log("NOW SUBMITTING COMMENT FROM CATCH");
             comment();
           }
@@ -657,7 +644,7 @@ conn.once('open', function ()
                                       post_vote.push({"author": post.author, "permlink": post.permlink, "vote": vote, "category": cat, "achievements": achievements, "suggestions": suggestions,"created": post.created});
 
                                       if(i + 1 === posts.length)
-                                        sortContributions(stats);
+                                        sortContributions();
                                       else i++;
 
                                     });
