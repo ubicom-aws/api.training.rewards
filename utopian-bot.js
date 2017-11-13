@@ -37,7 +37,7 @@ conn.once('open', function ()
         const secondsago = (new Date().getTime() - new Date(botStatus.last_vote_time + "Z").getTime()) / 1000;
         const votingPower = botStatus.voting_power + (10000 * secondsago / 432000);
 
-        if (votingPower <= limitPower && !forced) {
+        if (votingPower < limitPower && !forced) {
           console.log("UPS I AM SO TIRED TODAY. VOTED TOO MUCH", votingPower);
           conn.close();
           process.exit(0);
