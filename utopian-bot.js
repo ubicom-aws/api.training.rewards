@@ -56,10 +56,10 @@ conn.once('open', function ()
 
   const now = new Date();
   var post_vote = [];
-  const MIN_VOTE_QUAL = 15;
-  const MAX_INFLATION = 1.4;
-  const VOTE_THRESHOLD = 8;
-  const category_max_votes=[{"cat":"development","max_vote":400},{"cat":"bug-hunting","max_vote":125},{"cat":"ideas","max_vote":100},{"cat":"translations","max_vote":150},{"cat":"others","max_vote":225}];
+  const MIN_VOTE_QUAL = 20;
+  const MAX_INFLATION = 1.5;
+  const VOTE_THRESHOLD = 7;
+  const category_max_votes=[{"cat":"development","max_vote":400},{"cat":"bug-hunting","max_vote":75},{"cat":"ideas","max_vote":50},{"cat":"translations","max_vote":150},{"cat":"others","max_vote":325}];
   var processed_posts=[];
   const query = {
     reviewed: true,
