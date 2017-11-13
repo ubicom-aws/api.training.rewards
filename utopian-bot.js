@@ -342,6 +342,7 @@ conn.once('open', function ()
                                         'reblogger',
                                         'resteem.bot',
                                         'resteembot',
+                                        'resteemable',
                                         'russiann',
                                         'scamnotifier',
                                         'sneaky-ninja',
