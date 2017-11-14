@@ -226,13 +226,16 @@ conn.once('open', function ()
                                     .list({ skip: 0, limit: contributionsCount, query })
                                     .then(contributions => {
                                       const bots = [
+                                        'adsactly',
                                         'analisa',
                                         'animus',
                                         'appreciator',
+                                        'ausbitbot',
                                         'bago',
                                         'whatupgg',
                                         'burdok213',
                                         'besttocome215',
+                                        'centerlink',
                                         'drakkald',
                                         'heelpopulair',
                                         'portoriko',
@@ -267,6 +270,7 @@ conn.once('open', function ()
                                         'boostupvote',
                                         'bowlofbitcoin',
                                         'buildawhale',
+                                        'businessbot',
                                         'cleverbot',
                                         'counterbot',
                                         'cryptoowl',
@@ -293,6 +297,7 @@ conn.once('open', function ()
                                         'idioticbot',
                                         'ilvacca',
                                         'inchonbitcoin',
+                                        'libertyteeth',
                                         'lovejuice',
                                         'makindatsteem',
                                         'minnowbooster',
@@ -301,6 +306,7 @@ conn.once('open', function ()
                                         'minnowpondblue',
                                         'minnowpondred',
                                         'minnowsupport',
+                                        'moonbot',
                                         'morwhale',
                                         'moses153',
                                         'msp-lovebot',
@@ -323,11 +329,14 @@ conn.once('open', function ()
                                         'reblogger',
                                         'resteem.bot',
                                         'resteembot',
+                                        'resteemable',
                                         'russiann',
                                         'scamnotifier',
                                         'sneaky-ninja',
                                         'spinbot',
                                         'steemholder',
+                                        'steemsquad',
+                                        'steemgigs',
                                         'steemit-gamble',
                                         'steemit-hangouts',
                                         'steemmaker',
@@ -361,7 +370,11 @@ conn.once('open', function ()
                                         'viraltrend',
                                         'deutschbot',
                                         'davidding',
-                                        'boostupvote'
+                                        'stackin',
+                                        'themanualbot',
+                                        'steem-untalented',
+                                        'boostupvote',
+                                        'muxxybot'
                                       ];
 
 
