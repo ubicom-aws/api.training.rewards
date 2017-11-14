@@ -90,7 +90,7 @@ function getProjects (req, res, next) {
       if(!err) {
         const repos = response.body;
         if (repos.length > 0) {
-          res.json(repos.filter(repo => repo.owner.login === user.github.account));
+          res.json(repos.filter(repo => repo.owner.login === user.github.account && repo.private === false));
         } else {
           res.status(404);
         }

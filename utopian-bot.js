@@ -37,7 +37,7 @@ conn.once('open', function ()
         const secondsago = (new Date().getTime() - new Date(botStatus.last_vote_time + "Z").getTime()) / 1000;
         const votingPower = botStatus.voting_power + (10000 * secondsago / 432000);
 
-        if (votingPower <= limitPower && !forced) {
+        if (votingPower < limitPower && !forced) {
           console.log("UPS I AM SO TIRED TODAY. VOTED TOO MUCH", votingPower);
           conn.close();
           process.exit(0);
@@ -65,13 +65,13 @@ conn.once('open', function ()
     reviewed: true,
     'active_votes.voter': { $ne: botAccount },
     created: {
-      $lte: new Date(now.getTime() - 1*60*60*1000).toISOString()
+      $lte: new Date(now.getTime() - 4*60*60*1000).toISOString()
     },
     cashout_time: {
       $gt: paidRewardsDate,
     },
   };
-  function sortContributions(stats){
+  function sortContributions(){
     //console.log('---------LOOP OVER------------\n',post_vote);
     post_vote = post_vote.filter(function(elt){return (Date.now()-new Date(elt.created)- new Date().getTimezoneOffset())<1000*3600*24*6});
     const high_qual_post=post_vote.filter(function(elt){return elt.vote>=MIN_VOTE_QUAL;});
@@ -160,19 +160,6 @@ conn.once('open', function ()
           }).catch(e => {
           // I think there is a problem with sdk. Always gets in the catch
           if (e.error_description == undefined) {
-
-            stats.utopian_votes = [
-              ...stats.utopian_votes,
-              {
-                date: new Date().toISOString(),
-                weight: post.real_vote * 100,
-                permlink: post.permlink,
-                author: post.author,
-              }
-            ];
-
-            stats.save();
-
             console.log("NOW SUBMITTING COMMENT FROM CATCH");
             comment();
           }
@@ -239,13 +226,16 @@ conn.once('open', function ()
                                     .list({ skip: 0, limit: contributionsCount, query })
                                     .then(contributions => {
                                       const bots = [
+                                        'adsactly',
                                         'analisa',
                                         'animus',
                                         'appreciator',
+                                        'ausbitbot',
                                         'bago',
                                         'whatupgg',
                                         'burdok213',
                                         'besttocome215',
+                                        'centerlink',
                                         'drakkald',
                                         'heelpopulair',
                                         'portoriko',
@@ -280,6 +270,7 @@ conn.once('open', function ()
                                         'boostupvote',
                                         'bowlofbitcoin',
                                         'buildawhale',
+                                        'businessbot',
                                         'cleverbot',
                                         'counterbot',
                                         'cryptoowl',
@@ -306,6 +297,7 @@ conn.once('open', function ()
                                         'idioticbot',
                                         'ilvacca',
                                         'inchonbitcoin',
+                                        'libertyteeth',
                                         'lovejuice',
                                         'makindatsteem',
                                         'minnowbooster',
@@ -314,6 +306,7 @@ conn.once('open', function ()
                                         'minnowpondblue',
                                         'minnowpondred',
                                         'minnowsupport',
+                                        'moonbot',
                                         'morwhale',
                                         'moses153',
                                         'msp-lovebot',
@@ -336,11 +329,14 @@ conn.once('open', function ()
                                         'reblogger',
                                         'resteem.bot',
                                         'resteembot',
+                                        'resteemable',
                                         'russiann',
                                         'scamnotifier',
                                         'sneaky-ninja',
                                         'spinbot',
                                         'steemholder',
+                                        'steemsquad',
+                                        'steemgigs',
                                         'steemit-gamble',
                                         'steemit-hangouts',
                                         'steemmaker',
@@ -374,7 +370,10 @@ conn.once('open', function ()
                                         'viraltrend',
                                         'deutschbot',
                                         'davidding',
-                                        'boostupvote'
+                                        'stackin',
+                                        'steem-untalented',
+                                        'boostupvote',
+                                        'muxxybot'
                                       ];
 
 
@@ -648,7 +647,7 @@ conn.once('open', function ()
 
                                       var cat = post.json_metadata.type.replace('task-', ''); //put announcements with their corresponding category
 
-                                      if(cat === 'graphics' || cat === 'documentation' || cat === 'analysis' || cat ==='social'|| cat ==='tutorials'|| cat ==='video-tutorials'|| cat ==='copywriting') {
+                                      if(cat === 'graphics' || cat === 'documentation' || cat === 'analysis' || cat ==='social'|| cat ==='tutorials'|| cat ==='video-tutorials'|| cat ==='copywriting' || cat === 'blog') {
                                         cat = 'others'; //regroups the categories with low amount of contributions
                                       }
                                       if(cat ==='sub-projects')
@@ -657,7 +656,7 @@ conn.once('open', function ()
                                       post_vote.push({"author": post.author, "permlink": post.permlink, "vote": vote, "category": cat, "achievements": achievements, "suggestions": suggestions,"created": post.created});
 
                                       if(i + 1 === posts.length)
-                                        sortContributions(stats);
+                                        sortContributions();
                                       else i++;
 
                                     });

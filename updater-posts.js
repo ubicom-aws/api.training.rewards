@@ -58,6 +58,8 @@ conn.once('open', function ()
                       if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
                       if (!updatedPost.json_metadata.pullRequests && post.json_metadata.pullRequests) updatedPost.json_metadata.pullRequests = post.json_metadata.pullRequests;
 
+                      updatedPost.json_metadata.type = updatedPost.json_metadata.type.replace("announcement-", "task-");
+
                       for (var prop in updatedPost) {
                         if (updatedPost[prop] !== post[prop]) {
                           post[prop] = updatedPost[prop];

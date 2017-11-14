@@ -60,14 +60,6 @@ const StatsSchema = new mongoose.Schema({
     'task-analysis': categoriesStats,
     'task-social': categoriesStats,
   },
-  utopian_votes: [
-    {
-      date: String,
-      weight: Number,
-      permlink: String,
-      author: String,
-    }
-  ]
 });
 
 StatsSchema.method({
