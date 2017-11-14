@@ -371,7 +371,6 @@ conn.once('open', function ()
                                         'deutschbot',
                                         'davidding',
                                         'stackin',
-                                        'themanualbot',
                                         'steem-untalented',
                                         'boostupvote',
                                         'muxxybot'
