@@ -386,7 +386,8 @@ conn.once('open', function ()
                                         'stackin',
                                         'themanualbot',
                                         'steem-untalented',
-                                        'boostupvote'
+                                        'boostupvote',
+                                        'muxxybot'
                                       ];
                                       const reputation = steem.formatter.reputation(account.reputation);
 
