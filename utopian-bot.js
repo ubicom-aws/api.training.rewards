@@ -648,7 +648,7 @@ conn.once('open', function ()
 
                                       var cat = post.json_metadata.type.replace('task-', ''); //put announcements with their corresponding category
 
-                                      if(cat === 'graphics' || cat === 'documentation' || cat === 'analysis' || cat ==='social'|| cat ==='tutorials'|| cat ==='video-tutorials'|| cat ==='copywriting') {
+                                      if(cat === 'graphics' || cat === 'documentation' || cat === 'analysis' || cat ==='social'|| cat ==='tutorials'|| cat ==='video-tutorials'|| cat ==='copywriting' || cat === 'blog') {
                                         cat = 'others'; //regroups the categories with low amount of contributions
                                       }
                                       if(cat ==='sub-projects')
