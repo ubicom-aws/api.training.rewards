@@ -371,7 +371,6 @@ conn.once('open', function ()
                                         'deutschbot',
                                         'davidding',
                                         'stackin',
-                                        'themanualbot',
                                         'steem-untalented',
                                         'boostupvote',
                                         'muxxybot'
@@ -648,9 +647,11 @@ conn.once('open', function ()
 
                                       var cat = post.json_metadata.type.replace('task-', ''); //put announcements with their corresponding category
 
-                                      if(cat === 'graphics' || cat === 'documentation' || cat === 'analysis' || cat ==='social'|| cat ==='tutorials'|| cat ==='video-tutorials'|| cat ==='copywriting' || cat === 'blog') {
+                                      if(cat === 'graphics' || cat === 'documentation' || cat === 'analysis' || cat ==='social'|| cat ==='tutorials'|| cat ==='video-tutorials'|| cat ==='copywriting' ) {
                                         cat = 'others'; //regroups the categories with low amount of contributions
                                       }
+                                      if(cat === 'blog')
+                                        cat = 'ideas';
                                       if(cat ==='sub-projects')
                                         cat='development';
 
