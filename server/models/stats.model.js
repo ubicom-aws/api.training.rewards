@@ -59,6 +59,7 @@ const StatsSchema = new mongoose.Schema({
     'task-documentation': categoriesStats,
     'task-analysis': categoriesStats,
     'task-social': categoriesStats,
+    blog: categoriesStats,
   },
 });
 

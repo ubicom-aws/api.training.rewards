@@ -176,7 +176,7 @@ conn.once('open', function ()
     .get(`https://v2.steemconnect.com/api/oauth2/token?refresh_token=${refreshToken}&client_secret=${secret}&scope=vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance,offline`)
     .end((err, res) => {
       if (!res.body.access_token) {
-        console.log("COULD NOT GET ACCESS TOKEN");
+        console.log("COULD NOT GET ACCESS TOKEN", res);
         conn.close();
         process.exit(0);
         return;
@@ -641,7 +641,7 @@ conn.once('open', function ()
 
                                       vote = Math.round(vote);
                                       if(vote <= 0) vote = 1;
-                                      if(vote > 100) vote = 100;
+                                      if(vote > 100) vote = 60;
 
 
 
