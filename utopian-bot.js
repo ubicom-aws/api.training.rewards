@@ -624,15 +624,15 @@ conn.once('open', function ()
                                       if (foundBots > 0) {
                                         vote = vote - 2.5;
 
-                                        if (foundBots > bots.length / 4) {
+                                        if (foundBots > 4) {
                                           vote = vote - 2.5;
                                         }
 
-                                        if (foundBots > bots.length / 3) {
+                                        if (foundBots > 8) {
                                           vote = vote - 5;
                                         }
 
-                                        if (foundBots > bots.length / 2) {
+                                        if (foundBots > 12) {
                                           vote = vote - 10;
                                         }
 
