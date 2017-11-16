@@ -143,7 +143,7 @@ conn.once('open', function ()
         console.log('VOTE:' + post.real_vote * 100 + '\n');
         console.log(commentBody);
         console.log('--------------------------------------\n');
-        ///*
+
         const comment = () => {
           SteemConnect.comment(
             post.author,
