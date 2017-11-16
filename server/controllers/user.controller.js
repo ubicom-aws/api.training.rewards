@@ -92,10 +92,14 @@ function getProjects (req, res, next) {
         if (repos.length > 0) {
           res.json(repos.filter(repo => repo.owner.login === user.github.account && repo.private === false));
         } else {
-          res.status(404);
+          res.status(404);.json({
+            message: 'Cannot find project for this account'
+          });;
         }
       } else {
-        res.status(403)
+        res.status(403).json({
+          message: 'Server refuses to give details of the account'
+        })
       }
     })
 }
