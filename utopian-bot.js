@@ -531,8 +531,8 @@ conn.once('open', function ()
                                       if(reputation > 25) vote++;
                                       if(reputation >= 35) vote++;
                                       if(reputation >= 50) vote++;
+                                      if(reputation >= 60) vote++;
                                       if(reputation >= 70) vote++;
-                                      if(reputation >= 80) vote++;
 
                                       if (contributionsCount === 0) {
                                         // this is the first contribution of the user accepted in the Utopian feed
@@ -553,10 +553,6 @@ conn.once('open', function ()
                                         if (contributionsCount >= 30) {
                                           // git for being productive
                                           vote = vote + 5;
-                                        }
-                                        if (contributionsCount >= 60) {
-                                          // git for being productive
-                                          vote = vote + 10;
                                         }
                                         achievements.push('Seems like you contribute quite often. AMAZING!');
                                       }
@@ -624,15 +620,15 @@ conn.once('open', function ()
                                       if (foundBots > 0) {
                                         vote = vote - 2.5;
 
-                                        if (foundBots > bots.length / 4) {
+                                        if (foundBots > 4) {
                                           vote = vote - 2.5;
                                         }
 
-                                        if (foundBots > bots.length / 3) {
+                                        if (foundBots > 8) {
                                           vote = vote - 5;
                                         }
 
-                                        if (foundBots > bots.length / 2) {
+                                        if (foundBots > 12) {
                                           vote = vote - 10;
                                         }
 
