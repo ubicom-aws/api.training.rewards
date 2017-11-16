@@ -659,7 +659,7 @@ conn.once('open', function ()
 
                                       vote = Math.round(vote);
                                       if(vote <= 0) vote = 1;
-                                      if(vote > 100) vote = 60;
+                                      if(vote > 60) vote = 60;
 
 
 
