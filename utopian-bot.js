@@ -53,13 +53,13 @@ conn.once('open', function ()
     });
   }
 
-
   const now = new Date();
   var post_vote = [];
   const MIN_VOTE_QUAL = 20;
   const MAX_INFLATION = 1.5;
   const VOTE_THRESHOLD = 7;
-  const category_max_votes=[{"cat":"development","max_vote":400},{"cat":"bug-hunting","max_vote":75},{"cat":"ideas","max_vote":50},{"cat":"translations","max_vote":150},{"cat":"others","max_vote":325}];
+  const MAX_VOTE=60;
+  const category_pools=[{"cat":"development","max_vote":400,"min_single_vote":6},{"cat":"bug-hunting","max_vote":75,"min_single_vote":2},{"cat":"ideas","max_vote":50,"min_single_vote":1},{"cat":"translations","max_vote":150,"min_single_vote":3},{"cat":"others","max_vote":325,"min_single_vote":3}];
   var processed_posts=[];
   const query = {
     reviewed: true,
@@ -73,12 +73,20 @@ conn.once('open', function ()
   };
   function sortContributions(){
     //console.log('---------LOOP OVER------------\n',post_vote);
+
+    // Keep only posts fresher than 6 days
     post_vote = post_vote.filter(function(elt){return (Date.now()-new Date(elt.created)- new Date().getTimezoneOffset())<1000*3600*24*6});
-    const high_qual_post=post_vote.filter(function(elt){return elt.vote>=MIN_VOTE_QUAL;});
-    const low_qual_post=post_vote.filter(function(elt){return elt.vote<MIN_VOTE_QUAL;});
+
+    // Put blogs and ideas in low qual content
+    post_vote.forEach(function(elt){if(elt.category==='blog'||elt.category==='ideas')elt.vote=Math.min(MIN_VOTE_QUAL-0.1,elt.vote);});
+
+    // Separate High and Low quality content
+    var high_qual_post=post_vote.filter(function(elt){return elt.vote>=MIN_VOTE_QUAL;});
+    var low_qual_post=post_vote.filter(function(elt){return elt.vote<MIN_VOTE_QUAL;});
     var total_vote_high = 0;
 
-    category_max_votes.forEach(function(elt){
+    // High quality content get voted accorded to the ratio in their pool
+    category_pools.forEach(function(elt){
       const this_cat_post = high_qual_post.filter(function(e){return e.category===elt.cat;});
       console.log(elt.cat, this_cat_post.length);
       var total_cat_vote=0;
@@ -87,29 +95,35 @@ conn.once('open', function ()
       if(ratio<1/MAX_INFLATION)
         ratio=1/MAX_INFLATION;
       console.log('Desired total vote:',total_cat_vote,'Max vote',elt.max_vote,'Ratio',ratio);
-      high_qual_post.forEach(function(post){if(post.category===elt.cat){const real_vote=Math.max(Math.min(Math.round(post.vote/ratio),100),VOTE_THRESHOLD+2);post.real_vote=real_vote;total_vote_high+=real_vote;}});
+      high_qual_post.forEach(function(post){if(post.category===elt.cat){const real_vote=Math.max(Math.min(Math.round(post.vote/ratio),MAX_VOTE),VOTE_THRESHOLD+2);post.real_vote=real_vote;total_vote_high+=real_vote;}});
     });
+
+    // Low quality content shares unused voting power plus one full vote
     console.log('High Quality:',high_qual_post.length,'Low quality:',low_qual_post.length);
-    //console.log(high_qual_post);
     const unused_vp=Math.max(0,1000-total_vote_high);
     console.log('Voting Power for High Quality:',total_vote_high,'Unused VP:',unused_vp);
-    const low_qual_post_vote=Math.min(VOTE_THRESHOLD,Math.round((unused_vp+100)/low_qual_post.length));
+    const low_qual_post_vote=Math.max(Math.min(VOTE_THRESHOLD,Math.round((unused_vp+100)/low_qual_post.length)));
+
+    // Applying a lower bound to each category in the low quality array
+
     console.log(low_qual_post.length,'low quality posts will be voted at',low_qual_post_vote,'or less');
-    low_qual_post.forEach(function(post){post.real_vote=(low_qual_post_vote*post.vote/MIN_VOTE_QUAL).toFixed(1);});
-    console.log("Total used voting power:",total_vote_high+low_qual_post_vote*low_qual_post.length);
+    var low_qual_vp=0;
+    low_qual_post.forEach(function(post){
+      var cat=category_pools.find(function(c){return c.cat===post.category;});
+      post.real_vote=Math.max((low_qual_post_vote*post.vote/MIN_VOTE_QUAL).toFixed(1),cat.min_single_vote);
+      low_qual_vp+=post.real_vote;});
     processed_posts.push.apply(processed_posts,high_qual_post.concat(low_qual_post));
+    console.log("Total used voting power:",total_vote_high+low_qual_vp);
+
 
     processed_posts.forEach(function(post, i){
       setTimeout(function() {
-        const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
 
+        const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
         let commentBody = '';
 
-        if (post.real_vote > 0) {
-          commentBody = `### Hey @${post.author} I am @${botAccount}. I have just super-voted you at ${post.real_vote}% Power!\n`;
-        } else {
-          commentBody = `### Hey @${post.author} I am @${botAccount}. So sad I couldn't super-vote this time!\n`;
-        }
+        commentBody = `### Hey @${post.author} I am @${botAccount}. I have just super-voted you at ${post.real_vote}% Power!\n`;
+
 
         if (post.suggestions.length > 0) {
           commentBody += '#### Suggestions https://utopian.io/rules\n';
@@ -123,12 +137,13 @@ conn.once('open', function ()
 
         commentBody += '**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
+
         console.log('--------------------------------------\n');
-        console.log('https://utopian.io/utopian-io/@'+post.author+'/'+post.permlink+'\n');
+        console.log('https://utopian.io/utopian-io/@'+post.author+'/'+post.permlink+'\n',post.category);
         console.log('VOTE:' + post.real_vote * 100 + '\n');
         console.log(commentBody);
         console.log('--------------------------------------\n');
-
+        ///*
         const comment = () => {
           SteemConnect.comment(
             post.author,
@@ -167,9 +182,6 @@ conn.once('open', function ()
 
       }, i === 0 || 30000 * i);
     });
-
-
-
   }
   ///*
   request
@@ -226,99 +238,115 @@ conn.once('open', function ()
                                     .list({ skip: 0, limit: contributionsCount, query })
                                     .then(contributions => {
                                       const bots = [
-                                        'adsactly',
                                         'analisa',
                                         'animus',
                                         'appreciator',
+                                        'arama',
                                         'ausbitbot',
                                         'bago',
-                                        'whatupgg',
-                                        'burdok213',
-                                        'besttocome215',
-                                        'centerlink',
-                                        'drakkald',
-                                        'heelpopulair',
-                                        'portoriko',
-                                        'blimbossem',
-                                        'weareone1',
-                                        'raidrunner',
-                                        'sniffo35',
-                                        'ikwindje',
-                                        'bierkaart',
-                                        'waardanook',
-                                        'zdashmash',
-                                        'misterwister',
-                                        'ipuffyou',
-                                        'wildoekwind',
-                                        'scharmebran',
-                                        'siliwilly',
-                                        'prambarbara',
-                                        'idioticbot',
-                                        'tarmaland',
-                                        'biskopakon',
-                                        'wistoepon',
-                                        'pimpoesala',
-                                        'maradaratar',
-                                        'wiseguyhuh',
-                                        'mahabrahma',
-                                        'dahrma',
+                                        'bambam808',
                                         'banjo',
                                         'barrie',
                                         'bellyrub',
+                                        'besttocome215',
+                                        'bierkaart',
+                                        'biskopakon',
+                                        'blackwidow7',
+                                        'blimbossem',
                                         'boomerang',
                                         'booster',
                                         'boostupvote',
                                         'bowlofbitcoin',
+                                        'bp423',
+                                        'brandybb',
+                                        'brensker',
+                                        'btcvenom',
                                         'buildawhale',
+                                        'burdok213',
                                         'businessbot',
+                                        'centerlink',
                                         'cleverbot',
+                                        'cnbuddy',
                                         'counterbot',
+                                        'crypto-hangouts',
+                                        'cryptobooty',
+                                        'cryptoholic',
                                         'cryptoowl',
                                         'cub1',
                                         'curationrus',
+                                        'dahrma',
+                                        'davidding',
+                                        'decibel',
+                                        'deutschbot',
                                         'dirty.hera',
                                         'discordia',
                                         'done',
+                                        'drakkald',
                                         'drotto',
+                                        'earthboundgiygas',
+                                        'edrivegom',
                                         'emilhoch',
                                         'eoscrusher',
                                         'famunger',
                                         'feedyourminnows',
                                         'followforupvotes',
                                         'frontrunner',
+                                        'fuzzyvest',
                                         'gamerpool',
+                                        'gamerveda',
                                         'gaming-hangouts',
+                                        'gindor',
                                         'givemedatsteem',
                                         'givemesteem1',
+                                        'glitterbooster',
                                         'gonewhaling',
                                         'gotvotes',
                                         'gpgiveaways',
+                                        'gsgaming',
+                                        'guarddog',
+                                        'heelpopulair',
                                         'helpfulcrypto',
                                         'idioticbot',
+                                        'ikwindje',
                                         'ilvacca',
                                         'inchonbitcoin',
+                                        'ipuffyou',
                                         'libertyteeth',
                                         'lovejuice',
+                                        'mahabrahma',
+                                        'make-a-whale',
                                         'makindatsteem',
+                                        'maradaratar',
                                         'minnowbooster',
                                         'minnowhelper',
                                         'minnowpond',
                                         'minnowpondblue',
                                         'minnowpondred',
                                         'minnowsupport',
+                                        'misterwister',
                                         'moonbot',
                                         'morwhale',
                                         'moses153',
+                                        'moyeses',
                                         'msp-lovebot',
                                         'msp-shanehug',
+                                        'muxxybot',
+                                        'myday',
                                         'ninja-whale',
                                         'ninjawhale',
-                                        'originalworks',
+                                        'officialfuzzy',
+                                        'perennial',
                                         'pharesim',
+                                        'pimpoesala',
                                         'polsza',
+                                        'portoriko',
+                                        'prambarbara',
+                                        'proctologic',
                                         'pumpingbitcoin',
                                         'pushup',
                                         'qurator',
+                                        'qwasert',
+                                        'raidrunner',
                                         'ramta',
                                         'randovote',
                                         'randowhale',
@@ -328,57 +356,59 @@ conn.once('open', function ()
                                         'randowhaling',
                                         'reblogger',
                                         'resteem.bot',
-                                        'resteembot',
                                         'resteemable',
+                                        'resteembot',
                                         'russiann',
                                         'scamnotifier',
+                                        'scharmebran',
+                                        'siliwilly',
                                         'sneaky-ninja',
+                                        'sniffo35',
+                                        'soonmusic',
                                         'spinbot',
-                                        'steemholder',
-                                        'steemsquad',
+                                        'stackin',
+                                        'steem-untalented',
+                                        'steemedia',
                                         'steemgigs',
+                                        'steemholder',
                                         'steemit-gamble',
                                         'steemit-hangouts',
+                                        'steemitgottalent',
                                         'steemmaker',
                                         'steemmemes',
                                         'steemminers',
                                         'steemode',
                                         'steemprentice',
+                                        'steemsquad',
                                         'steemthat',
                                         'steemvoter',
-                                        'officialfuzzy',
-                                        'fuzzyvest',
-                                        'arama',
-                                        'make-a-whale',
-                                        'cnbuddy',
-                                        'glitterbooster',
-                                        'steemedia',
-                                        'wahyurahadiann',
-                                        'blackwidow7',
-                                        'tabea',
-                                        'timbalabuch',
-                                        'edrivegom',
-                                        'qwasert',
-                                        'gamerveda',
-                                        'whatamidoing',
                                         'stephen.king989',
-                                        'decibel',
-                                        'myday',
-                                        'gindor',
-                                        'bp423',
-                                        'votey',
+                                        'tabea',
+                                        'tarmaland',
+                                        'timbalabuch',
+                                        'trail1',
+                                        'trail2',
+                                        'trail3',
+                                        'trail4',
+                                        'trail5',
+                                        'trail6',
+                                        'trail7',
                                         'viraltrend',
-                                        'deutschbot',
-                                        'davidding',
-                                        'stackin',
-                                        'steem-untalented',
-                                        'boostupvote',
-                                        'muxxybot'
+                                        'votey',
+                                        'waardanook',
+                                        'wahyurahadiann',
+                                        'wannabeme',
+                                        'weareone1',
+                                        'whatamidoing',
+                                        'whatupgg',
+                                        'wildoekwind',
+                                        'wiseguyhuh',
+                                        'wistoepon',
+                                        'zdashmash',
+                                        'zdemonz',
+                                        'zhusatriani'
                                       ];
-
-
                                       const reputation = steem.formatter.reputation(account.reputation);
-
                                       const categoryStats = categories[post.json_metadata.type];
                                       let contributionsTotalVotes = 0;
                                       contributions.forEach(contribution => contributionsTotalVotes = contributionsTotalVotes + contribution.net_votes);
@@ -531,8 +561,8 @@ conn.once('open', function ()
                                       if(reputation > 25) vote++;
                                       if(reputation >= 35) vote++;
                                       if(reputation >= 50) vote++;
+                                      if(reputation >= 60) vote++;
                                       if(reputation >= 70) vote++;
-                                      if(reputation >= 80) vote++;
 
                                       if (contributionsCount === 0) {
                                         // this is the first contribution of the user accepted in the Utopian feed
@@ -553,10 +583,6 @@ conn.once('open', function ()
                                         if (contributionsCount >= 30) {
                                           // git for being productive
                                           vote = vote + 5;
-                                        }
-                                        if (contributionsCount >= 60) {
-                                          // git for being productive
-                                          vote = vote + 10;
                                         }
                                         achievements.push('Seems like you contribute quite often. AMAZING!');
                                       }
@@ -624,15 +650,15 @@ conn.once('open', function ()
                                       if (foundBots > 0) {
                                         vote = vote - 2.5;
 
-                                        if (foundBots > bots.length / 4) {
+                                        if (foundBots > 4) {
                                           vote = vote - 2.5;
                                         }
 
-                                        if (foundBots > bots.length / 3) {
+                                        if (foundBots > 8) {
                                           vote = vote - 5;
                                         }
 
-                                        if (foundBots > bots.length / 2) {
+                                        if (foundBots > 12) {
                                           vote = vote - 10;
                                         }
 
@@ -656,7 +682,7 @@ conn.once('open', function ()
                                         cat='development';
 
                                       post_vote.push({"author": post.author, "permlink": post.permlink, "vote": vote, "category": cat, "achievements": achievements, "suggestions": suggestions,"created": post.created});
-
+                                      console.log(i);
                                       if(i + 1 === posts.length)
                                         sortContributions();
                                       else i++;
