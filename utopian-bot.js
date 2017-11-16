@@ -367,9 +367,7 @@ conn.once('open', function ()
                                         'soonmusic',
                                         'spinbot',
                                         'stackin',
-                                        'steem-untalented',
                                         'steemedia',
-                                        'steemgigs',
                                         'steemholder',
                                         'steemit-gamble',
                                         'steemit-hangouts',
@@ -686,7 +684,6 @@ conn.once('open', function ()
                                       if(i + 1 === posts.length)
                                         sortContributions();
                                       else i++;
-
                                     });
                                 });
                             });
