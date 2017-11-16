@@ -239,6 +239,7 @@ function list(req, res, next) {
       }
     }
     query = {
+      ...query,
       $text: {
         $search: bySimilarity
         }

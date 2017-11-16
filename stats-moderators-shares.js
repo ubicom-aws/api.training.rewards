@@ -19,7 +19,6 @@ conn.once('open', function () {
       const dedicatedPercentageModerators = 5;
 
       const query = {
-        reviewed: true,
         moderator: {
           $exists: true
         }
