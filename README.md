@@ -3,7 +3,7 @@ Node API for Utopian.io
 Utopian wants to reward Open Source contributors for their hard work.
 
 ## Contributing
-The project is in super early state and will change substantially. We will accept contributions soon.
+Get in touch on Discord: https://discord.gg/5qMzAJ
 
 ## License
 MIT
