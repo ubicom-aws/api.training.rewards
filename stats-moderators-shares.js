@@ -34,7 +34,6 @@ conn.once('open', function () {
                   setTimeout(function(){
                     const queryTotalModerated = {
                       moderator: moderator.account,
-                      reviewed: true,
                     };
 
                     Post
