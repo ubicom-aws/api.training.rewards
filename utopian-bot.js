@@ -78,7 +78,7 @@ conn.once('open', function ()
     post_vote = post_vote.filter(function(elt){return (Date.now()-new Date(elt.created)- new Date().getTimezoneOffset())<1000*3600*24*6});
 
     // Put blogs and ideas in low qual content
-    post_vote.forEach(function(elt){if(elt.category==='blog'||elt.category==='ideas')elt.vote=Math.min(MIN_VOTE_QUAL-0.1,elt.vote);});
+    //post_vote.forEach(function(elt){if(elt.category==='blog'||elt.category==='ideas')elt.vote=Math.min(MIN_VOTE_QUAL-0.1,elt.vote);});
 
     // Separate High and Low quality content
     var high_qual_post=post_vote.filter(function(elt){return elt.vote>=MIN_VOTE_QUAL;});
