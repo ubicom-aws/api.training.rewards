@@ -260,7 +260,6 @@ conn.once('open', function ()
         console.log(commentBody);
         console.log('--------------------------------------\n');
 
-        return;
         const comment = () => {
           SteemConnect.comment(
             post.author,
