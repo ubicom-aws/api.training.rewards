@@ -255,6 +255,7 @@ conn.once('open', function ()
 
         if (finalVote <= 10) {
           commentBody += '#### Suggestions\n';
+          commentBody += `- Contribute more often to get higher and higher rewards. I want to see you often!\n`
           commentBody += `- Work on your followers to increase the votes/rewards. My vote is now primarily based on that, humans rule. Good luck!\n`
           commentBody += `- Wondering why other contributions got more? I introduced a competition factor. My vote is also based on how competitive the category used is.\n`
         }
@@ -298,7 +299,7 @@ conn.once('open', function ()
           });
         };
 
-        SteemConnect.vote(botAccount, post.author, post.permlink, post.real_vote * 100)
+        SteemConnect.vote(botAccount, post.author, post.permlink, finalVote * 100)
           .then(() => {
             comment();
           }).catch(e => {
