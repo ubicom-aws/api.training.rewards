@@ -25,7 +25,6 @@ conn.once('open', function ()
   const MAX_USABLE_POOL = 10000;
 
   const bots = [
-    'analisa',
     'animus',
     'appreciator',
     'arama',
