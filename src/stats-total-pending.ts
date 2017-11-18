@@ -1,0 +1,57 @@
+import * as mongoose from 'mongoose';
+import * as Promise from 'bluebird';
+import Post from './server/models/post.model';
+import Stats from './server/models/stats.model';
+import { calculatePayout } from './server/steemitHelpers';
+
+import config from './config/config';
+
+mongoose.Promise = Promise;
+mongoose.connect(`${config.mongo.host}`);
+
+const conn = mongoose.connection;
+conn.once('open', function ()
+{
+  Stats.get().then(stats => {
+    // @TODO should be used to increment the stats based on last check, instead then rechecking from the start
+    const lastCheck = stats.stats_total_pending_last_check;
+    const now = new Date().toISOString();
+    const paidRewardsDate = '1969-12-31T23:59:59';
+    const query = {
+      cashout_time:
+        {
+          $gt: paidRewardsDate
+        },
+    };
+
+    Post
+      .countAll({ query })
+      .then(count => {
+        Post
+          .list({ skip: 0, limit: count, query })
+          .then(posts => {
+            if(posts.length > 0) {
+              let total_pending_rewards = 0;
+
+              posts.forEach((post, index) => {
+                const payoutDetails = calculatePayout(post);
+                const potentialPayout = payoutDetails.potentialPayout || 0;
+                total_pending_rewards = total_pending_rewards + potentialPayout;
+              });
+
+              stats.total_pending_rewards = total_pending_rewards;
+              stats.stats_total_pending_last_check = now;
+
+              stats.save().then(savedStats => {
+                conn.close();
+                process.exit(0);
+              });
+            }
+          })
+      })
+  }).catch(e => {
+    console.log("ERROR STATS", e);
+    conn.close();
+    process.exit(0);
+  });
+});
