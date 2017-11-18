@@ -3,7 +3,6 @@
     "target": "es6",
     "outDir": "dist",
     "module": "commonjs",
-    "allowJs": true,
     "strict": true,
     "noImplicitAny": false,
     "experimentalDecorators": true,
