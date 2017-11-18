@@ -108,7 +108,6 @@ conn.once('open', function ()
     'minnowpond',
     'minnowpondblue',
     'minnowpondred',
-    'minnowsupport',
     'misterwister',
     'moonbot',
     'morwhale',
@@ -193,6 +192,7 @@ conn.once('open', function ()
   ];
   const query = {
     reviewed: true,
+    author: { $ne: botAccount },
     'active_votes.voter': { $ne: botAccount },
     created: {
       $lte: new Date(now.getTime() - 6*60*60*1000).toISOString()
@@ -233,6 +233,7 @@ conn.once('open', function ()
   }
 
   const proceedVoting = (scoredPosts, categories_pool) => {
+    console.log("SCORED POSTS", scoredPosts.length);
     scoredPosts.forEach((post, index) => {
       setTimeout(function(){
         const finalScore = post.finalScore;
@@ -245,12 +246,21 @@ conn.once('open', function ()
         const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
         let commentBody = '';
 
-        commentBody = `### Hey @${post.author} I am @${botAccount}. I have just voted you at ${finalVote}% Power!\n`;
+        commentBody = `### Hey @${post.author} I am @${botAccount}. I have just upvoted you at ${finalVote}% Power!\n`;
 
         if (achievements.length > 0) {
           commentBody += '#### Achievements\n';
           achievements.forEach(achievement => commentBody += `- ${achievement}\n`);
         }
+
+        if (finalVote <= 10) {
+          commentBody += '#### Suggestions\n';
+          commentBody += `- Work on your followers to increase the votes/rewards. My vote is now primarily based on that, humans rule. Good luck!\n`
+          commentBody += `- Wondering why other contributions got more? I introduced a competition factor. My vote is also based on how competitive the category used is.\n`
+        }
+
+        commentBody += '#### Did you know?\n';
+        commentBody += `- I am going to become the first Steem Community-Driven Witness. Follow me to know when!\n`
 
         commentBody += '**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
@@ -259,6 +269,7 @@ conn.once('open', function ()
         console.log('VOTE:' + finalVote + '\n');
         console.log(commentBody);
         console.log('--------------------------------------\n');
+
 
         const comment = () => {
           SteemConnect.comment(
@@ -333,7 +344,7 @@ conn.once('open', function ()
                         return;
                       }
 
-                      console.log("FOUND POSTS TO VOTE: ", limit);
+                      console.log("FOUND POSTS TO VOTE: ", posts.length);
 
                       const categories_pool = {
                         "ideas": {
@@ -442,7 +453,7 @@ conn.once('open', function ()
                                     const rankConsensus = averageWeightPercentage * upVotes.length / 100;
                                     let finalScore = rankConsensus;
 
-                                    if (finalScore > MAX_VOTE_EVER) {
+                                    if (finalScore > 50) {
                                       achievements.push('WOW WOW WOW People loved what you did here. GREAT JOB!');
                                     }
 
@@ -452,7 +463,7 @@ conn.once('open', function ()
                                       achievements.push('You have less than 500 followers. Just gave you a gift to help you succeed!');
                                     }
                                     if(totalGenerated > averageRewards) {
-                                      finalScore = finalScore + 5;
+                                      finalScore = finalScore + 10;
                                       achievements.push('You are generating more rewards than average for this category. Super!;)');
                                     }
                                     if (contributionsCount === 0) {
@@ -463,11 +474,13 @@ conn.once('open', function ()
                                     }
                                     // number of contributions in total
                                     if (contributionsCount > 0) {
+                                      finalScore = finalScore + 5;
+
                                       if (contributionsCount >= 15) {
                                         // git for being productive
                                         finalScore = finalScore + 2.5;
                                       }
-                                      if (contributionsCount >= 30) {
+                                      if (contributionsCount >= 40) {
                                         // git for being productive
                                         finalScore = finalScore + 2.5;
                                       }
@@ -482,11 +495,10 @@ conn.once('open', function ()
                                       achievements.push('Seems like you contribute quite often. AMAZING!');
                                     }
 
-                                    if(reputation >= 25) finalScore++;
-                                    if(reputation >= 35) finalScore++;
-                                    if(reputation >= 50) finalScore++;
-                                    if(reputation >= 60) finalScore++;
-                                    if(reputation >= 70) finalScore++;
+                                    if(reputation >= 25) finalScore = finalScore + 2.5;
+                                    if(reputation >= 50) finalScore = finalScore + 2.5;
+                                    if(reputation >= 65) finalScore = finalScore + 2.5;
+                                    if(reputation >= 70) finalScore = finalScore + 2.5;
 
                                     post.finalScore = finalScore >= 100 ? 100 : Math.round(finalScore);
                                     post.achievements = achievements;

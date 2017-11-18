@@ -14,7 +14,7 @@
     "dev-server": "cross-env NODE_ENV=development PORT=4040 MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 gulp serve",
     "start": "cross-env NODE_ENV=production PORT=443 MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 gulp serve",
     "updater-posts": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./updater-posts.js",
-    "utopian-bot": "cross-env MONGO_HOST=mongodb://159.203.67.21/utopian-io MONGO_PORT=27017 babel-node ./utopian-bot.js $REFRESH_TOKEN $CLIENT_SECRET",
+    "utopian-bot": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./utopian-bot.js $REFRESH_TOKEN $CLIENT_SECRET",
     "stats-categories": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./stats-categories.js",
     "stats-moderators-shares": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./stats-moderators-shares.js",
     "stats-sponsors-shares": "cross-env MONGO_HOST=mongodb://localhost/utopian-io MONGO_PORT=27017 babel-node ./stats-sponsors-shares.js",
