@@ -240,7 +240,7 @@ conn.once('open', function ()
         const category = post.category;
         const assignedWeight = (finalScore / categories_pool[category].total_vote_weight * 100) * categories_pool[category].assigned_pool / 100;
         const calculatedVote = Math.round(assignedWeight / categories_pool[category].assigned_pool * 100);
-        const finalVote = calculatedVote >= MAX_VOTE_EVER ? MAX_VOTE_EVER : calculatedVote;
+        const finalVote = calculatedVote >= categories_pool[category].max_vote ? categories_pool[category].max_vote : calculatedVote;
 
         const achievements = post.achievements;
         const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
@@ -260,17 +260,17 @@ conn.once('open', function ()
           commentBody += `- Wondering why other contributions got more? I introduced a competition factor. My vote is also based on how competitive the category used is.\n`
         }
 
-        commentBody += '#### Did you know?\n';
-        commentBody += `- I am going to become the first Steem Community-Driven Witness. Follow me to know when!\n`
+        commentBody += '#### Community-Driven Witness!\n';
+        commentBody += `- I am the first and only Steem Community-Driven Witness. <a href="https://steemit.com/~witnesses">Vote for my Witness</a>. Lets GROW TOGETHER!\n`
+        commentBody += `\n[![Screen Shot 2017-11-19 at 16.54.19.png](https://steemitimages.com/DQmSAd4sBoscGQEDNAdq4CY4YAGM32FNCp5tP4ZB2JupbcN/Screen%20Shot%202017-11-19%20at%2016.54.19.png)](https://steemit.com/~witnesses)\n`
 
-        commentBody += '**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
+        commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
         console.log('--------------------------------------\n');
         console.log('https://utopian.io/utopian-io/@'+post.author+'/'+post.permlink);
         console.log('VOTE:' + finalVote + '\n');
         console.log(commentBody);
         console.log('--------------------------------------\n');
-
 
         const comment = () => {
           SteemConnect.comment(
@@ -309,6 +309,7 @@ conn.once('open', function ()
             comment();
           }
         });
+
       }, index * 30000);
     })
   };
@@ -351,58 +352,72 @@ conn.once('open', function ()
                         "ideas": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'ideas').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": 15,
                         },
                         "sub-projects": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'sub-projects').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": MAX_VOTE_EVER,
                         },
                         "development": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'development').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": MAX_VOTE_EVER,
                         },
                         "bug-hunting": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'bug-hunting').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": 15,
                         },
                         "translations": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'translations').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": MAX_VOTE_EVER,
                         },
                         "graphics": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'graphics').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": MAX_VOTE_EVER,
                         },
                         "analysis": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'analysis').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": MAX_VOTE_EVER,
                         },
                         "social": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'social').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": 25,
                         },
                         "documentation": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'documentation').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": 20,
                         },
                         "tutorials": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'tutorials').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": 20,
                         },
                         "video-tutorials": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'video-tutorials').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": MAX_VOTE_EVER,
                         },
                         "copywriting": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'copywriting').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": 20,
                         },
                         "blog": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type === 'blog').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": 15,
                         },
                         "tasks-requests": {
                           "assigned_pool": (posts.filter(post => post.json_metadata.type.indexOf('task-') > -1).length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
+                          "max_vote": 15,
                         },
                       }
 
