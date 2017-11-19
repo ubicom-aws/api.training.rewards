@@ -1,12 +1,12 @@
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as request from 'superagent';
+import * as SteemConnect from 'sc2-sdk';
+import * as steem from 'steem';
 import Stats from './server/models/stats.model';
 import Post from './server/models/post.model';
 import config from './config/config';
-import steem from 'steem';
 
-import SteemConnect from 'sc2-sdk';
 import { createCommentPermlink } from './server/steemitHelpers';
 
 mongoose.Promise = Promise;
