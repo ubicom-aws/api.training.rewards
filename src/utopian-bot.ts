@@ -444,9 +444,9 @@ conn.once('open', function ()
                       for (var elt in categories_pool)
                       {
                         if(elt!=='tasks-requests')
-                          categories_pool[elt].assigned_pool=(posts.filter(post => post.json_metadata.type === elt).length / total_weighted_length * 100) *categories_pool[elt].difficulty* MAX_USABLE_POOL / 100;
+                          (categories_pool[elt] as any).assigned_pool =(posts.filter(post => post.json_metadata.type === elt).length / total_weighted_length * 100) *categories_pool[elt].difficulty* MAX_USABLE_POOL / 100;
                         else
-                          categories_pool[elt].assigned_pool=(posts.filter(post => post.json_metadata.type.indexOf('task-') > -1).length / posts.length * 100) *categories_pool[elt].difficulty* MAX_USABLE_POOL / 100;
+                          (categories_pool[elt] as any).assigned_pool =(posts.filter(post => post.json_metadata.type.indexOf('task-') > -1).length / posts.length * 100) *categories_pool[elt].difficulty* MAX_USABLE_POOL / 100;
                       }
 
                       console.log(categories_pool);
