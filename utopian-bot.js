@@ -262,8 +262,8 @@ conn.once('open', function ()
         }
 
         commentBody += '#### Community-Driven Witness!\n';
-        commentBody += `- I am the first and only Steem Community-Driven Witness. <a href="https://steemit.com/~witnesses">Vote for my Witness</a>. Lets GROW TOGETHER!\n`
-        commentBody += `\n[![Screen Shot 2017-11-19 at 16.54.19.png](https://steemitimages.com/DQmSAd4sBoscGQEDNAdq4CY4YAGM32FNCp5tP4ZB2JupbcN/Screen%20Shot%202017-11-19%20at%2016.54.19.png)](https://steemit.com/~witnesses)\n`
+        commentBody += `- I am the first and only Steem Community-Driven Witness. <a href="https://steemit.com/~witnesses">Vote for my Witness</a>. Let us GROW TOGETHER!\n`
+        commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
 
         commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
