@@ -239,6 +239,7 @@ function list(req, res, next) {
       }
     }
     query = {
+      ...query,
       $text: {
         $search: bySimilarity
         }
@@ -262,6 +263,7 @@ function list(req, res, next) {
         $ne: moderator,
       }
     }
+    sort = { created: 1 }
   }
 
   if (status === 'pending') {
