@@ -281,8 +281,6 @@ conn.once('open', function ()
         console.log('--------------------------------------\n');
 
 
-        return;
-
         const comment = () => {
           SteemConnect.comment(
             post.author,
