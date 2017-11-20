@@ -27,7 +27,6 @@ conn.once('open', function ()
 
 
   const bots = [
-    'analisa',
     'animus',
     'appreciator',
     'arama',
@@ -268,10 +267,10 @@ conn.once('open', function ()
         commentBody += '#### Community-Driven Witness!\n';
 
         commentBody += `I am the first and only Steem Community-Driven Witness. <a href="https://discord.gg/2rSx9Eu">Participate on Discord</a>. Lets GROW TOGETHER!\n`
-        commentBody += `<a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for my Witness</a>\n`
-        commentBody += `<a href="https://v2.steemconnect.com/sign/account-witness-proxy?proxy=utopian-io&approve=1">Proxy to my Witness</a>\n`
-        commentBody += `Or vote/proxy on <a href="https://steemit.com/~witnesses">Steemit Witnesses</a>\n`
-        commentBody += `\n[![Screen Shot 2017-11-19 at 16.54.19.png](https://steemitimages.com/DQmSAd4sBoscGQEDNAdq4CY4YAGM32FNCp5tP4ZB2JupbcN/Screen%20Shot%202017-11-19%20at%2016.54.19.png)](https://steemit.com/~witnesses)\n`
+        commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for my Witness</a>\n`
+        commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-proxy?proxy=utopian-io&approve=1">Proxy to my Witness</a>\n`
+        commentBody += `- Or vote/proxy on <a href="https://steemit.com/~witnesses">Steemit Witnesses</a>\n`
+        commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
         commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
         console.log('--------------------------------------\n');
@@ -319,7 +318,7 @@ conn.once('open', function ()
           }
         });
 
-      }, index * 1000);
+      }, index * 30000);
     })
   };
 
