@@ -21,11 +21,12 @@ conn.once('open', function ()
   const secret = process.env.CLIENT_SECRET;
   const forced = process.env.FORCED === 'true' || false;
   const now = new Date();
-  const MAX_VOTE_EVER = 35;
+  const MAX_VOTE_EVER = 25;
   const MAX_USABLE_POOL = 10000;
+  const DIFFICULTY_MULTIPLIER=1;
+
 
   const bots = [
-    'analisa',
     'animus',
     'appreciator',
     'arama',
@@ -236,12 +237,14 @@ conn.once('open', function ()
   const proceedVoting = (scoredPosts, categories_pool) => {
     console.log("SCORED POSTS", scoredPosts.length);
     scoredPosts.forEach((post, index) => {
+
       setTimeout(function(){
         const finalScore = post.finalScore;
         const category = post.category;
         const assignedWeight = (finalScore / categories_pool[category].total_vote_weight * 100) * categories_pool[category].assigned_pool / 100;
         const calculatedVote = Math.round(assignedWeight / categories_pool[category].assigned_pool * 100);
         const finalVote = calculatedVote >= categories_pool[category].max_vote ? categories_pool[category].max_vote : calculatedVote;
+
 
         const achievements = post.achievements;
         const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
@@ -256,20 +259,24 @@ conn.once('open', function ()
 
         if (finalVote <= 10) {
           commentBody += '#### Suggestions\n';
+          commentBody += `- Work on your followers to increase the votes/rewards. My vote is on the human input. Good luck!\n`
           commentBody += `- Contribute more often to get higher and higher rewards. I want to see you often!\n`
-          commentBody += `- Work on your followers to increase the votes/rewards. My vote is now primarily based on that, humans rule. Good luck!\n`
-          commentBody += `- Wondering why other contributions got more? I introduced a competition factor. My vote is also based on how competitive the category used is.\n`
+          commentBody += `- Wondering why other contributions got more? I introduced a competition factor. My vote is based also on how competitive the category used is.\n`
         }
 
         commentBody += '#### Community-Driven Witness!\n';
-        commentBody += `- I am the first and only Steem Community-Driven Witness. <a href="https://steemit.com/~witnesses">Vote for my Witness</a>. Lets GROW TOGETHER!\n`
-        commentBody += `\n[![Screen Shot 2017-11-19 at 16.54.19.png](https://steemitimages.com/DQmSAd4sBoscGQEDNAdq4CY4YAGM32FNCp5tP4ZB2JupbcN/Screen%20Shot%202017-11-19%20at%2016.54.19.png)](https://steemit.com/~witnesses)\n`
 
+        commentBody += `I am the first and only Steem Community-Driven Witness. <a href="https://discord.gg/2rSx9Eu">Participate on Discord</a>. Lets GROW TOGETHER!\n`
+        commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for my Witness</a>\n`
+        commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-proxy?proxy=utopian-io&approve=1">Proxy to my Witness</a>\n`
+        commentBody += `- Or vote/proxy on <a href="https://steemit.com/~witnesses">Steemit Witnesses</a>\n`
+        commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
         commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
         console.log('--------------------------------------\n');
         console.log('https://utopian.io/utopian-io/@'+post.author+'/'+post.permlink);
         console.log('VOTE:' + finalVote + '\n');
+        console.log('CATEGORY', category);
         console.log(commentBody);
         console.log('--------------------------------------\n');
 
@@ -350,77 +357,96 @@ conn.once('open', function ()
 
                       console.log("FOUND POSTS TO VOTE: ", posts.length);
 
-                      const categories_pool = {
+
+                      var categories_pool = {
                         "ideas": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'ideas').length / posts.length * 100) * MAX_USABLE_POOL / 100,
+                          "difficulty" : 1*DIFFICULTY_MULTIPLIER,
                           "total_vote_weight": 0,
-                          "max_vote": 15,
+                          "max_vote": 10,
+
                         },
                         "sub-projects": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'sub-projects').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": MAX_VOTE_EVER,
+                          "difficulty" : 2*DIFFICULTY_MULTIPLIER
                         },
                         "development": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'development').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": MAX_VOTE_EVER,
+                          "difficulty" : 2*DIFFICULTY_MULTIPLIER
                         },
                         "bug-hunting": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'bug-hunting').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": 15,
+                          "difficulty" : 1*DIFFICULTY_MULTIPLIER
                         },
                         "translations": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'translations').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": MAX_VOTE_EVER,
+                          "difficulty" : 1.5*DIFFICULTY_MULTIPLIER
                         },
                         "graphics": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'graphics').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": MAX_VOTE_EVER,
+                          "difficulty" : 1.5*DIFFICULTY_MULTIPLIER
+
                         },
                         "analysis": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'analysis').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": MAX_VOTE_EVER,
+                          "difficulty" : 1.8*DIFFICULTY_MULTIPLIER
                         },
                         "social": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'social').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": 25,
+                          "difficulty" : 1.5*DIFFICULTY_MULTIPLIER
                         },
                         "documentation": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'documentation').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": 20,
+                          "difficulty" : 1.5*DIFFICULTY_MULTIPLIER
                         },
                         "tutorials": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'tutorials').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": 20,
+                          "difficulty" : 1.55*DIFFICULTY_MULTIPLIER
                         },
                         "video-tutorials": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'video-tutorials').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": MAX_VOTE_EVER,
+                          "difficulty" : 1.65*DIFFICULTY_MULTIPLIER
                         },
                         "copywriting": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'copywriting').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": 20,
+                          "difficulty" : 1.55*DIFFICULTY_MULTIPLIER
                         },
                         "blog": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type === 'blog').length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
-                          "max_vote": 15,
+                          "max_vote": 10,
+                          "difficulty" : 1*DIFFICULTY_MULTIPLIER
                         },
                         "tasks-requests": {
-                          "assigned_pool": (posts.filter(post => post.json_metadata.type.indexOf('task-') > -1).length / posts.length * 100) * MAX_USABLE_POOL / 100,
                           "total_vote_weight": 0,
                           "max_vote": 15,
+                          "difficulty" : 1.1*DIFFICULTY_MULTIPLIER
                         },
+                      };
+
+                      var total_weighted_length=0;
+
+                      for (var elt in categories_pool)
+                      {
+                        categories_pool[elt].weighted_length=posts.filter(post => post.json_metadata.type === elt).length*categories_pool[elt].difficulty;
+                        total_weighted_length+=categories_pool[elt].weighted_length;
+                      }
+
+                      for (var elt in categories_pool)
+                      {
+                        if(elt!=='tasks-requests')
+                          categories_pool[elt].assigned_pool=(posts.filter(post => post.json_metadata.type === elt).length / total_weighted_length * 100) *categories_pool[elt].difficulty* MAX_USABLE_POOL / 100;
+                        else
+                          categories_pool[elt].assigned_pool=(posts.filter(post => post.json_metadata.type.indexOf('task-') > -1).length / posts.length * 100) *categories_pool[elt].difficulty* MAX_USABLE_POOL / 100;
                       }
 
                       console.log(categories_pool);
@@ -477,7 +503,7 @@ conn.once('open', function ()
 
                                     // help the user grow the followers
                                     if(followers.follower_count < 500) {
-                                      finalScore = finalScore + 5;
+                                      finalScore = finalScore + 10;
                                       achievements.push('You have less than 500 followers. Just gave you a gift to help you succeed!');
                                     }
                                     if(totalGenerated > averageRewards) {
@@ -487,7 +513,7 @@ conn.once('open', function ()
                                     if (contributionsCount === 0) {
                                       // this is the first contribution of the user accepted in the Utopian feed
                                       // give the user a little gift
-                                      finalScore = finalScore + 5;
+                                      finalScore = finalScore + 10;
                                       achievements.push('This is your first accepted contribution here in Utopian. Welcome!');
                                     }
                                     // number of contributions in total
