@@ -60,7 +60,6 @@
     "helmet": "^3.9.0",
     "http-status": "^1.0.1",
     "joi": "^13.0.2",
-    "jsonwebtoken": "^8.1.0",
     "method-override": "^2.3.5",
     "mongoose": "^4.13.4",
     "querystring": "^0.2.0",
