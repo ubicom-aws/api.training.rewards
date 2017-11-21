@@ -7,7 +7,6 @@ import * as cors from 'cors';
 import * as httpStatus from 'http-status';
 import * as expressWinston from 'express-winston';
 import * as expressValidation from 'express-validation';
-import * as winston from 'winston';
 import * as helmet from 'helmet';
 
 import winstonInstance from './winston';
@@ -47,6 +46,10 @@ if (config.env === 'development') {
 // mount all routes on /api path
 app.use('/api', routes);
 
+app.use('/error', (req, res) => {
+  throw new Error('test');
+});
+
 // if error is not an instanceOf APIError, convert it.
 app.use((err, req, res, next) => {
   if (err instanceof expressValidation.ValidationError) {
@@ -67,24 +70,15 @@ app.use((req, res, next) => {
   return next(err);
 });
 
-// log error in winston transports except when executing test suite
-if (config.env !== 'test') {
-  app.use(expressWinston.errorLogger({
-    transports: [
-      new winston.transports.Console({
-        json: true,
-        colorize: true
-      })
-    ]
-  }));
-}
-
 // error handler, send stacktrace only during development
-app.use((err, req, res, next) => // eslint-disable-line no-unused-vars
+app.use((err, req, res, next) => {
+  if (err.status !== httpStatus.NOT_FOUND) {
+    winstonInstance.error('Error processing request', err.message, err.stack);
+  }
   res.status(err.status).json({
     message: err.isPublic ? err.message : httpStatus[err.status],
     stack: config.env === 'development' ? err.stack : {}
   })
-);
+});
 
 export default app;
