@@ -7,6 +7,7 @@ import * as cors from 'cors';
 import * as httpStatus from 'http-status';
 import * as expressWinston from 'express-winston';
 import * as expressValidation from 'express-validation';
+import * as winston from 'winston';
 import * as helmet from 'helmet';
 
 import winstonInstance from './winston';
@@ -36,9 +37,10 @@ if (config.env === 'development') {
   expressWinston.responseWhitelist.push('body');
   app.use(expressWinston.logger({
     winstonInstance,
-    meta: true, // optional: log meta data about request (defaults to true)
-    msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
-    colorStatus: true // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
+    meta: false,
+    msg: 'HTTP {{req.ip}} {{res.statusCode}} {{req.method}} '
+          + '{{res.responseTime}}ms {{req.url}}',
+    colorStatus: true
   }));
 }
 
@@ -68,7 +70,12 @@ app.use((req, res, next) => {
 // log error in winston transports except when executing test suite
 if (config.env !== 'test') {
   app.use(expressWinston.errorLogger({
-    winstonInstance
+    transports: [
+      new winston.transports.Console({
+        json: true,
+        colorize: true
+      })
+    ]
   }));
 }
 
