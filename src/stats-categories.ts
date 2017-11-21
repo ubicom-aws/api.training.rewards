@@ -5,7 +5,7 @@ import config from './config/config';
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 
-mongoose.Promise = Promise;
+(mongoose as any).Promise = Promise;
 mongoose.connect(`${config.mongo.host}`);
 
 const conn = mongoose.connection;

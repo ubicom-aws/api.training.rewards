@@ -19,7 +19,15 @@ const ModeratorSchema = new mongoose.Schema({
   percentage_total_rewards_moderators: Number,
 });
 
-ModeratorSchema.method({});
+export interface ModeratorSchemaDoc extends mongoose.Document {
+}
+
+export interface ModeratorSchemaModel extends mongoose.Model<ModeratorSchemaDoc> {
+  get(account: any): any;
+  list(): any;
+  listAll(): any;
+  listBeneficiaries(exclude?: any[]): any;
+}
 
 ModeratorSchema.statics = {
   get(account) {
@@ -77,4 +85,4 @@ ModeratorSchema.statics = {
   }
 };
 
-export default mongoose.model('Moderator', ModeratorSchema);
+export default mongoose.model<ModeratorSchemaDoc, ModeratorSchemaModel>('Moderator', ModeratorSchema);

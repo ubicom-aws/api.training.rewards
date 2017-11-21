@@ -63,8 +63,12 @@ const StatsSchema = new mongoose.Schema({
   },
 });
 
-StatsSchema.method({
-});
+export interface StatsSchemaDoc extends mongoose.Document {
+}
+
+export interface StatsSchemaModel extends mongoose.Model<StatsSchemaDoc> {
+  get(): any;
+}
 
 StatsSchema.statics = {
   get() {
@@ -80,4 +84,4 @@ StatsSchema.statics = {
   },
 };
 
-export default mongoose.model('Stats', StatsSchema);
+export default mongoose.model<StatsSchemaDoc, StatsSchemaModel>('Stats', StatsSchema);

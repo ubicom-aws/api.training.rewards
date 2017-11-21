@@ -23,8 +23,15 @@ const SponsorSchema = new mongoose.Schema({
   },
 });
 
-SponsorSchema.method({
-});
+export interface SponsorSchemaDoc extends mongoose.Document {
+}
+
+export interface SponsorSchemaModel extends mongoose.Model<SponsorSchemaDoc> {
+  get(account: any): any;
+  list(): any;
+  listAll(): any;
+  listBeneficiaries(exclude?: any[]): any;
+}
 
 SponsorSchema.statics = {
   get(account) {
@@ -71,4 +78,4 @@ SponsorSchema.statics = {
   }
 };
 
-export default mongoose.model('Sponsor', SponsorSchema);
+export default mongoose.model<SponsorSchemaDoc, SponsorSchemaModel>('Sponsor', SponsorSchema);

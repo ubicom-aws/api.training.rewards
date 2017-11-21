@@ -6,7 +6,7 @@ import Stats from './server/models/stats.model';
 import config from './config/config';
 import steemApi from './server/steemAPI';
 
-mongoose.Promise = Promise;
+(mongoose as any).Promise = Promise;
 mongoose.connect(`${config.mongo.host}`);
 
 const conn = mongoose.connection;

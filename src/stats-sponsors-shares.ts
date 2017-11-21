@@ -8,8 +8,7 @@ import config from './config/config';
 import steemApi from './server/steemAPI';
 import { calculatePayout } from './server/steemitHelpers';
 
-
-mongoose.Promise = Promise;
+(mongoose as any).Promise = Promise;
 mongoose.connect(`${config.mongo.host}`);
 
 const conn = mongoose.connection;

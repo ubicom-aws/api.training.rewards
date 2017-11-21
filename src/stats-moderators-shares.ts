@@ -5,7 +5,7 @@ import Stats from './server/models/stats.model';
 import Post from './server/models/post.model';
 import config from './config/config';
 
-mongoose.Promise = Promise;
+(mongoose as any).Promise = Promise;
 mongoose.connect(`${config.mongo.host}`);
 
 const conn = mongoose.connection;

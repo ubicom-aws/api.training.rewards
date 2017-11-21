@@ -19,18 +19,19 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-/**
- * Add your
- * - pre-save hooks
- * - validations
- * - virtuals
- */
+export interface UserModelListOpts {
+  skip?: number;
+  limit?: number;
+}
 
-/**
- * Methods
- */
-UserSchema.method({
-});
+export interface UserSchemaDoc extends mongoose.Document {
+}
+
+export interface UserSchemaModel extends mongoose.Model<UserSchemaDoc> {
+  get(account: any): any;
+  getByGithub(token: any): any;
+  list(opts?: UserModelListOpts): any;
+}
 
 /**
  * Statics
@@ -77,7 +78,7 @@ UserSchema.statics = {
    * @param {number} limit - Limit number of users to be returned.
    * @returns {Promise<User[]>}
    */
-  list({ skip = 0, limit = 50 } = {}) {
+  list({ skip = 0, limit = 50 }: UserModelListOpts = {}) {
     return this.find()
       .sort({ createdAt: -1 })
       .skip(+skip)
@@ -89,4 +90,4 @@ UserSchema.statics = {
 /**
  * @typedef User
  */
-export default mongoose.model('User', UserSchema);
+export default mongoose.model<UserSchemaDoc, UserSchemaModel>('User', UserSchema);

@@ -214,11 +214,17 @@ PostSchema.index(
   }
 )
 
-PostSchema.method({
-});
+export interface PostSchemaDoc extends mongoose.Document {
+}
+
+export interface PostSchemaModel extends mongoose.Model<PostSchemaDoc> {
+  get(author: string, permlink: string): any;
+  countAll(query: any): any;
+  list(query?: any): any;
+}
 
 PostSchema.statics = {
-  get(author, permlink) {
+  get(author: string, permlink: string) {
     return this.findOne({ author, permlink })
       .exec()
       .then((post) => {
@@ -242,4 +248,4 @@ PostSchema.statics = {
   }
 };
 
-export default mongoose.model('Post', PostSchema);
+export default mongoose.model<PostSchemaDoc, PostSchemaModel>('Post', PostSchema);
