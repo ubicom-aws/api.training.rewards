@@ -16,25 +16,26 @@ function create(req, res, next) {
   const permlink = req.body.permlink;
 
   steemAPI.getContent(author, permlink, (err, post) => {
-    if (!err) {
-      // hard fix for edge cases where json_metadata is empty
-      const parsedJson = post.json_metadata && post.json_metadata !== '' ?
-        JSON.parse(post.json_metadata) :
-        {};
-
-      const newPost = new Post({
-        ...post,
-        reviewed: false,
-        json_metadata: parsedJson,
-      });
-
-      newPost.save()
-        .then(savedPost => res.json(savedPost))
-        .catch(e => {
-          console.log("ERROR SAVING POST", e);
-          next(e);
-        });
+    if (err) {
+      return console.log('ERROR GETTING CONTENT', err);
     }
+    // hard fix for edge cases where json_metadata is empty
+    const parsedJson = post.json_metadata && post.json_metadata !== '' ?
+      JSON.parse(post.json_metadata) :
+      {};
+
+    const newPost = new Post({
+      ...post,
+      reviewed: false,
+      json_metadata: parsedJson,
+    });
+
+    newPost.save()
+      .then(savedPost => res.json(savedPost))
+      .catch(e => {
+        console.log("ERROR SAVING POST", e);
+        next(e);
+      });
   });
 }
 
