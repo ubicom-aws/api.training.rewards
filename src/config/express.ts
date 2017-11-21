@@ -1,5 +1,4 @@
 import * as express from 'express';
-import * as logger from 'morgan';
 import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import * as compress from 'compression';
@@ -16,10 +15,6 @@ import APIError from '../server/helpers/APIError';
 import config from './config';
 
 const app = express();
-
-if (config.env === 'development') {
-  app.use(logger('dev'));
-}
 
 // parse body params and attache them to req.body
 app.use(bodyParser.json());
