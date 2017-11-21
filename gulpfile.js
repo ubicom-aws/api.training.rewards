@@ -1,19 +1,15 @@
-import gulpLoadPlugins from 'gulp-load-plugins';
-import sourceMaps from 'gulp-sourcemaps';
-import runSequence from 'run-sequence';
-import ts from 'gulp-typescript';
-import gulp from 'gulp';
-import path from 'path';
-import del from 'del';
+const sourceMaps = require('gulp-sourcemaps');
+const runSequence = require('run-sequence');
+const nodemon = require('gulp-nodemon');
+const ts = require('gulp-typescript');
+const gulp = require('gulp');
+const path = require('path');
+const del = require('del');
 
-const plugins = gulpLoadPlugins();
-
-// Clean up dist and coverage directory
 gulp.task('clean', () =>
-  del.sync(['dist/**', 'dist/.*', 'coverage/**', '!dist', '!coverage'])
+  del.sync(['dist/**', '!dist'])
 );
 
-// Compile Typescript
 gulp.task('ts', () => {
   const res = gulp.src(['src/**/*.ts'])
     .pipe(sourceMaps.init())
@@ -25,9 +21,8 @@ gulp.task('ts', () => {
   })).pipe(gulp.dest('dist'));
 });
 
-// Start server with restart on file changes
 gulp.task('nodemon', ['ts'], () =>
-  plugins.nodemon({
+  nodemon({
     script: path.join('dist', 'server', 'index.js'),
     ext: 'js',
     ignore: ['node_modules/**/*.js', 'dist/**/*.js'],
@@ -35,10 +30,8 @@ gulp.task('nodemon', ['ts'], () =>
   })
 );
 
-// gulp serve for development
 gulp.task('serve', ['clean'], () => runSequence('nodemon'));
 
-// default task: clean dist, compile js files
 gulp.task('default', ['clean'], () => {
   runSequence(
     ['ts']
