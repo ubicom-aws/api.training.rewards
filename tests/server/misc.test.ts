@@ -1,7 +1,8 @@
-import request from 'supertest-as-promised';
-import httpStatus from 'http-status';
-import chai, { expect } from 'chai';
+import * as request from 'supertest-as-promised';
+import * as httpStatus from 'http-status';
 import app from '../../dist/server';
+import { expect } from 'chai';
+import * as chai from 'chai';
 
 chai.config.includeStack = true;
 

@@ -1,9 +1,10 @@
-import request from 'supertest-as-promised';
-import httpStatus from 'http-status';
-import jwt from 'jsonwebtoken';
-import chai, { expect } from 'chai';
-import app from '../../dist/server';
+import * as request from 'supertest-as-promised';
 import config from '../../dist/config/config';
+import * as httpStatus from 'http-status';
+import * as jwt from 'jsonwebtoken';
+import app from '../../dist/server';
+import { expect } from 'chai';
+import * as chai from 'chai';
 
 chai.config.includeStack = true;
 

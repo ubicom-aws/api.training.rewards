@@ -1,8 +1,9 @@
-import mongoose from 'mongoose';
-import request from 'supertest-as-promised';
-import httpStatus from 'http-status';
-import chai, { expect } from 'chai';
+import * as mongoose from 'mongoose';
+import * as request from 'supertest-as-promised';
+import * as httpStatus from 'http-status';
 import app from '../../dist/server';
+import { expect } from 'chai';
+import * as chai from 'chai';
 
 chai.config.includeStack = true;
 
@@ -42,7 +43,7 @@ describe('## User APIs', () => {
   describe('# GET /api/users/:userId', () => {
     it('should get user details', (done) => {
       request(app)
-        .get(`/api/users/${user._id}`)
+        .get(`/api/users/${(user as any)._id}`)
         .expect(httpStatus.OK)
         .then((res) => {
           expect(res.body.username).to.equal(user.username);
@@ -68,7 +69,7 @@ describe('## User APIs', () => {
     it('should update user details', (done) => {
       user.username = 'KK';
       request(app)
-        .put(`/api/users/${user._id}`)
+        .put(`/api/users/${(user as any)._id}`)
         .send(user)
         .expect(httpStatus.OK)
         .then((res) => {
@@ -108,7 +109,7 @@ describe('## User APIs', () => {
   describe('# DELETE /api/users/', () => {
     it('should delete user', (done) => {
       request(app)
-        .delete(`/api/users/${user._id}`)
+        .delete(`/api/users/${(user as any)._id}`)
         .expect(httpStatus.OK)
         .then((res) => {
           expect(res.body.username).to.equal('KK');
