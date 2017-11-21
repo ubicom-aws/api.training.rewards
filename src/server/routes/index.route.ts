@@ -8,7 +8,6 @@ import beneficiariesRoutes from './beneficiaries.route';
 import tokenRoute from './token.route';
 import moderatorRoutes from './moderator.route';
 import statsRoutes from './stats.route';
-import authRoutes from './auth.route';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -33,8 +32,5 @@ router.use('/beneficiaries', beneficiariesRoutes);
 router.use('/sponsors', sponsorRoutes);
 
 router.use('/moderators', moderatorRoutes);
-
-// mount auth routes at /auth
-router.use('/auth', authRoutes);
 
 export default router;
