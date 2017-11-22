@@ -17,7 +17,8 @@ function create(req, res, next) {
 
   steemAPI.getContent(author, permlink, (err, post) => {
     if (err) {
-      return console.log('ERROR GETTING CONTENT', err);
+      console.log('ERROR GETTING CONTENT', err);
+      return next(err);
     }
     // hard fix for edge cases where json_metadata is empty
     const parsedJson = post.json_metadata && post.json_metadata !== '' ?

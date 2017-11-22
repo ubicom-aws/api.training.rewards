@@ -8,6 +8,7 @@ import * as httpStatus from 'http-status';
 import * as expressWinston from 'express-winston';
 import * as expressValidation from 'express-validation';
 import * as helmet from 'helmet';
+import * as util from 'util';
 
 import winstonInstance from './winston';
 import routes from '../server/routes/index.route';
@@ -44,10 +45,6 @@ app.use(expressWinston.logger({
 // mount all routes on /api path
 app.use('/api', routes);
 
-app.use('/error', (req, res) => {
-  throw new Error('test');
-});
-
 // if error is not an instanceOf APIError, convert it.
 app.use((err, req, res, next) => {
   if (err instanceof expressValidation.ValidationError) {
@@ -69,9 +66,12 @@ app.use((req, res, next) => {
 });
 
 // error handler, send stacktrace only during development
-app.use((err, req, res, next) => {
+app.use((err, req: express.Request, res, next) => {
   if (err.status !== httpStatus.NOT_FOUND) {
-    winstonInstance.error('Error processing request', err.message, err.stack);
+    winstonInstance.error('Error processing HTTP request',
+                            '\nError: ', err.message, err.stack,
+                            '\nRequest URL: ', req.originalUrl,
+                            '\nRequest body: ', req.body);
   }
   res.status(err.status).json({
     message: err.isPublic ? err.message : httpStatus[err.status],
