@@ -111,7 +111,7 @@ function getProjects (req, res, next) {
  * @returns {User}
  */
 function create(req, res, next) {
-  const { account, code, state } = req.body;
+  const { account, code, state, scopeVersion } = req.body;
 
   if (code && state) {
     request.post('https://github.com/login/oauth/access_token')
@@ -141,6 +141,7 @@ function create(req, res, next) {
                     user.github = {
                       account: githubUserName,
                       token: access_token,
+                      scopeVersion: scopeVersion,
                       ...githubUser,
                     };
                     user.save()
@@ -153,6 +154,7 @@ function create(req, res, next) {
                         github: {
                           account: githubUserName,
                           token: access_token,
+                          scopeVersion: scopeVersion,
                           ...githubUser,
                         }
                       });
