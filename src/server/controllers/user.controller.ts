@@ -89,51 +89,49 @@ function getProjects(req, res, next) {
 
     request.get('https://api.github.com/user/repos')
         .query({ access_token: user.github.token })
-        .end(function (err, response) {
-            if (!err) {
-                if (response.body.length >= 0) {
-                    const repos = (response.body.filter(repo => repo.owner.login === user.github.account && repo.private === false));
-                    for (var k = 0; k < repos.length; k++) {
-                        result.push(repos[k]);
-                    }
-                    var orgs = new Array();
-                    request.get('https://api.github.com/user/orgs')
-                        .query({ access_token: user.github.token })
-                        .end(function (err, resp) {
-                            if (!err) {
-                                const organizations = resp.body;
-                                for (var i = 0; i < organizations.length; i++) {
-                                    orgs.push(organizations[i].login);
-                                }
-                                if (orgs.length === 0) {
-                                    res.json(result);
-                                    return;
-                                }
-                                for (var j = 0; j < orgs.length; ++j) {
-                                    request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
-                                        .end(function (err, respo) {
-                                            if (!err) {
-                                                for (var m = 0; m < respo.body.length; ++m) {
-                                                    result.push(respo.body[m]);
-                                                }
-                                                // for (var r = 0; r < result.length; ++r) {
-                                                //  console.log(result[r].full_name);
-                                                //  }
-                                                if (j+1 >= orgs.length) {
-                                                    console.log("DONE");
-                                                    res.json(result);
-                                                    return;
-                                                }
-                                            }
-                                        })
-                                }
-                            } else {
-                                return res.status(403).json({
-                                    message: 'Server refuses to give organizations of the account'
-                                })
-                            }
-                        })
+        .then(function (response) {
+            if (response && response.body.length) {
+                const repos = (response.body.filter(repo => repo.owner.login === user.github.account && repo.private === false));
+                for (var k = 0; k < repos.length; k++) {
+                    result.push(repos[k]);
                 }
+                var orgs = new Array();
+                request.get('https://api.github.com/user/orgs')
+                    .query({ access_token: user.github.token })
+                    .then(function (resp) {
+                        if (resp && resp.body) {
+                            const organizations = resp.body;
+                            for (var i = 0; i < organizations.length; i++) {
+                                orgs.push(organizations[i].login);
+                            }
+                            if (orgs.length === 0) {
+                                res.json(result);
+                                return;
+                            }
+                            for (var j = 0; j < orgs.length; ++j) {
+                                request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
+                                    .then(function (respo) {
+                                        if (respo && respo.body) {
+                                            for (var m = 0; m < respo.body.length; ++m) {
+                                                result.push(respo.body[m]);
+                                            }
+                                            // for (var r = 0; r < result.length; ++r) {
+                                            //  console.log(result[r].full_name);
+                                            //  }
+                                            if (j+1 >= orgs.length) {
+                                                console.log("DONE");
+                                                res.json(result);
+                                                return;
+                                            }
+                                        }
+                                    })
+                            }
+                        } else {
+                            return res.status(403).json({
+                                message: 'Server refuses to give organizations of the account'
+                            })
+                        }
+                    })
             } else {
                 return res.status(403).json({
                     message: 'Server refuses to give details of the account'
