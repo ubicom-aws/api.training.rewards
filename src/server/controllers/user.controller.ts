@@ -124,11 +124,6 @@ function getProjects(req, res, next) {
                                                     res.json(result);
                                                     return;
                                                 }
-                                            } else {
-                                                if (j+1 >= orgs.length) {
-                                                    res.json(result);
-                                                    return;
-                                                }
                                             }
                                         })
                                 }
