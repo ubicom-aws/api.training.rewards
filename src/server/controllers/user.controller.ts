@@ -106,8 +106,7 @@ function getProjects(req, res, next) {
                   orgs.push(organizations[i].login);
                 }
                 if (orgs.length === 0) {
-                  res.json(result);
-                  return;
+                  return res.json(result);
                 }
                 for (var j = 0; j < orgs.length; ++j) {
                   request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
@@ -121,25 +120,24 @@ function getProjects(req, res, next) {
                         //  }
                         if (j+1 >= orgs.length) {
                           // console.log("DONE");
-                          res.json(result);
-                          return;
+                          return res.json(result);
                         }
                       } else {
-                        res.status(403).json({
-                          message: 'Server refuses to give repos of the organization'
-                        })
+                        // return res.status(403).json({
+                        //   message: 'Server refuses to give repos of the organization'
+                        // })
                       }
                     })
                 }
               } else {
-                res.status(403).json({
+                return res.status(403).json({
                   message: 'Server refuses to give organizations of the account'
                 })
               }
             })
         } 
       } else {
-        res.status(403).json({
+        return res.status(403).json({
           message: 'Server refuses to give details of the account'
         })
       }
