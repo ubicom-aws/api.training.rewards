@@ -120,11 +120,7 @@ function getProjects(req, res, next) {
                                                 //  console.log(result[r].full_name);
                                                 //  }
                                                 if (j+1 >= orgs.length) {
-                                                    res.json(result);
-                                                    return;
-                                                }
-                                            } else {
-                                                if (j+1 >= orgs.length) {
+                                                    console.log("DONE");
                                                     res.json(result);
                                                     return;
                                                 }
