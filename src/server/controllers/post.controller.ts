@@ -14,30 +14,41 @@ function get(req, res, next) {
 function create(req, res, next) {
   const author = req.body.author;
   const permlink = req.body.permlink;
+  let attempts = 0;
 
-  steemAPI.getContent(author, permlink, (err, post) => {
-    if (err) {
-      console.log('ERROR GETTING CONTENT', err);
-      return next(err);
-    }
-    // hard fix for edge cases where json_metadata is empty
-    const parsedJson = post.json_metadata && post.json_metadata !== '' ?
-      JSON.parse(post.json_metadata) :
-      {};
+  const doCreate = () => {
+    steemAPI.getContent(author, permlink, (err, post) => {
+      if ((err || author === '' || permlink === '') && attempts < 10) {
+        setTimeout(function() {
+          attempts++;
+          doCreate();
+        }, 1500);
+        return;
+      } else {
+        console.log('ERROR GETTING CONTENT', err);
+        res.status(500);
+        return;
+      }
+      // hard fix for edge cases where json_metadata is empty
+      const parsedJson = post.json_metadata && post.json_metadata !== '' ?
+          JSON.parse(post.json_metadata) :
+          {};
 
-    const newPost = new Post({
-      ...post,
-      reviewed: false,
-      json_metadata: parsedJson,
-    });
-
-    newPost.save()
-      .then(savedPost => res.json(savedPost))
-      .catch(e => {
-        console.log("ERROR SAVING POST", e);
-        next(e);
+      const newPost = new Post({
+        ...post,
+        reviewed: false,
+        json_metadata: parsedJson,
       });
-  });
+
+      newPost.save()
+          .then(savedPost => res.json(savedPost))
+          .catch(e => {
+            console.log("ERROR SAVING POST", e);
+            next(e);
+          });
+    });
+  };
+  doCreate();
 }
 
 function update(req, res, next) {
