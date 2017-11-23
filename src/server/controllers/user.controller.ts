@@ -99,7 +99,6 @@ function getProjects(req, res, next) {
           var orgs = new Array();
           request.get('https://api.github.com/user/orgs')
             .query({ access_token: user.github.token })
-            .set('Accept', 'application/json')
             .end(function (err, resp) {
               if (!err) {
                 const organizations = resp.body;
@@ -108,10 +107,10 @@ function getProjects(req, res, next) {
                 }
                 if (orgs.length === 0) {
                   res.json(result);
+                  return;
                 }
                 for (var j = 0; j < orgs.length; ++j) {
                   request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
-                    .set('Accept', 'application/json')
                     .end(function (err, respo) {
                       if (!err) {
                         for (var m = 0; m < respo.body.length; ++m) {
@@ -123,6 +122,7 @@ function getProjects(req, res, next) {
                         if (j+1 >= orgs.length) {
                           // console.log("DONE");
                           res.json(result);
+                          return;
                         }
                       } else {
                         res.status(403).json({
