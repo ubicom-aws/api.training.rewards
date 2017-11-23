@@ -85,7 +85,7 @@ function get(req, res) {
 
 function getProjects(req, res, next) {
     const user = req.user;
-    var result = [];
+    var result = new Array();
 
     request.get('https://api.github.com/user/repos')
         .query({ access_token: user.github.token })
@@ -96,7 +96,7 @@ function getProjects(req, res, next) {
                     for (var k = 0; k < repos.length; k++) {
                         result.push(repos[k]);
                     }
-                    var orgs = [];
+                    var orgs = new Array();
                     request.get('https://api.github.com/user/orgs')
                         .query({ access_token: user.github.token })
                         .end(function (err, resp) {
