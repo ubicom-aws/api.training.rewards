@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3c5f5c7b-7cb8-414e-916c-d12c4017d40f" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/server/controllers/user.controller.ts" afterPath="$PROJECT_DIR$/src/server/controllers/user.controller.ts" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -66,8 +65,8 @@
       <file leaf-file-name="user.controller.ts" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/server/controllers/user.controller.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="108">
-              <caret line="108" column="39" lean-forward="true" selection-start-line="108" selection-start-column="39" selection-end-line="108" selection-end-column="39" />
+            <state relative-caret-position="342">
+              <caret line="112" column="79" lean-forward="false" selection-start-line="112" selection-start-column="79" selection-end-line="112" selection-end-column="79" />
               <folding>
                 <element signature="e#0#43#0" expanded="true" />
               </folding>
@@ -213,8 +212,8 @@
     <handled-path value="$PROJECT_DIR$/node_modules" />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="24" />
-    <option name="y" value="23" />
+    <option name="x" value="1" />
+    <option name="y" value="109" />
     <option name="width" value="1680" />
     <option name="height" value="1023" />
   </component>
@@ -496,15 +495,15 @@
       <workItem from="1510942585943" duration="36833000" />
       <workItem from="1511392280915" duration="632000" />
       <workItem from="1511429152610" duration="2642000" />
-      <workItem from="1511446721501" duration="2149000" />
+      <workItem from="1511446721501" duration="2739000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="338928000" />
+    <option name="totallyTimeSpent" value="339518000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="24" y="23" width="1680" height="1023" extended-state="0" />
+    <frame x="1" y="109" width="1680" height="1023" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="TypeScript" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32914045" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -681,8 +680,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/server/controllers/user.controller.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="108" column="39" lean-forward="true" selection-start-line="108" selection-start-column="39" selection-end-line="108" selection-end-column="39" />
+        <state relative-caret-position="342">
+          <caret line="112" column="79" lean-forward="false" selection-start-line="112" selection-start-column="79" selection-end-line="112" selection-end-column="79" />
           <folding>
             <element signature="e#0#43#0" expanded="true" />
           </folding>

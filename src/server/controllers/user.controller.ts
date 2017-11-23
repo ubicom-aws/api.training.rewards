@@ -110,6 +110,7 @@ function getProjects(req, res, next) {
                             }
                             for (var j = 0; j < orgs.length; ++j) {
                                 request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
+                                    .query({ access_token: user.github.token })
                                     .then(function (respo) {
                                         if (respo && respo.body) {
                                             for (var m = 0; m < respo.body.length; ++m) {
