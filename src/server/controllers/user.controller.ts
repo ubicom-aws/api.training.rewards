@@ -106,18 +106,24 @@ function getProjects(req, res, next) {
                 for (var i = 0; i < organizations.length; i++) {
                   orgs.push(organizations[i].login);
                 }
+                if (orgs.length === 0) {
+                  res.json(result);
+                }
                 for (var j = 0; j < orgs.length; ++j) {
                   request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
                     .set('Accept', 'application/json')
-                    .end(function (err, resp) {
+                    .end(function (err, respo) {
                       if (!err) {
-                        for (var m = 0; m < resp.body.length; ++m) {
-                          result.push(resp.body[m]);
+                        for (var m = 0; m < respo.body.length; ++m) {
+                          result.push(respo.body[m]);
                         }
                         // for (var r = 0; r < result.length; ++r) {
-                        //   console.log(result[r].full_name);
-                        // }
-                        res.json(result);
+                        //  console.log(result[r].full_name);
+                        //  }
+                        if (j+1 >= orgs.length) {
+                          // console.log("DONE");
+                          res.json(result);
+                        }
                       } else {
                         res.status(403).json({
                           message: 'Server refuses to give repos of the organization'
