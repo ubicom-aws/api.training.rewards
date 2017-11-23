@@ -234,102 +234,116 @@ conn.once('open', function ()
   }
 
 
-  const proceedVoting = (scoredPosts, categories_pool) => {
+  const proceedVoting = (scoredPosts, categories_pool, stats) => {
     console.log("SCORED POSTS", scoredPosts.length);
-    scoredPosts.forEach((post, index) => {
 
-      setTimeout(function(){
-        const finalScore = post.finalScore;
-        const category = post.category;
-        const assignedWeight = (finalScore / categories_pool[category].total_vote_weight * 100) * categories_pool[category].assigned_pool / 100;
-        const calculatedVote = Math.round(assignedWeight / categories_pool[category].assigned_pool * 100);
-        let finalVote = calculatedVote;
+    stats.bot_is_voting = true;
 
-        if (calculatedVote >= categories_pool[category].max_vote) {
-          finalVote = categories_pool[category].max_vote;
-        }
+    stats.save().then(() => {
+      scoredPosts.forEach((post, index) => {
+        setTimeout(function(){
+          const finalScore = post.finalScore;
+          const category = post.category;
+          const assignedWeight = (finalScore / categories_pool[category].total_vote_weight * 100) * categories_pool[category].assigned_pool / 100;
+          const calculatedVote = Math.round(assignedWeight / categories_pool[category].assigned_pool * 100);
+          let finalVote = calculatedVote;
 
-        if (calculatedVote <= categories_pool[category].min_vote) {
-          finalVote = categories_pool[category].min_vote;
-        }
+          if (calculatedVote >= categories_pool[category].max_vote) {
+            finalVote = categories_pool[category].max_vote;
+          }
 
-        const achievements = post.achievements;
-        const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
-        let commentBody = '';
+          if (calculatedVote <= categories_pool[category].min_vote) {
+            finalVote = categories_pool[category].min_vote;
+          }
 
-        commentBody = `### Hey @${post.author} I am @${botAccount}. I have just upvoted you at ${finalVote}% Power!\n`;
+          const achievements = post.achievements;
+          const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
+          let commentBody = '';
 
-        if (achievements.length > 0) {
-          commentBody += '#### Achievements\n';
-          achievements.forEach(achievement => commentBody += `- ${achievement}\n`);
-        }
+          commentBody = `### Hey @${post.author} I am @${botAccount}. I have just upvoted you at ${finalVote}% Power!\n`;
 
-        if (finalVote <= 7) {
-          commentBody += '#### Suggestions\n';
-          commentBody += `- Work on your followers to increase the votes/rewards. I follow what humans do and my vote is mainly based on that. Good luck!\n`
-          commentBody += `- Contribute more often to get higher and higher rewards. I wish to see you often!\n`
-          commentBody += `- I introduced a competition factor. My vote is based also on how competitive the category used is.\n`
-          commentBody += '#### Human Curation\n';
-          commentBody += `- Do you believe you deserved more? Let a human curator know. <a href="https://discord.gg/PrzCKpq">Get in touch on Discord</a>\n`
-        }
+          if (achievements.length > 0) {
+            commentBody += '#### Achievements\n';
+            achievements.forEach(achievement => commentBody += `- ${achievement}\n`);
+          }
 
-        commentBody += '#### Community-Driven Witness!\n';
+          if (finalVote <= 7) {
+            commentBody += '#### Suggestions\n';
+            commentBody += `- Work on your followers to increase the votes/rewards. I follow what humans do and my vote is mainly based on that. Good luck!\n`
+            commentBody += `- Contribute more often to get higher and higher rewards. I wish to see you often!\n`
+            commentBody += `- I introduced a competition factor. My vote is based also on how competitive the category used is.\n`
+            commentBody += '#### Human Curation\n';
+            commentBody += `- Do you believe you deserved more? Let a human curator know. <a href="https://discord.gg/PrzCKpq">Get in touch on Discord</a>\n`
+          }
 
-        commentBody += `I am the first and only Steem Community-Driven Witness. <a href="https://discord.gg/zTrEMqB">Participate on Discord</a>. Lets GROW TOGETHER!\n`
-        commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for my Witness With SteemConnect</a>\n`
-        commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-proxy?proxy=utopian-io&approve=1">Proxy vote to Utopian Witness with SteemConnect</a>\n`
-        commentBody += `- Or vote/proxy on <a href="https://steemit.com/~witnesses">Steemit Witnesses</a>\n`
-        commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
-        commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
+          commentBody += '#### Community-Driven Witness!\n';
 
-        console.log('--------------------------------------\n');
-        console.log('https://utopian.io/utopian-io/@'+post.author+'/'+post.permlink);
-        console.log('VOTE:' + finalVote + '\n');
-        console.log('CATEGORY', category);
-        console.log(commentBody);
-        console.log('--------------------------------------\n');
+          commentBody += `I am the first and only Steem Community-Driven Witness. <a href="https://discord.gg/zTrEMqB">Participate on Discord</a>. Lets GROW TOGETHER!\n`
+          commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for my Witness With SteemConnect</a>\n`
+          commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-proxy?proxy=utopian-io&approve=1">Proxy vote to Utopian Witness with SteemConnect</a>\n`
+          commentBody += `- Or vote/proxy on <a href="https://steemit.com/~witnesses">Steemit Witnesses</a>\n`
+          commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
+          commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
-        let i = 0;
-        const comment = () => {
-          SteemConnect.comment(
-              post.author,
-              post.permlink,
-              botAccount,
-              createCommentPermlink(post.author, post.permlink),
-              '',
-              commentBody,
-              jsonMetadata,
-          ).then(() => {
-            if (index + 1 === scoredPosts.length) {
-              conn.close();
-              process.exit(0);
-            }
-          }).catch(e => {
-            if (e.error_description == undefined) {
-              console.log("COMMENT SUBMITTED");
+          console.log('--------------------------------------\n');
+          console.log('https://utopian.io/utopian-io/@'+post.author+'/'+post.permlink);
+          console.log('VOTE:' + finalVote + '\n');
+          console.log('CATEGORY', category);
+          console.log(commentBody);
+          console.log('--------------------------------------\n');
+
+          let i = 0;
+          const comment = () => {
+            SteemConnect.comment(
+                post.author,
+                post.permlink,
+                botAccount,
+                createCommentPermlink(post.author, post.permlink),
+                '',
+                commentBody,
+                jsonMetadata,
+            ).then(() => {
               if (index + 1 === scoredPosts.length) {
-                conn.close();
-                process.exit();
+
+                stats.bot_is_voting = false;
+
+                stats.save().then(() => {
+                  conn.close();
+                  process.exit();
+                });
               }
-            } else {
-              console.log("COMMENT ERROR", e);
+            }).catch(e => {
+              if (e.error_description == undefined) {
+                console.log("COMMENT SUBMITTED");
+                if (index + 1 === scoredPosts.length) {
+
+                  stats.bot_is_voting = false;
+
+                  stats.save().then(() => {
+                    conn.close();
+                    process.exit();
+                  });
+                }
+              } else {
+                console.log("COMMENT ERROR", e);
+              }
+            });
+          };
+
+          SteemConnect.vote(botAccount, post.author, post.permlink, finalVote * 100)
+              .then(() => {
+                comment();
+              }).catch(e => {
+            // I think there is a problem with sdk. Always gets in the catch
+            if (e.error_description == undefined) {
+              console.log("VOTED");
+              comment();
             }
           });
-        };
 
-        SteemConnect.vote(botAccount, post.author, post.permlink, finalVote * 100)
-            .then(() => {
-              comment();
-            }).catch(e => {
-          // I think there is a problem with sdk. Always gets in the catch
-          if (e.error_description == undefined) {
-            console.log("VOTED");
-            comment();
-          }
-        });
-
-      }, index * 30000);
-    })
+        }, index * 30000);
+      })
+    });
   };
 
   Stats.get()
@@ -583,7 +597,7 @@ conn.once('open', function ()
                                             scoredPosts.push(post);
 
                                             if (allPostsIndex + 1 === posts.length) {
-                                              proceedVoting(scoredPosts, categories_pool);
+                                              proceedVoting(scoredPosts, categories_pool, stats);
                                             }
                                           });
                                     });

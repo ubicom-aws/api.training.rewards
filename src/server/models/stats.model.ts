@@ -38,6 +38,7 @@ const StatsSchema = new mongoose.Schema({
   stats_total_pending_last_check: String,
   stats_last_updated_posts: String,
   stats_categories_last_check: String,
+  bot_is_voting: Boolean,
   categories: {
     ideas: categoriesStats,
     'sub-projects': categoriesStats,
