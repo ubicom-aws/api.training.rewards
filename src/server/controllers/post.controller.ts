@@ -18,12 +18,8 @@ function create(req, res, next) {
 
   const doCreate = () => {
     steemAPI.getContent(author, permlink, (err, post) => {
-      if (!attempts) {
-        attempts = 0;
-      }
-      attempts++;
       if (err || !author || !permlink) {
-        if (attempts > 10) {
+        if (++attempts > 10) {
           console.log('ERROR GETTING CONTENT', err);
           return res.status(500);
         }
