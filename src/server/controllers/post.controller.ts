@@ -18,15 +18,18 @@ function create(req, res, next) {
 
   const doCreate = () => {
     steemAPI.getContent(author, permlink, (err, post) => {
-      if ((err || author === '' || permlink === '') && attempts < 10) {
-        setTimeout(function() {
-          attempts++;
+      if (!attempts) {
+        attempts = 0;
+      }
+      attempts++;
+      if (err || !author || !permlink) {
+        if (attempts > 10) {
+          console.log('ERROR GETTING CONTENT', err);
+          return res.status(500);
+        }
+        setTimeout(() => {
           doCreate();
         }, 1500);
-        return;
-      } else {
-        console.log('ERROR GETTING CONTENT', err);
-        res.status(500);
         return;
       }
       // hard fix for edge cases where json_metadata is empty
