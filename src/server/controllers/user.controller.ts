@@ -7,6 +7,7 @@ import User from '../models/user.model';
  * Load user and append to req.
  */
 function load(req, res, next, id) {
+  
   const { params } = req;
 
   if (params.platform && params.platform === 'github') {
@@ -27,6 +28,7 @@ function load(req, res, next, id) {
 }
 
 function createToken(req, res, next) {
+  
   const { code } = req.query;
 
   request.get(`https://v2.steemconnect.com/api/oauth2/token?code=${code}&client_secret=${process.env.UTOPIAN_STEEMCONNECT_SECRET}&scope=offline,vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance`)
@@ -81,27 +83,62 @@ function get(req, res) {
   return res.json(req.user);
 }
 
-function getProjects (req, res, next) {
+function getProjects(req, res, next) {
   const user = req.user;
+  var result = new Array();
 
   request.get('https://api.github.com/user/repos')
-    .query({access_token: user.github.token})
-    .end(function(err, response){
-      if(!err) {
-        const repos = response.body;
-        if (repos.length > 0) {
-          res.json(repos.filter(repo => repo.owner.login === user.github.account && repo.private === false));
-        } else {
-          res.status(404).json({
-            message: 'Cannot find project for this account'
-          });;
-        }
+    .query({ access_token: user.github.token })
+    .end(function (err, response) {
+      if (!err) {
+        if (response.body.length >= 0) {
+          const repos = (response.body.filter(repo => repo.owner.login === user.github.account && repo.private === false));
+          for (var k = 0; k < repos.length; k++) {
+            result.push(repos[k]);
+          }
+          var orgs = new Array();
+          request.get('https://api.github.com/user/orgs')
+            .query({ access_token: user.github.token })
+            .set('Accept', 'application/json')
+            .end(function (err, resp) {
+              if (!err) {
+                const organizations = resp.body;
+                for (var i = 0; i < organizations.length; i++) {
+                  orgs.push(organizations[i].login);
+                }
+                for (var j = 0; j < orgs.length; ++j) {
+                  request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
+                    .set('Accept', 'application/json')
+                    .end(function (err, resp) {
+                      if (!err) {
+                        for (var m = 0; m < resp.body.length; ++m) {
+                          result.push(resp.body[m]);
+                        }
+                        // for (var r = 0; r < result.length; ++r) {
+                        //   console.log(result[r].full_name);
+                        // }
+                        res.json(result);
+                      } else {
+                        res.status(403).json({
+                          message: 'Server refuses to give repos of the organization'
+                        })
+                      }
+                    })
+                }
+              } else {
+                res.status(403).json({
+                  message: 'Server refuses to give organizations of the account'
+                })
+              }
+            })
+        } 
       } else {
         res.status(403).json({
           message: 'Server refuses to give details of the account'
         })
       }
-    })
+    });
+
 }
 
 /**
@@ -111,6 +148,7 @@ function getProjects (req, res, next) {
  * @returns {User}
  */
 function create(req, res, next) {
+  
   const { account, code, state, scopeVersion } = req.body;
 
   if (code && state) {
