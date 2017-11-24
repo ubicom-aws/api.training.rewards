@@ -199,6 +199,10 @@ const PostSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  humanVoteSize: {
+    type: Number,
+    required: false,
+  }
 });
 
 PostSchema.index(
