@@ -30,6 +30,16 @@ export default {
       userId: Joi.string().hex().required()
     }
   },
+  banUser: {
+    body: {
+      account: Joi.string(),
+      banned: Joi.number().integer().min(0).max(9),
+      bannedBy: Joi.string(),
+    },
+    params: {
+      userId: Joi.string(),
+    }
+  },
 
   // POST /api/auth/login
   login: {

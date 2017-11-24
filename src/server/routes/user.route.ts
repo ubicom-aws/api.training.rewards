@@ -18,6 +18,10 @@ router.route('/:userId')
 router.route('/:userId/projects')
   .get(userCtrl.getProjects);
 
+router.route('/:userId/ban')
+  .get(userCtrl.get)
+  .post(validate(paramValidation.banUser), userCtrl.ban)
+
 router.route('/:userId/platforms/:platform')
   .get(userCtrl.get)
 

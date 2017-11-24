@@ -74,6 +74,24 @@ function createToken(req, res, next) {
             }
         });
 }
+/** 
+* Ban user
+* @property {string} req.body.username - The username of user.
+* @property {string} req.body.banned - Banning Status of user
+* @returns {User}
+**/
+function ban(req, res, next) {
+  console.log("=> ban() "); 
+  const user = req.user;
+  // console.log("-> req.user ", req.user);
+  console.log("-> req.body ", req.body);
+  user.banned = req.body.banned;
+  user.bannedBy = req.body.bannedBy;
+
+  user.save()
+      .then(savedUser => res.json(savedUser))
+      .catch(e => next(e));
+}
 
 /**
  * Get user
@@ -256,4 +274,4 @@ function remove(req, res, next) {
         .catch(e => next(e));
 }
 
-export default { load, get, getProjects, create, update, list, remove, createToken };
+export default { load, ban, get, getProjects, create, update, list, remove, createToken };
