@@ -88,6 +88,7 @@ function ban(req, res, next) {
   user.banned = req.body.banned;
   user.bannedBy = req.body.bannedBy;
   user.banReason = req.body.banReason;
+  user.bannedUntil = req.body.bannedUntil;
 
   user.save()
       .then(savedUser => res.json(savedUser))
@@ -97,10 +98,15 @@ function ban(req, res, next) {
 function getBan(req, res, next) {
   console.log("=> getban(user) ");
   const user = req.user;
+  var until = new Date(0);
+  if (user.bannedUntil) {
+    until = user.bannedUntil;
+  }
   res.json({
     banned: user.banned,
     bannedBy: user.bannedBy,
     banReason: user.banReason,
+    bannedUntil: until,
   });
 }
 
