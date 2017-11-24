@@ -202,7 +202,7 @@ const PostSchema = new mongoose.Schema({
   humanVoteSize: {
     type: Number,
     required: false,
-  }
+  },
 });
 
 PostSchema.index(

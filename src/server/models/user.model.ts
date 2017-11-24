@@ -19,11 +19,15 @@ const UserSchema = new mongoose.Schema({
   },
   banned: {
     type: Number,
-    default: 0
+    default: 0,
   },
   bannedBy: {
     type: String,
-    default: ""
+    default: "<anonymous mod>",
+  },
+  banReason: {
+    type: String,
+    default: "Violation of the Utopian Rules",
   }
 });
 

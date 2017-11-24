@@ -35,6 +35,7 @@ export default {
       account: Joi.string(),
       banned: Joi.number().integer().min(0).max(9),
       bannedBy: Joi.string(),
+      banReason: Joi.string(),
     },
     params: {
       userId: Joi.string(),
