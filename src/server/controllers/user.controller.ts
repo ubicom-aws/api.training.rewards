@@ -87,6 +87,7 @@ function ban(req, res, next) {
   console.log("-> req.body ", req.body);
   user.banned = req.body.banned;
   user.bannedBy = req.body.bannedBy;
+  user.banReason = req.body.banReason;
 
   user.save()
       .then(savedUser => res.json(savedUser))

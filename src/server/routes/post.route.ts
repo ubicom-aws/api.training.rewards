@@ -14,4 +14,8 @@ router.route('/:author/:permlink')
   .put(postCtrl.update)
   .delete(postCtrl.remove);
 
+router.route('/:author/:permlink/hvs')
+  .get(postCtrl.getHVS)
+  .post(postCtrl.setHVS)
+
 export default router;
