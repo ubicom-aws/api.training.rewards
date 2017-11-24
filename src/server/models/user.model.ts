@@ -16,6 +16,14 @@ const UserSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  banned: {
+    type: Number,
+    default: 0
+  },
+  bannedBy: {
+    type: String,
+    default: ""
   }
 });
 
