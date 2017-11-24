@@ -3,7 +3,6 @@ import * as Promise from 'bluebird';
 import * as request from 'superagent';
 import * as SteemConnect from 'sc2-sdk';
 import * as steem from 'steem';
-import { isNumber } from 'util';
 import Stats from './server/models/stats.model';
 import Post from './server/models/post.model';
 import config from './config/config';
@@ -589,68 +588,22 @@ conn.once('open', function ()
                                             if(reputation >= 50) finalScore = finalScore + 2.5;
                                             if(reputation >= 65) finalScore = finalScore + 2.5;
                                             if(reputation >= 70) finalScore = finalScore + 2.5;
-                                            
-                                            request
-                                            .get(`https://api.utopian.io/api/posts/${post.author}/${post.permlink}/hvs`)
-                                            .end((err, res) => {
-                                              if (!err) {
-                                                var realAdjust = 0.0;
-                                                if (res.body && isNumber(res.body)) {
-                                                  switch (res.body) {
-                                                    case 2:
-                                                      realAdjust = 25; // XL
-                                                      break;
-                                                    case 1:
-                                                      realAdjust = 10; // L
-                                                      break;
-                                                    case 0:
-                                                      realAdjust = 0; // M
-                                                      break;
-                                                    case -1:
-                                                      realAdjust = -10; // S
-                                                      break;
-                                                    case -2:
-                                                      realAdjust = -25; // XS
-                                                      break;
-                                                    default:
-                                                      realAdjust = 0;
-                                                  }
-                                                }
-                                                finalScore = finalScore * (100.0 + realAdjust);
-                                                finalScore = finalScore / (100.0);
-                                                post.finalScore = finalScore >= 100 ? 100 : Math.round(finalScore);
-                                                post.achievements = achievements;
-                                                post.category = post.json_metadata.type.indexOf('task-') > - 1 ? 'tasks-requests' : post.json_metadata.type;
-    
-                                                if (post.json_metadata.type.indexOf('task-') > - 1) {
-                                                  categories_pool['tasks-requests'].total_vote_weight = categories_pool['tasks-requests'].total_vote_weight + finalScore;
-                                                } else{
-                                                  categories_pool[post.json_metadata.type].total_vote_weight = categories_pool[post.json_metadata.type].total_vote_weight + finalScore;
-                                                }
-    
-                                                scoredPosts.push(post);
-    
-                                                if (allPostsIndex + 1 === posts.length) {
-                                                  proceedVoting(scoredPosts, categories_pool, stats);
-                                                }
-                                              } else {
-                                                post.finalScore = finalScore >= 100 ? 100 : Math.round(finalScore);
-                                                post.achievements = achievements;
-                                                post.category = post.json_metadata.type.indexOf('task-') > - 1 ? 'tasks-requests' : post.json_metadata.type;
-    
-                                                if (post.json_metadata.type.indexOf('task-') > - 1) {
-                                                  categories_pool['tasks-requests'].total_vote_weight = categories_pool['tasks-requests'].total_vote_weight + finalScore;
-                                                } else{
-                                                  categories_pool[post.json_metadata.type].total_vote_weight = categories_pool[post.json_metadata.type].total_vote_weight + finalScore;
-                                                }
-    
-                                                scoredPosts.push(post);
-    
-                                                if (allPostsIndex + 1 === posts.length) {
-                                                  proceedVoting(scoredPosts, categories_pool, stats);
-                                                }
-                                              }
-                                            })
+
+                                            post.finalScore = finalScore >= 100 ? 100 : Math.round(finalScore);
+                                            post.achievements = achievements;
+                                            post.category = post.json_metadata.type.indexOf('task-') > - 1 ? 'tasks-requests' : post.json_metadata.type;
+
+                                            if (post.json_metadata.type.indexOf('task-') > - 1) {
+                                              categories_pool['tasks-requests'].total_vote_weight = categories_pool['tasks-requests'].total_vote_weight + finalScore;
+                                            }else{
+                                              categories_pool[post.json_metadata.type].total_vote_weight = categories_pool[post.json_metadata.type].total_vote_weight + finalScore;
+                                            }
+
+                                            scoredPosts.push(post);
+
+                                            if (allPostsIndex + 1 === posts.length) {
+                                              proceedVoting(scoredPosts, categories_pool, stats);
+                                            }
                                           });
                                     });
                                   }

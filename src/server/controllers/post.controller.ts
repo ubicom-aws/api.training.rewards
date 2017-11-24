@@ -36,9 +36,9 @@ function create(req, res, next) {
       const newPost = new Post({
         ...post,
         reviewed: false,
-        humanVoteSize: 0,
         json_metadata: parsedJson,
       });
+
       newPost.save()
           .then(savedPost => res.json(savedPost))
           .catch(e => {
@@ -50,34 +50,6 @@ function create(req, res, next) {
   doCreate();
 }
 
-function getHVS(req, res, next) {
-  const author = req.body.author;
-  const permlink = req.body.permlink;
-  Post.get(author, permlink)
-    .then((post) => {
-      if (post.humanVoteSize) {
-        res.json(post.humanVoteSize);
-      } else {
-        res.json(0);
-      }
-  })
-}
-
-function setHVS(req, res, next) {
-  const author = req.body.author;
-  const permlink = req.body.permlink;
-  Post.get(author, permlink)
-    .then((post) => {
-      post.humanVoteSize = req.body.humanVoteSize;
-      post.save()
-      .then(savedPost => res.json(savedPost))
-      .catch(e => {
-        console.log("ERROR SETTING HVS FOR POST", e);
-        next(e);
-      });
-    })
-}
-
 function update(req, res, next) {
   const author = req.body.author;
   const permlink = req.body.permlink;
@@ -85,7 +57,6 @@ function update(req, res, next) {
   const pending = req.body.pending || false;
   const reviewed = req.body.reviewed || false;
   const moderator = req.body.moderator || null;
-  const humanVoteSize = req.body.humanVoteSize || 0;
 
   Post.get(req.params.author, req.params.permlink)
     .then((post) => {
@@ -111,9 +82,6 @@ function update(req, res, next) {
 
           if (moderator) {
             post.moderator = moderator;
-          }
-          if (humanVoteSize) {
-            post.humanVoteSize = humanVoteSize;
           }
 
           if (reviewed) {
@@ -396,4 +364,4 @@ function remove(req, res, next) {
     .catch(e => next(e));
 }
 
-export default { get, getHVS, setHVS, create, update, list, listByIssue, remove };
+export default { get, create, update, list, listByIssue, remove };
