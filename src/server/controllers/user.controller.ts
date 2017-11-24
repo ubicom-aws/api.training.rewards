@@ -94,6 +94,16 @@ function ban(req, res, next) {
       .catch(e => next(e));
 }
 
+function getBan(req, res, next) {
+  console.log("=> getban(user) ");
+  const user = req.user;
+  res.json({
+    banned: user.banned,
+    bannedBy: user.bannedBy,
+    banReason: user.banReason,
+  });
+}
+
 /**
  * Get user
  * @returns {User}
@@ -275,4 +285,4 @@ function remove(req, res, next) {
         .catch(e => next(e));
 }
 
-export default { load, ban, get, getProjects, create, update, list, remove, createToken };
+export default { load, ban, getBan, get, getProjects, create, update, list, remove, createToken };
