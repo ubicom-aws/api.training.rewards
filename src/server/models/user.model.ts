@@ -25,6 +25,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: "<anonymous mod>",
   },
+  bannedUntil: {
+    type: Date,
+    default: new Date(0),
+  },
   banReason: {
     type: String,
     default: "Violation of the Utopian Rules",

@@ -233,11 +233,17 @@ function list(req, res, next) {
   let select: any = {}
 
   let query: any = {
-    reviewed: true,
     flagged: {
       $ne : true,
     },
   };
+
+  if (section !== 'author') {
+    query = {
+      ...query,
+      reviewed: true,
+    }
+  }
 
   if (bySimilarity) {
     select = {

@@ -13,6 +13,10 @@ const ModeratorSchema = new mongoose.Schema({
   },
   banned: Boolean,
   reviewed: Boolean,
+  supermoderator: {
+    type: Boolean,
+    required: false,
+  },
   total_paid_rewards: Number,
   should_receive_rewards: Number,
   total_moderated: Number,
