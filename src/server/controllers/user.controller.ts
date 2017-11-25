@@ -74,34 +74,34 @@ function createToken(req, res, next) {
             }
         });
 }
-/** 
-* Ban user
-* @property {string} req.body.username - The username of user.
-* @property {string} req.body.banned - Banning Status of user
-* @returns {User}
-**/
+/**
+ * Ban user
+ * @property {string} req.body.username - The username of user.
+ * @property {string} req.body.banned - Banning Status of user
+ * @returns {User}
+ **/
 function ban(req, res, next) {
-  console.log("=> ban() "); 
-  const user = req.user;
-  // console.log("-> req.user ", req.user);
-  console.log("-> req.body ", req.body);
-  user.banned = req.body.banned;
-  user.bannedBy = req.body.bannedBy;
-  user.banReason = req.body.banReason;
+    console.log("=> ban() ");
+    const user = req.user;
+    // console.log("-> req.user ", req.user);
+    console.log("-> req.body ", req.body);
+    user.banned = req.body.banned;
+    user.bannedBy = req.body.bannedBy;
+    user.banReason = req.body.banReason;
 
-  user.save()
-      .then(savedUser => res.json(savedUser))
-      .catch(e => next(e));
+    user.save()
+        .then(savedUser => res.json(savedUser))
+        .catch(e => next(e));
 }
 
 function getBan(req, res, next) {
-  console.log("=> getban(user) ");
-  const user = req.user;
-  res.json({
-    banned: user.banned,
-    bannedBy: user.bannedBy,
-    banReason: user.banReason,
-  });
+    console.log("=> getban(user) ");
+    const user = req.user;
+    res.json({
+        banned: user.banned,
+        bannedBy: user.bannedBy,
+        banReason: user.banReason,
+    });
 }
 
 /**
@@ -112,8 +112,7 @@ function get(req, res) {
     return res.json(req.user);
 }
 
-function getProjects(req, res, next) {
-    const user = req.user;
+function getGithubProjects(user, callback) {
     var result = new Array();
 
     request.get('https://api.github.com/user/repos')
@@ -134,7 +133,7 @@ function getProjects(req, res, next) {
                                 orgs.push(organizations[i].login);
                             }
                             if (orgs.length === 0) {
-                                res.json(result);
+                                callback(result);
                                 return;
                             }
                             for (var j = 0; j < orgs.length; ++j) {
@@ -145,30 +144,35 @@ function getProjects(req, res, next) {
                                             for (var m = 0; m < respo.body.length; ++m) {
                                                 result.push(respo.body[m]);
                                             }
-                                            // for (var r = 0; r < result.length; ++r) {
-                                            //  console.log(result[r].full_name);
-                                            //  }
                                             if (j+1 >= orgs.length) {
-                                                console.log("DONE");
-                                                res.json(result);
+                                                callback(result);
                                                 return;
                                             }
                                         }
                                     })
                             }
                         } else {
-                            return res.status(403).json({
-                                message: 'Server refuses to give organizations of the account'
-                            })
+                            callback(result);
                         }
                     })
             } else {
-                return res.status(403).json({
-                    message: 'Server refuses to give details of the account'
-                })
+                callback(result);
             }
         });
+}
 
+function getProjects(req, res, next) {
+    const user = req.user;
+
+    getGithubProjects(user, (result) => {
+        if (result.length) {
+            res.json(result);
+        } else {
+            res.status(404).json({
+                message: 'No repos found on Github'
+            })
+        }
+    });
 }
 
 /**
@@ -285,4 +289,4 @@ function remove(req, res, next) {
         .catch(e => next(e));
 }
 
-export default { load, ban, getBan, get, getProjects, create, update, list, remove, createToken };
+export default { load, ban, getBan, get, getProjects, getGithubProjects, create, update, list, remove, createToken };

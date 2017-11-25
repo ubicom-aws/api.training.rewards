@@ -20,6 +20,15 @@ export default {
       account: Joi.string().required(),
     }
   },
+  createProject: {
+    body: {
+      owner: Joi.string().required(),
+      access_token: Joi.string().required(),
+      platform: Joi.string().required(),
+      external_id: Joi.number().required(),
+      project_name: Joi.string().required(),
+    }
+  },
   // UPDATE /api/users/:userId
   updateUser: {
     body: {

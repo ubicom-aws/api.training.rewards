@@ -29,6 +29,7 @@ const envVarsSchema = Joi.object({
   UTOPIAN_GITHUB_CLIENT_ID: Joi.string().required(),
   UTOPIAN_GITHUB_REDIRECT_URL: Joi.string().required(),
   UTOPIAN_STEEMCONNECT_SECRET: Joi.string().required(),
+  UTOPIAN_PRIVATE_PASS: Joi.string().required(),
 }).unknown()
   .required();
 
@@ -45,6 +46,12 @@ const config = {
   mongo: {
     host: envVars.MONGO_HOST,
     port: envVars.MONGO_PORT
+  },
+  credentials: {
+      githubSecret: envVars.UTOPIAN_GITHUB_SECRET,
+      githubClientId: envVars.UTOPIAN_GITHUB_CLIENT_ID,
+      steemConnectSecret: envVars.UTOPIAN_STEEMCONNECT_SECRET,
+      utopianPrivatePass: envVars.UTOPIAN_PRIVATE_PASS,
   }
 };
 

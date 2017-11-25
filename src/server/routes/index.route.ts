@@ -8,6 +8,7 @@ import beneficiariesRoutes from './beneficiaries.route';
 import tokenRoute from './token.route';
 import moderatorRoutes from './moderator.route';
 import statsRoutes from './stats.route';
+import projectRoutes from './project.route';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -20,6 +21,8 @@ router.get('/health-check', (req, res) =>
 router.use('/users', userRoutes);
 
 router.use('/token', tokenRoute);
+
+router.use('/projects', projectRoutes);
 
 router.use('/posts', postRoutes);
 
