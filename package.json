@@ -15,8 +15,8 @@
     "npm": ">=5.0.0"
   },
   "scripts": {
-    "dev-server": "cross-env NODE_ENV=development PORT=4040 gulp serve",
-    "start": "cross-env NODE_ENV=production PORT=443 gulp serve",
+    "dev-server": "cross-env NODE_ENV=development SERVER_PORT=4040 gulp serve",
+    "start": "cross-env NODE_ENV=production SERVER_PORT=443 gulp serve",
     "updater-posts": "node ./dist/updater-posts.js",
     "utopian-bot": "node ./dist/utopian-bot.js $REFRESH_TOKEN $CLIENT_SECRET",
     "stats-categories": "node ./dist/stats-categories.js",

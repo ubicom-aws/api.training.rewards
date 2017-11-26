@@ -32,21 +32,20 @@ if (config.mongooseDebug) {
 // module.parent check is required to support mocha watch
 // src: https://github.com/mochajs/mocha/issues/1912
 if (!module.parent) {
-  // listen on port config.port
-
-  if (config.env === 'production') {
+  const port = config.server.port;
+  if (config.server.cert && config.server.key) {
     const options = {
-      cert: fs.readFileSync('/etc/letsencrypt/live/api.utopian.io/fullchain.pem'),
-      key: fs.readFileSync('/etc/letsencrypt/live/api.utopian.io/privkey.pem')
+      cert: fs.readFileSync(config.server.cert),
+      key: fs.readFileSync(config.server.key)
     };
 
-    https.createServer(options, app).listen(config.port, () => {
-      console.info(`server started on port ${config.port} (${config.env})`); // eslint-disable-line no-console
+    https.createServer(options, app).listen(port, () => {
+      console.info(`server started on port ${port} (${config.env})`);
     });
 
   } else {
-    app.listen(config.port, () => {
-      console.info(`server started on port ${config.port} (${config.env})`); // eslint-disable-line no-console
+    app.listen(config.server.port, () => {
+      console.info(`server started on port ${port} (${config.env})`);
     });
   }
 }

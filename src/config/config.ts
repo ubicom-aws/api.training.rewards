@@ -8,12 +8,9 @@ const envVarsSchema = Joi.object({
   NODE_ENV: Joi.string()
     .allow(['development', 'production', 'test', 'provision'])
     .default('development'),
-  PORT: Joi.number()
-    .when('NODE_ENV', {
-      is: Joi.string().equal('development'),
-      then: Joi.number().default(4040),
-      otherwise: Joi.number().default(443)
-    }),
+  SERVER_PORT: Joi.number().required(),
+  SERVER_SSL_CERT: Joi.string().allow('').default(''),
+  SERVER_SSL_KEY: Joi.string().allow('').default(''),
   MONGOOSE_DEBUG: Joi.boolean()
     .when('NODE_ENV', {
       is: Joi.string().equal('development'),
@@ -35,20 +32,30 @@ if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
 
+interface Server {
+  port: number;
+  cert?: string;
+  key?: string;
+}
+
 interface Config {
   env: string;
-  port: number;
   steemNode: string;
   mongooseDebug: boolean;
   mongo: string;
+  server: Server;
 }
 
 const config: Config = {
   env: envVars.NODE_ENV,
-  port: envVars.PORT,
   steemNode: envVars.STEEM_NODE,
   mongooseDebug: envVars.MONGOOSE_DEBUG,
-  mongo: envVars.MONGO_HOST
+  mongo: envVars.MONGO_HOST,
+  server: {
+    port: envVars.SERVER_PORT,
+    cert: envVars.SERVER_SSL_CERT,
+    key: envVars.SERVER_SSL_KEY
+  }
 };
 
 export default config;
