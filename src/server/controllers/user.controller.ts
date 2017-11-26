@@ -187,7 +187,7 @@ function create(req, res, next) {
 
     const { account, code, state, scopeVersion } = req.body;
 
-    if (code && state) {
+    if (code && state && (code !== "-") && (state !== "-")) {
         request.post('https://github.com/login/oauth/access_token')
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json')
@@ -248,6 +248,16 @@ function create(req, res, next) {
                 }
             })
             .catch(e => res.status(500))
+    } else {
+      const newUser = new User({
+        account,
+        github: {
+            scopeVersion: 0
+        }
+    });
+      newUser.save()
+        .then(savedUser => res.json(savedUser))
+        .catch(e => next(e));
     }
 }
 
