@@ -10,7 +10,7 @@ import config from './config/config';
 import { createCommentPermlink } from './server/steemitHelpers';
 
 (mongoose as any).Promise = Promise;
-mongoose.connect(`${config.mongo.host}`);
+mongoose.connect(config.mongo);
 
 const conn = mongoose.connection;
 conn.once('open', function ()

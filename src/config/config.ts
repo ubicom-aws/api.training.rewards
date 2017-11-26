@@ -23,8 +23,6 @@ const envVarsSchema = Joi.object({
   STEEM_NODE: Joi.string().default('https://api.steemit.com'),
   MONGO_HOST: Joi.string().required()
     .description('Mongo DB host url'),
-  MONGO_PORT: Joi.number()
-    .default(27017),
   UTOPIAN_GITHUB_SECRET: Joi.string().required(),
   UTOPIAN_GITHUB_CLIENT_ID: Joi.string().required(),
   UTOPIAN_GITHUB_REDIRECT_URL: Joi.string().required(),
@@ -37,15 +35,20 @@ if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
 
-const config = {
+interface Config {
+  env: string;
+  port: number;
+  steemNode: string;
+  mongooseDebug: boolean;
+  mongo: string;
+}
+
+const config: Config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   steemNode: envVars.STEEM_NODE,
   mongooseDebug: envVars.MONGOOSE_DEBUG,
-  mongo: {
-    host: envVars.MONGO_HOST,
-    port: envVars.MONGO_PORT
-  }
+  mongo: envVars.MONGO_HOST
 };
 
 export default config;
