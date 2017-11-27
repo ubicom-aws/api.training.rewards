@@ -12,11 +12,31 @@ const SteemAccount = {
     required: true,
     unique: true,
   },
-  password: {
+  refresh_token: {
     type: String,
-    required: true,
+    required: false,
   }
 };
+const RejectStatus = {
+  status: {
+    type: Boolean,
+    required: true,
+  },
+  message: {
+    type: String,
+    required: false,
+  }
+};
+const ProjectSponsor = {
+  account: {
+    type: String,
+    required: true,
+  },
+  vesting_shares: {
+    type: Number,
+    required: true,
+  }
+}
 const ProjectSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -30,7 +50,12 @@ const ProjectSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  sponsorship: {
+    enabled: Boolean,
+    rejected: RejectStatus,
+  },
   steem_account: SteemAccount,
+  sponsors: []
 });
 
 export interface ProjectSchemaDoc extends mongoose.Document {

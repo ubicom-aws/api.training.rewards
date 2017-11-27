@@ -117,7 +117,7 @@ function get(req, res) {
     return res.json(req.user);
 }
 
-function getGithubProjects(user, callback) {
+function getGithubRepos(user, callback) {
     var result = new Array();
 
     request.get('https://api.github.com/user/repos')
@@ -166,10 +166,10 @@ function getGithubProjects(user, callback) {
         });
 }
 
-function getProjects(req, res, next) {
+function getRepos(req, res, next) {
     const user = req.user;
 
-    getGithubProjects(user, (result) => {
+    getGithubRepos(user, (result) => {
         if (result.length) {
             res.json(result);
         } else {
@@ -294,4 +294,4 @@ function remove(req, res, next) {
         .catch(e => next(e));
 }
 
-export default { load, ban, getBan, get, getProjects, getGithubProjects, create, update, list, remove, createToken };
+export default { load, ban, getBan, get, getRepos, getGithubRepos, create, update, list, remove, createToken };

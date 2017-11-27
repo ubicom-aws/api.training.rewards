@@ -15,8 +15,8 @@ router.route('/:userId')
   .put(validate(paramValidation.updateUser), userCtrl.update)
   .delete(userCtrl.remove);
 
-router.route('/:userId/projects')
-  .get(userCtrl.getProjects);
+router.route('/:userId/repos')
+  .get(userCtrl.getRepos);
 
 router.route('/:userId/ban')
   .get(userCtrl.getBan)

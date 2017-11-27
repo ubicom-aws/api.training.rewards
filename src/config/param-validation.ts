@@ -17,7 +17,20 @@ export default {
   },
   createSponsor: {
     body: {
-      account: Joi.string().required(),
+      sponsor: Joi.string().required(),
+    }
+  },
+  createProjectSponsor: {
+    body: {
+      sponsor: Joi.string().required(),
+    }
+  },
+  voteWithSponsors: {
+    body: {
+      author: Joi.string().required(),
+      permlink: Joi.string().required(),
+      vote: Joi.number().required(),
+      access_token: Joi.string().required(),
     }
   },
   createProject: {

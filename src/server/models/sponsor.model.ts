@@ -21,6 +21,8 @@ const SponsorSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  opted_out: Boolean,
+  is_witness: Boolean,
 });
 
 export interface SponsorSchemaDoc extends mongoose.Document {
@@ -48,7 +50,7 @@ SponsorSchema.statics = {
     return this.find({
       vesting_shares: {
         '$gt': 0
-      }
+      },
     })
       .sort({ vesting_shares: -1 })
       .exec();
