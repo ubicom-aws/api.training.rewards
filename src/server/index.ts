@@ -17,10 +17,9 @@ Promise = require('bluebird'); // eslint-disable-line no-global-assign
 (mongoose as any).Promise = Promise;
 
 // connect to mongo db
-const mongoUri = config.mongo.host;
-mongoose.connect(mongoUri, { server: { socketOptions: { keepAlive: 1 } } });
+mongoose.connect(config.mongo, { server: { socketOptions: { keepAlive: 1 } } });
 mongoose.connection.on('error', () => {
-  throw new Error(`unable to connect to database: ${mongoUri}`);
+  throw new Error(`unable to connect to database`);
 });
 
 // print mongoose logs in dev env
@@ -33,21 +32,20 @@ if (config.mongooseDebug) {
 // module.parent check is required to support mocha watch
 // src: https://github.com/mochajs/mocha/issues/1912
 if (!module.parent) {
-  // listen on port config.port
-
-  if (config.env === 'production') {
+  const port = config.server.port;
+  if (config.server.cert && config.server.key) {
     const options = {
-      cert: fs.readFileSync('/etc/letsencrypt/live/api.utopian.io/fullchain.pem'),
-      key: fs.readFileSync('/etc/letsencrypt/live/api.utopian.io/privkey.pem')
+      cert: fs.readFileSync(config.server.cert),
+      key: fs.readFileSync(config.server.key)
     };
 
-    https.createServer(options, app).listen(config.port, () => {
-      console.info(`server started on port ${config.port} (${config.env})`); // eslint-disable-line no-console
+    https.createServer(options, app).listen(port, () => {
+      console.info(`server started on port ${port} (${config.env})`);
     });
 
   } else {
-    app.listen(config.port, () => {
-      console.info(`server started on port ${config.port} (${config.env})`); // eslint-disable-line no-console
+    app.listen(config.server.port, () => {
+      console.info(`server started on port ${port} (${config.env})`);
     });
   }
 }

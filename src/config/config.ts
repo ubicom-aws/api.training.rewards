@@ -6,50 +6,60 @@ require('dotenv').config();
 // define validation for all the env vars
 const envVarsSchema = Joi.object({
   NODE_ENV: Joi.string()
-    .allow(['development', 'production', 'test', 'provision'])
-    .default('development'),
-  PORT: Joi.number()
-    .when('NODE_ENV', {
-      is: Joi.string().equal('development'),
-      then: Joi.number().default(4040),
-      otherwise: Joi.number().default(443)
-    }),
+      .allow(['development', 'production', 'test', 'provision'])
+      .default('development'),
+  SERVER_PORT: Joi.number().default(4040),
+  SERVER_SSL_CERT: Joi.string().allow('').default(''),
+  SERVER_SSL_KEY: Joi.string().allow('').default(''),
   MONGOOSE_DEBUG: Joi.boolean()
-    .when('NODE_ENV', {
-      is: Joi.string().equal('development'),
-      then: Joi.boolean().default(true),
-      otherwise: Joi.boolean().default(false)
-    }),
+      .when('NODE_ENV', {
+        is: Joi.string().equal('development'),
+        then: Joi.boolean().default(true),
+        otherwise: Joi.boolean().default(false)
+      }),
   STEEM_NODE: Joi.string().default('https://api.steemit.com'),
   MONGO_HOST: Joi.string().required()
-    .description('Mongo DB host url'),
-  MONGO_PORT: Joi.number()
-    .default(27017),
+      .description('Mongo DB host url'),
   UTOPIAN_GITHUB_SECRET: Joi.string().required(),
   UTOPIAN_GITHUB_CLIENT_ID: Joi.string().required(),
   UTOPIAN_GITHUB_REDIRECT_URL: Joi.string().required(),
   UTOPIAN_STEEMCONNECT_SECRET: Joi.string().required(),
 }).unknown()
-  .required();
+    .required();
 
 const { error, value: envVars } = Joi.validate(process.env, envVarsSchema);
 if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
 
-const config = {
+interface Server {
+  port: number;
+  cert?: string;
+  key?: string;
+}
+
+interface Config {
+  env: string;
+  steemNode: string;
+  mongooseDebug: boolean;
+  mongo: string;
+  server: Server;
+}
+
+const config: Config = {
   env: envVars.NODE_ENV,
-  port: envVars.PORT,
   steemNode: envVars.STEEM_NODE,
   mongooseDebug: envVars.MONGOOSE_DEBUG,
-  mongo: {
-    host: envVars.MONGO_HOST,
-    port: envVars.MONGO_PORT
-  },
   credentials: {
-      githubSecret: envVars.UTOPIAN_GITHUB_SECRET,
-      githubClientId: envVars.UTOPIAN_GITHUB_CLIENT_ID,
-      steemConnectSecret: envVars.UTOPIAN_STEEMCONNECT_SECRET,
+    githubSecret: envVars.UTOPIAN_GITHUB_SECRET,
+    githubClientId: envVars.UTOPIAN_GITHUB_CLIENT_ID,
+    steemConnectSecret: envVars.UTOPIAN_STEEMCONNECT_SECRET,
+  },
+  mongo: envVars.MONGO_HOST,
+  server: {
+    port: envVars.SERVER_PORT,
+    cert: envVars.SERVER_SSL_CERT,
+    key: envVars.SERVER_SSL_KEY
   }
 };
 

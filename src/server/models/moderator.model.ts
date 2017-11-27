@@ -17,6 +17,14 @@ const ModeratorSchema = new mongoose.Schema({
     type: Boolean,
     required: false,
   },
+  referrer: {
+    type: String,
+    required: false
+  },
+  apprentice: {
+    type: Boolean,
+    required: false,
+  },
   total_paid_rewards: Number,
   should_receive_rewards: Number,
   total_moderated: Number,

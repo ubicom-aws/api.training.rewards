@@ -75,23 +75,25 @@ function createToken(req, res, next) {
         });
 }
 /**
+<<<<<<< HEAD
  * Ban user
  * @property {string} req.body.username - The username of user.
  * @property {string} req.body.banned - Banning Status of user
  * @returns {User}
  **/
 function ban(req, res, next) {
-    console.log("=> ban() ");
-    const user = req.user;
-    // console.log("-> req.user ", req.user);
-    console.log("-> req.body ", req.body);
-    user.banned = req.body.banned;
-    user.bannedBy = req.body.bannedBy;
-    user.banReason = req.body.banReason;
-    user.bannedUntil = req.body.bannedUntil;
-    user.save()
-        .then(savedUser => res.json(savedUser))
-        .catch(e => next(e));
+  console.log("=> ban() ");
+  const user = req.user;
+  // console.log("-> req.user ", req.user);
+  console.log("-> req.body ", req.body);
+  user.banned = req.body.banned;
+  user.bannedBy = req.body.bannedBy;
+  user.banReason = req.body.banReason;
+  user.bannedUntil = req.body.bannedUntil;
+
+  user.save()
+      .then(savedUser => res.json(savedUser))
+      .catch(e => next(e));
 }
 
 function getBan(req, res, next) {
@@ -119,6 +121,9 @@ function get(req, res) {
 
 function getGithubRepos(user, callback) {
     var result = new Array();
+    if (!(user.github && user.github.token)) {
+        return res.json(result);
+    }
 
     request.get('https://api.github.com/user/repos')
         .query({ access_token: user.github.token })
@@ -190,7 +195,7 @@ function create(req, res, next) {
 
     const { account, code, state, scopeVersion } = req.body;
 
-    if (code && state) {
+    if (code && state && (code !== "-") && (state !== "-")) {
         request.post('https://github.com/login/oauth/access_token')
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json')
@@ -251,6 +256,16 @@ function create(req, res, next) {
                 }
             })
             .catch(e => res.status(500))
+    } else {
+      const newUser = new User({
+        account,
+        github: {
+            scopeVersion: 0
+        }
+    });
+      newUser.save()
+        .then(savedUser => res.json(savedUser))
+        .catch(e => next(e));
     }
 }
 
