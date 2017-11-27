@@ -122,7 +122,7 @@ function get(req, res) {
 function getGithubRepos(user, callback) {
     var result = new Array();
     if (!(user.github && user.github.token)) {
-        return res.json(result);
+        return callback(result);
     }
 
     request.get('https://api.github.com/user/repos')

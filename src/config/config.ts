@@ -44,6 +44,7 @@ interface Config {
   mongooseDebug: boolean;
   mongo: string;
   server: Server;
+  credentials: any;
 }
 
 const config: Config = {
