@@ -48,7 +48,7 @@ function create(req, res, next) {
         }
       } catch (e) {
         if (!(e instanceof APIError && e.status === HttpStatus.NOT_FOUND)) {
-          return res.status(500);
+          return next(e);
         }
       }
 
