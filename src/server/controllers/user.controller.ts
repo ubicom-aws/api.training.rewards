@@ -74,14 +74,14 @@ function createToken(req, res, next) {
             }
         });
 }
-/** 
+/**
 * Ban user
 * @property {string} req.body.username - The username of user.
 * @property {string} req.body.banned - Banning Status of user
 * @returns {User}
 **/
 function ban(req, res, next) {
-  console.log("=> ban() "); 
+  console.log("=> ban() ");
   const user = req.user;
   // console.log("-> req.user ", req.user);
   console.log("-> req.body ", req.body);
@@ -121,6 +121,9 @@ function get(req, res) {
 function getProjects(req, res, next) {
     const user = req.user;
     var result = new Array();
+    if (!(user.github && user.github.token)) {
+        return res.json(result);
+    }
 
     request.get('https://api.github.com/user/repos')
         .query({ access_token: user.github.token })
