@@ -121,7 +121,7 @@ function get(req, res) {
 
 function getGithubRepos(user, callback) {
     var result = new Array();
-    if (!(user.github && user.github.token)) {
+    if (!user || !user.github || !user.github.token) {
         return callback(result);
     }
 
@@ -173,6 +173,10 @@ function getGithubRepos(user, callback) {
 
 function getRepos(req, res, next) {
     const user = req.user;
+
+    if (!user) {
+        res.json([]);
+    }
 
     getGithubRepos(user, (result) => {
         if (result.length) {
