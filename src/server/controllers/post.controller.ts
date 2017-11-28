@@ -84,7 +84,7 @@ function update(req, res, next) {
             post.moderator = moderator;
           }
 
-          if (reviewed) {
+          if (reviewed === true) {
             post.reviewed = true;
             post.pending = false;
             post.flagged = false;
@@ -169,13 +169,13 @@ function update(req, res, next) {
 
           } else {
 
-            if (flagged) {
+            if (flagged === true) {
               post.flagged = true;
               post.reviewed = false;
               post.pending = false;
             }
 
-            if (pending) {
+            if (pending === true) {
               post.pending = true;
               post.reviewed = false;
               post.flagged = false;
@@ -190,7 +190,7 @@ function update(req, res, next) {
             post.save()
               .then(savedPost => res.json(savedPost))
               .catch(e => {
-                console.log("ERROR UPDATING POST", e);
+                res.status(500).json(e);
                 next(e);
               });
           }
