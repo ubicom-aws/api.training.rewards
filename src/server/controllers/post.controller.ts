@@ -333,12 +333,7 @@ function remove(req, res, next) {
 }
 
 function getBoolean(val?: string|boolean): boolean {
-  if (val === null || val === undefined) {
-    return false;
-  } else if (typeof(val) === 'string') {
-    return val === 'true';
-  }
-  return val;
+  return val === true || val === 'true';
 }
 
 export default { get, create, update, list, listByIssue, remove };
