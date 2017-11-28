@@ -1,3 +1,5 @@
+import * as HttpStatus from 'http-status';
+import APIError from '../helpers/APIError';
 import * as request from 'superagent';
 import Post from '../models/post.model';
 import User from '../models/user.model';
@@ -17,7 +19,7 @@ function create(req, res, next) {
   let attempts = 0;
 
   const doCreate = () => {
-    steemAPI.getContent(author, permlink, (err, post) => {
+    steemAPI.getContent(author, permlink, async (err, post) => {
       if (err || !author || !permlink) {
         if (++attempts > 10) {
           console.log('ERROR GETTING CONTENT', err);
@@ -38,6 +40,17 @@ function create(req, res, next) {
         reviewed: false,
         json_metadata: parsedJson,
       });
+
+      try {
+        const dbPost = await Post.get(author, permlink);
+        if (dbPost) {
+          return res.json(dbPost);
+        }
+      } catch (e) {
+        if (!(e instanceof APIError && e.status === HttpStatus.NOT_FOUND)) {
+          return next(e);
+        }
+      }
 
       newPost.save()
           .then(savedPost => res.json(savedPost))
