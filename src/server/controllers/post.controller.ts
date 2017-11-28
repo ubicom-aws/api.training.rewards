@@ -66,9 +66,9 @@ function create(req, res, next) {
 async function update(req, res, next) {
   const author = req.params.author;
   const permlink = req.params.permlink;
-  const flagged = req.body.flagged === 'true';
-  const pending = req.body.pending === 'true';
-  const reviewed = req.body.reviewed === 'true';
+  const flagged = getBoolean(req.body.flagged);
+  const pending = getBoolean(req.body.pending);
+  const reviewed = getBoolean(req.body.reviewed);
   const moderator = req.body.moderator || null;
 
   try {
@@ -108,29 +108,31 @@ async function update(req, res, next) {
       post.pending = false;
       post.flagged = false;
 
-      try {
-        const user = await User.get(post.author);
-        if (user.github && user.github.account && post.json_metadata.type === 'bug-hunting') {
-          const resGithub = await request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
-              .set('Content-Type', 'application/json')
-              .set('Accept', 'application/json')
-              .set('Authorization', `token ${user.github.token}`)
-              .send({
-                title: post.title,
-                body: post.body,
-              });
-          const issue = resGithub.body;
-          const { html_url, number, id, title } = issue;
+      if (post.json_metadata.type === 'bug-hunting') {
+        try {
+          const user = await User.get(post.author);
+          if (user.github && user.github.account) {
+            const resGithub = await request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
+                .set('Content-Type', 'application/json')
+                .set('Accept', 'application/json')
+                .set('Authorization', `token ${user.github.token}`)
+                .send({
+                  title: post.title,
+                  body: post.body,
+                });
+            const issue = resGithub.body;
+            const { html_url, number, id, title } = issue;
 
-          post.json_metadata.issue = {
-            url: html_url,
-            number,
-            id,
-            title,
-          };
+            post.json_metadata.issue = {
+              url: html_url,
+              number,
+              id,
+              title,
+            };
+          }
+        } catch (e) {
+          console.log("ERROR REVIEWING GITHUB", e);
         }
-      } catch (e) {
-        console.log("ERROR REVIEWING GITHUB", e);
       }
     } else if (flagged) {
       post.flagged = true;
@@ -328,6 +330,15 @@ function remove(req, res, next) {
   post.remove()
     .then(deletedPost => res.json(deletedPost))
     .catch(e => next(e));
+}
+
+function getBoolean(val?: string|boolean): boolean {
+  if (val === null || val === undefined) {
+    return false;
+  } else if (typeof(val) === 'string') {
+    return val === 'true';
+  }
+  return val;
 }
 
 export default { get, create, update, list, listByIssue, remove };
