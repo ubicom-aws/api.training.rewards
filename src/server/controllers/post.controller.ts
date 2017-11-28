@@ -7,10 +7,10 @@ import steemAPI from '../steemAPI';
 
 function get(req, res, next) {
   Post.get(req.params.author, req.params.permlink)
-      .then((post) => {
-        res.json(post);
-      })
-      .catch(e => next(e));
+    .then((post) => {
+      res.json(post);
+    })
+    .catch(e => next(e));
 }
 
 function create(req, res, next) {
@@ -27,7 +27,7 @@ function create(req, res, next) {
         }
         setTimeout(() => {
           doCreate();
-        }, 1500);
+        }, attempts * 1000);
         return;
       }
       // hard fix for edge cases where json_metadata is empty
@@ -63,161 +63,101 @@ function create(req, res, next) {
   doCreate();
 }
 
-function update(req, res, next) {
-  const author = req.body.author;
-  const permlink = req.body.permlink;
-  const flagged = req.body.flagged || false;
-  const pending = req.body.pending || false;
-  const reviewed = req.body.reviewed || false;
+async function update(req, res, next) {
+  const author = req.params.author;
+  const permlink = req.params.permlink;
+  const flagged = req.body.flagged === 'true';
+  const pending = req.body.pending === 'true';
+  const reviewed = req.body.reviewed === 'true';
   const moderator = req.body.moderator || null;
 
-  Post.get(req.params.author, req.params.permlink)
-      .then((post) => {
-        steemAPI.getContent(author, permlink, (err, updatedPost) => {
-          if (!err) {
-            updatedPost.json_metadata = updatedPost.json_metadata && updatedPost.json_metadata !== '' ?
-                JSON.parse(updatedPost.json_metadata) :
-                {};
-
-            // @UTOPIAN @TODO bad patches. Needs to have a specific place where the put the utopian data so it does not get overwritten
-            if (!updatedPost.json_metadata.type && post.json_metadata.type) {
-              updatedPost.json_metadata.type = post.json_metadata.type;
-            }
-            if (updatedPost.json_metadata.app !== 'utopian/1.0.0') updatedPost.json_metadata.app = 'utopian/1.0.0';
-            if (updatedPost.json_metadata.community !== 'utopian') updatedPost.json_metadata.community = 'utopian';
-            // making sure the repository does not get deleted
-            if (!updatedPost.json_metadata.repository) updatedPost.json_metadata.repository = post.json_metadata.repository;
-            if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
-            if (!updatedPost.json_metadata.pullRequests && post.json_metadata.pullRequests) updatedPost.json_metadata.pullRequests = post.json_metadata.pullRequests;
-            if (!updatedPost.json_metadata.issue && post.json_metadata.issue) updatedPost.json_metadata.issue = post.json_metadata.issue;
-
-            updatedPost.json_metadata.type = updatedPost.json_metadata.type.replace("announcement-", "task-");
-
-            if (moderator) {
-              post.moderator = moderator;
-            }
-
-            if (reviewed === true) {
-              post.reviewed = true;
-              post.pending = false;
-              post.flagged = false;
-
-              User
-                  .get(post.author)
-                  .then(user => {
-                    if (user && user.github && user.github.account) {
-                      if (post.json_metadata.type === 'bug-hunting') {
-                        //if (post.json_metadata.type === 'bug-hunting' || post.json_metadata.type === 'ideas') {
-                        request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
-                            .set('Content-Type', 'application/json')
-                            .set('Accept', 'application/json')
-                            .set('Authorization', `token ${user.github.token}`)
-                            .send({
-                              title: post.title,
-                              body: post.body,
-                            })
-                            .then(resGithub => {
-                              const issue = resGithub.body;
-                              const { html_url, number, id, title } = issue;
-
-                              post.json_metadata.issue = {
-                                url: html_url,
-                                number,
-                                id,
-                                title,
-                              };
-
-                              post.save()
-                                  .then(savedPost => res.json(savedPost))
-                                  .catch(e => {
-                                    console.log("ERROR REVIEWING POST", e);
-                                    next(e);
-                                  });
-                            })
-                            .catch(e => {
-                              console.log("ERROR GITHUB");
-                              post.save()
-                                  .then(savedPost => res.json(savedPost))
-                                  .catch(e => {
-                                    console.log("ERROR REVIEWING POST", e);
-                                    next(e);
-                                  });
-                            })
-                      } else {
-                        post.save()
-                            .then(savedPost => res.json(savedPost))
-                            .catch(e => {
-                              console.log("ERROR REVIEWING POST", e);
-                              next(e);
-                            });
-                      }
-                      /*
-                       if (post.json_metadata.type === 'development' || post.json_metadata.type === 'documentation') {
-                       if (post.json_metadata.pullRequests && post.json_metadata.pullRequests.length > 0) {
-                       post.json_metadata.pullRequests.forEach((pr, index) => {
-                       setTimeout(function() {
-                       request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues/${pr.number}/comments`)
-                       .set('Content-Type', 'application/json')
-                       .set('Accept', 'application/json')
-                       .set('Authorization', `token ${user.github.token}`)
-                       .send({
-                       body: post.body,
-                       })
-                       .catch(e => console.log(e));
-                       }, index * 3000);
-                       });
-                       }
-                       } */
-                    } else {
-                      post.save()
-                          .then(savedPost => res.json(savedPost))
-                          .catch(e => {
-                            console.log("ERROR REVIEWING POST", e);
-                            next(e);
-                          });
-                    }
-                  })
-                  .catch(e => {
-                    // no user found
-                    post.save()
-                        .then(savedPost => res.json(savedPost))
-                        .catch(e => {
-                          console.log("ERROR REVIEWING POST", e);
-                          next(e);
-                        });
-                  });
-
-            } else {
-
-              if (flagged === true) {
-                post.flagged = true;
-                post.reviewed = false;
-                post.pending = false;
-              }
-
-              if (pending === true) {
-                post.pending = true;
-                post.reviewed = false;
-                post.flagged = false;
-              }
-
-              for (var prop in updatedPost) {
-                if (updatedPost[prop] !== post[prop]) {
-                  post[prop] = updatedPost[prop];
-                }
-              }
-
-              post.save()
-                  .then(savedPost => res.json(savedPost))
-                  .catch(e => {
-                    res.status(500).json(e);
-                    next(e);
-                  });
-            }
-          }
-        });
+  try {
+    const post = await Post.get(author, permlink);
+    const updatedPost: any = await new Promise((resolve, reject) => {
+      steemAPI.getContent(author, permlink, (e, p) => {
+        if (e) {
+          return reject(e);
+        }
+        resolve(p);
       })
-      .catch(e => next(e));
+    });
+
+    updatedPost.json_metadata = updatedPost.json_metadata && updatedPost.json_metadata !== '' ?
+                                  JSON.parse(updatedPost.json_metadata) : {};
+
+    // @UTOPIAN @TODO bad patches. Needs to have a specific place where the put the utopian data so it does not get overwritten
+    if (!updatedPost.json_metadata.type && post.json_metadata.type) {
+      updatedPost.json_metadata.type = post.json_metadata.type;
+    }
+    if (updatedPost.json_metadata.app !== 'utopian/1.0.0') updatedPost.json_metadata.app = 'utopian/1.0.0';
+    if (updatedPost.json_metadata.community !== 'utopian') updatedPost.json_metadata.community = 'utopian';
+    // making sure the repository does not get deleted
+    if (!updatedPost.json_metadata.repository) updatedPost.json_metadata.repository = post.json_metadata.repository;
+    if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
+    if (!updatedPost.json_metadata.pullRequests && post.json_metadata.pullRequests) updatedPost.json_metadata.pullRequests = post.json_metadata.pullRequests;
+    if (!updatedPost.json_metadata.issue && post.json_metadata.issue) updatedPost.json_metadata.issue = post.json_metadata.issue;
+
+    updatedPost.json_metadata.type = updatedPost.json_metadata.type.replace("announcement-", "task-");
+
+    if (moderator) {
+      post.moderator = moderator;
+    }
+
+    if (reviewed) {
+      post.reviewed = true;
+      post.pending = false;
+      post.flagged = false;
+
+      try {
+        const user = await User.get(post.author);
+        if (user.github && user.github.account && post.json_metadata.type === 'bug-hunting') {
+          const resGithub = await request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
+              .set('Content-Type', 'application/json')
+              .set('Accept', 'application/json')
+              .set('Authorization', `token ${user.github.token}`)
+              .send({
+                title: post.title,
+                body: post.body,
+              });
+          const issue = resGithub.body;
+          const { html_url, number, id, title } = issue;
+
+          post.json_metadata.issue = {
+            url: html_url,
+            number,
+            id,
+            title,
+          };
+        }
+      } catch (e) {
+        console.log("ERROR REVIEWING GITHUB", e);
+      }
+    } else if (flagged) {
+      post.flagged = true;
+      post.reviewed = false;
+      post.pending = false;
+    } else if (pending) {
+      post.pending = true;
+      post.reviewed = false;
+      post.flagged = false;
+    }
+
+    for (var prop in updatedPost) {
+      if (updatedPost[prop] !== post[prop]) {
+        post[prop] = updatedPost[prop];
+      }
+    }
+
+    try {
+      const savedPost = await post.save();
+      res.json(savedPost);
+    } catch (e) {
+      console.log("ERROR REVIEWING POST", e);
+      next(e);
+    }
+  } catch (e) {
+    next(e);
+  }
 }
 
 function listByIssue (req, res, next) {
@@ -232,10 +172,10 @@ function listByIssue (req, res, next) {
   };
 
   Post.list({ limit: 1, skip: 0, query })
-      .then(post => res.json({
-        ...post
-      }))
-      .catch(e => next(e));
+    .then(post => res.json({
+      ...post
+    }))
+    .catch(e => next(e));
 }
 
 function list(req, res, next) {
@@ -280,13 +220,13 @@ function list(req, res, next) {
       ...query,
       $text: {
         $search: bySimilarity
-      }
-    },
-        {
-          score: {
-            $meta: "textScore"
-          }
         }
+      },
+      {
+        score: {
+          $meta: "textScore"
+        }
+      }
   }
 
   if (sortBy === 'votes') {
@@ -323,9 +263,9 @@ function list(req, res, next) {
     query = {
       ...query,
       cashout_time:
-          {
-            $gt: cashoutTime
-          },
+        {
+          $gt: cashoutTime
+        },
     };
   }
 
@@ -333,9 +273,9 @@ function list(req, res, next) {
     query = {
       ...query,
       cashout_time:
-          {
-            $eq: cashoutTime
-          },
+        {
+          $eq: cashoutTime
+        },
     };
   }
 
@@ -371,23 +311,23 @@ function list(req, res, next) {
   }
 
   Post.countAll({ query })
-      .then(count => {
-        Post.list({ limit, skip, query, sort, select })
-            .then(posts => res.json({
-              total: count,
-              results: posts
-            }))
-            .catch(e => next(e));
+    .then(count => {
+      Post.list({ limit, skip, query, sort, select })
+        .then(posts => res.json({
+          total: count,
+          results: posts
+        }))
+        .catch(e => next(e));
 
-      })
-      .catch(e => next(e));
+    })
+    .catch(e => next(e));
 }
 
 function remove(req, res, next) {
   const post = req.post;
   post.remove()
-      .then(deletedPost => res.json(deletedPost))
-      .catch(e => next(e));
+    .then(deletedPost => res.json(deletedPost))
+    .catch(e => next(e));
 }
 
 export default { get, create, update, list, listByIssue, remove };
