@@ -21,7 +21,7 @@ conn.once('open', function ()
   const secret = process.env.CLIENT_SECRET;
   const forced = process.env.FORCED === 'true' || false;
   const now = new Date();
-  const MAX_VOTE_EVER = 27;
+  const MAX_VOTE_EVER = 30;
   const MAX_USABLE_POOL = 10000;
   const DIFFICULTY_MULTIPLIER=1;
 
@@ -265,7 +265,7 @@ conn.once('open', function ()
           const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
           let commentBody = '';
 
-          commentBody = `### Hey @${post.author} I am @${botAccount}. I have just upvoted you at ${finalVote}% Power!\n`;
+          commentBody = `### Hey @${post.author} I am @${botAccount}. I have just upvoted you!\n`;
 
           if (achievements.length > 0) {
             commentBody += '#### Achievements\n';
@@ -274,11 +274,10 @@ conn.once('open', function ()
 
           if (finalVote <= 7) {
             commentBody += '#### Suggestions\n';
-            commentBody += `- Work on your followers to increase the votes/rewards. I follow what humans do and my vote is mainly based on that. Good luck!\n`
             commentBody += `- Contribute more often to get higher and higher rewards. I wish to see you often!\n`
-            commentBody += `- I introduced a competition factor. My vote is based also on how competitive the category used is.\n`
-            commentBody += '#### Human Curation\n';
-            commentBody += `- Do you believe you deserved more? Let a human curator know. <a href="https://discord.gg/PrzCKpq">Get in touch on Discord</a>\n`
+            commentBody += `- Work on your followers to increase the votes/rewards. I follow what humans do and my vote is mainly based on that. Good luck!\n`
+            commentBody += '#### Get Noticed!\n';
+            commentBody += `- Did you know project owners can manually vote with their own voting power or by voting power delegated to their projects? Ask the project owner to review your contributions!\n`
           }
 
           commentBody += '#### Community-Driven Witness!\n';
@@ -394,44 +393,43 @@ conn.once('open', function ()
                                 "difficulty" : 1*DIFFICULTY_MULTIPLIER,
                                 "total_vote_weight": 0,
                                 "max_vote": 10,
-                                "min_vote": 3,
-
+                                "min_vote": 2,
                               },
                               "sub-projects": {
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
-                                "min_vote": 7,
+                                "min_vote": 8,
                                 "difficulty" : 2*DIFFICULTY_MULTIPLIER
                               },
                               "development": {
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
-                                "min_vote": 7,
+                                "min_vote": 10,
                                 "difficulty" : 2*DIFFICULTY_MULTIPLIER
                               },
                               "bug-hunting": {
                                 "total_vote_weight": 0,
                                 "max_vote": 10,
-                                "min_vote": 3,
+                                "min_vote": 2,
                                 "difficulty" : 1*DIFFICULTY_MULTIPLIER
                               },
                               "translations": {
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
-                                "min_vote": 7,
+                                "min_vote": 10,
                                 "difficulty" : 1.5*DIFFICULTY_MULTIPLIER
                               },
                               "graphics": {
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
-                                "min_vote": 7,
+                                "min_vote": 10,
                                 "difficulty" : 1.5*DIFFICULTY_MULTIPLIER
 
                               },
                               "analysis": {
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
-                                "min_vote": 7,
+                                "min_vote": 8,
                                 "difficulty" : 1.8*DIFFICULTY_MULTIPLIER
                               },
                               "social": {
@@ -449,31 +447,31 @@ conn.once('open', function ()
                               "tutorials": {
                                 "total_vote_weight": 0,
                                 "max_vote": 20,
-                                "min_vote": 7,
+                                "min_vote": 8,
                                 "difficulty" : 1.55*DIFFICULTY_MULTIPLIER
                               },
                               "video-tutorials": {
                                 "total_vote_weight": 0,
                                 "max_vote": 20,
-                                "min_vote": 7,
+                                "min_vote": 8,
                                 "difficulty" : 1.65*DIFFICULTY_MULTIPLIER
                               },
                               "copywriting": {
                                 "total_vote_weight": 0,
                                 "max_vote": 15,
-                                "min_vote": 7,
+                                "min_vote": 5,
                                 "difficulty" : 1.55*DIFFICULTY_MULTIPLIER
                               },
                               "blog": {
                                 "total_vote_weight": 0,
                                 "max_vote": 10,
-                                "min_vote": 3,
+                                "min_vote": 2,
                                 "difficulty" : 1*DIFFICULTY_MULTIPLIER
                               },
                               "tasks-requests": {
                                 "total_vote_weight": 0,
                                 "max_vote": 15,
-                                "min_vote": 3,
+                                "min_vote": 5,
                                 "difficulty" : 1.1*DIFFICULTY_MULTIPLIER
                               },
                             };
@@ -548,17 +546,17 @@ conn.once('open', function ()
 
                                             // help the user grow the followers
                                             if(followers.follower_count < 500) {
-                                              finalScore = finalScore + 15;
+                                              finalScore = finalScore + 20;
                                               achievements.push('You have less than 500 followers. Just gave you a gift to help you succeed!');
                                             }
                                             if(totalGenerated > averageRewards) {
-                                              finalScore = finalScore + 15;
+                                              finalScore = finalScore + 20;
                                               achievements.push('You are generating more rewards than average for this category. Super!;)');
                                             }
                                             if (contributionsCount === 0) {
                                               // this is the first contribution of the user accepted in the Utopian feed
                                               // give the user a little gift
-                                              finalScore = finalScore + 10;
+                                              finalScore = finalScore + 15;
                                               achievements.push('This is your first accepted contribution here in Utopian. Welcome!');
                                             }
                                             // number of contributions in total
@@ -567,19 +565,19 @@ conn.once('open', function ()
 
                                               if (contributionsCount >= 15) {
                                                 // git for being productive
-                                                finalScore = finalScore + 2.5;
+                                                finalScore = finalScore + 5;
                                               }
                                               if (contributionsCount >= 40) {
                                                 // git for being productive
-                                                finalScore = finalScore + 2.5;
+                                                finalScore = finalScore + 5;
                                               }
                                               if (contributionsCount >= 60) {
                                                 // git for being productive
-                                                finalScore = finalScore + 2.5;
+                                                finalScore = finalScore + 5;
                                               }
                                               if (contributionsCount >= 120) {
                                                 // git for being productive
-                                                finalScore = finalScore + 2.5;
+                                                finalScore = finalScore + 5;
                                               }
                                               achievements.push('Seems like you contribute quite often. AMAZING!');
                                             }
