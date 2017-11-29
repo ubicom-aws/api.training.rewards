@@ -11,6 +11,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  schemaVersion: {
+    type: Number,
+    default: 0,
+  },
   github: Object,
   refresh_token: String,
   createdAt: {
@@ -20,6 +24,17 @@ const UserSchema = new mongoose.Schema({
   banned: {
     type: Number,
     default: 0,
+  },
+  details: {
+    type: Object,
+    default: {
+      createdBy: 'steem',
+      emailVerified: false,
+      confirmed: false,
+      connectedToSteem: false,
+      lastUpdate: Date.now,
+      votingForWiteness: false,
+    }
   },
   bannedBy: {
     type: String,
@@ -32,7 +47,8 @@ const UserSchema = new mongoose.Schema({
   banReason: {
     type: String,
     default: "Violation of the Utopian Rules",
-  }
+  },
+  
 });
 
 export interface UserModelListOpts {
