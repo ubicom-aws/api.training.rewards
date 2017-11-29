@@ -9,6 +9,11 @@ export default {
       state: Joi.string(),
     }
   },
+  confirmExistence: {
+    body: {
+      account: Joi.string().required(),
+    }
+  },
   createPost: {
     body: {
       author: Joi.string().required(),

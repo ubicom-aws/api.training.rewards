@@ -1,5 +1,6 @@
 import * as querystring from 'querystring';
 import * as request from 'superagent';
+import steemAPI from '../steemAPI';
 import User from '../models/user.model';
 
 
@@ -74,6 +75,8 @@ function createToken(req, res, next) {
             }
         });
 }
+
+
 /**
 <<<<<<< HEAD
  * Ban user
@@ -273,6 +276,63 @@ function create(req, res, next) {
     }
 }
 
+async function updateSchema(user, account) {
+    if (!user) return {};
+    if (!user.schemaVersion) user.schemaVersion = 0;
+    if (user.schemaVersion < 1) {
+        var details = {
+            createdBy: 'steem',
+            emailVerified: false,
+            confirmed: false,
+            lastUpdate: Date.now,
+            connectedToSteem: false,
+            votingForWitness: false,
+          }
+        await steemAPI.getAccounts([account], (err, accounts) => {
+            if (err) {
+                user.save()
+                    .then(savedUser => {})
+                    .catch(e => {});
+                return;
+            }
+            const acct = accounts[0];
+            if (acct) {
+                if (acct.recovery_account) details.createdBy = acct.recovery_account;
+                details.lastUpdate = Date.now;
+                details.confirmed = true;
+                details.connectedToSteem = true;
+                if (acct.witness_votes) { 
+                    details.votingForWitness = (acct.witness_votes.indexOf('utopian-io') != -1);
+                }
+            }
+            user.details = details;
+            user.schemaVersion = 1;
+            user.save()
+                .then(savedUser => {})
+                .catch(e => {});
+            return;
+        })
+    }
+    return {"status": "success"};
+}
+
+async function confirmExistence(req, res, next) {
+    const { account } = req.body;
+    User.get(account)
+        .then(async (user) => {
+            res.json(updateSchema(user, account));  
+        })
+        .catch(async (e) => {
+            const newUser = new User({
+                account,
+                schemaVersion: 0,
+            });
+            newUser.save()
+                .then((savedUser) => {res.json(updateSchema(savedUser, account))})
+                .catch(e => next(e));
+        })
+}
+
 /**
  * Update existing user
  * @property {string} req.body.username - The username of user.
@@ -313,4 +373,4 @@ function remove(req, res, next) {
         .catch(e => next(e));
 }
 
-export default { load, ban, getBan, get, getRepos, getGithubRepos, create, update, list, remove, createToken };
+export default { load, ban, confirmExistence, getBan, get, getRepos, getGithubRepos, create, update, list, remove, createToken };

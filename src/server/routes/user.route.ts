@@ -18,6 +18,9 @@ router.route('/:userId')
 router.route('/:userId/repos')
   .get(userCtrl.getRepos);
 
+router.route('/:userId/check')
+  .post(validate(paramValidation.confirmExistence), userCtrl.confirmExistence)
+
 router.route('/:userId/ban')
   .get(userCtrl.getBan)
   .post(validate(paramValidation.banUser), userCtrl.ban)
