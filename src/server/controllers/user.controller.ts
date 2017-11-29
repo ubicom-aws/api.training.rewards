@@ -281,7 +281,7 @@ async function updateSchema(user, account) {
     if (!user.schemaVersion) user.schemaVersion = 0;
     if (user.schemaVersion < 1) {
         var details = {
-            createdBy: 'steem',
+            recoveryAccount: 'steem',
             emailVerified: false,
             confirmed: false,
             lastUpdate: Date.now,
@@ -297,7 +297,7 @@ async function updateSchema(user, account) {
             }
             const acct = accounts[0];
             if (acct) {
-                if (acct.recovery_account) details.createdBy = acct.recovery_account;
+                if (acct.recovery_account) details.recoveryAccount = acct.recovery_account;
                 details.lastUpdate = Date.now;
                 details.confirmed = true;
                 details.connectedToSteem = true;
