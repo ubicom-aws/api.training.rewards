@@ -244,7 +244,7 @@ conn.once('open', function ()
 
     stats.bot_is_voting = true;
 
-    stats.save().then(() => {
+    stats.save().then((savedStats) => {
       scoredPosts.forEach((post, index) => {
         setTimeout(function(){
           const finalScore = post.finalScore;
@@ -310,9 +310,9 @@ conn.once('open', function ()
             ).then(() => {
               if (index + 1 === scoredPosts.length) {
 
-                stats.bot_is_voting = false;
+                savedStats.bot_is_voting = false;
 
-                stats.save().then(() => {
+                savedStats.save().then(() => {
                   conn.close();
                   process.exit();
                 });
@@ -322,9 +322,9 @@ conn.once('open', function ()
                 console.log("COMMENT SUBMITTED");
                 if (index + 1 === scoredPosts.length) {
 
-                  stats.bot_is_voting = false;
+                  savedStats.bot_is_voting = false;
 
-                  stats.save().then(() => {
+                  savedStats.save().then(() => {
                     conn.close();
                     process.exit();
                   });
