@@ -246,58 +246,59 @@ conn.once('open', function ()
 
     stats.save().then((savedStats) => {
       scoredPosts.forEach((post, index) => {
+        const finalScore = post.finalScore;
+        const category = post.category;
+        const assignedWeight = (finalScore / categories_pool[category].total_vote_weight * 100) * categories_pool[category].assigned_pool / 100;
+        const calculatedVote = Math.round(assignedWeight / categories_pool[category].assigned_pool * 100);
+        let finalVote = calculatedVote;
+
+        if (calculatedVote >= categories_pool[category].max_vote) {
+          finalVote = categories_pool[category].max_vote;
+        }
+
+        if (calculatedVote <= categories_pool[category].min_vote) {
+          finalVote = categories_pool[category].min_vote;
+        }
+
+        const achievements = post.achievements;
+        const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
+        let commentBody = '';
+
+        commentBody = `### Hey @${post.author} I am @${botAccount}. I have just upvoted you!\n`;
+
+        if (achievements.length > 0) {
+          commentBody += '#### Achievements\n';
+          achievements.forEach(achievement => commentBody += `- ${achievement}\n`);
+        }
+
+        if (finalVote <= 7) {
+          commentBody += '#### Suggestions\n';
+          commentBody += `- Contribute more often to get higher and higher rewards. I wish to see you often!\n`
+          commentBody += `- Work on your followers to increase the votes/rewards. I follow what humans do and my vote is mainly based on that. Good luck!\n`
+          commentBody += '#### Get Noticed!\n';
+          commentBody += `- Did you know project owners can manually vote with their own voting power or by voting power delegated to their projects? Ask the project owner to review your contributions!\n`
+        }
+
+        commentBody += '#### Community-Driven Witness!\n';
+
+        commentBody += `I am the first and only Steem Community-Driven Witness. <a href="https://discord.gg/zTrEMqB">Participate on Discord</a>. Lets GROW TOGETHER!\n`
+        commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for my Witness With SteemConnect</a>\n`
+        commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-proxy?proxy=utopian-io&approve=1">Proxy vote to Utopian Witness with SteemConnect</a>\n`
+        commentBody += `- Or vote/proxy on <a href="https://steemit.com/~witnesses">Steemit Witnesses</a>\n`
+        commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
+        commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
+
+        console.log('--------------------------------------\n');
+        console.log('https://utopian.io/utopian-io/@'+post.author+'/'+post.permlink);
+        console.log('VOTE:' + finalVote + '\n');
+        console.log('CATEGORY', category);
+      //  console.log(commentBody);
+        console.log('--------------------------------------\n');
         setTimeout(function(){
-          const finalScore = post.finalScore;
-          const category = post.category;
-          const assignedWeight = (finalScore / categories_pool[category].total_vote_weight * 100) * categories_pool[category].assigned_pool / 100;
-          const calculatedVote = Math.round(assignedWeight / categories_pool[category].assigned_pool * 100);
-          let finalVote = calculatedVote;
 
-          if (calculatedVote >= categories_pool[category].max_vote) {
-            finalVote = categories_pool[category].max_vote;
-          }
-
-          if (calculatedVote <= categories_pool[category].min_vote) {
-            finalVote = categories_pool[category].min_vote;
-          }
-
-          const achievements = post.achievements;
-          const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
-          let commentBody = '';
-
-          commentBody = `### Hey @${post.author} I am @${botAccount}. I have just upvoted you!\n`;
-
-          if (achievements.length > 0) {
-            commentBody += '#### Achievements\n';
-            achievements.forEach(achievement => commentBody += `- ${achievement}\n`);
-          }
-
-          if (finalVote <= 7) {
-            commentBody += '#### Suggestions\n';
-            commentBody += `- Contribute more often to get higher and higher rewards. I wish to see you often!\n`
-            commentBody += `- Work on your followers to increase the votes/rewards. I follow what humans do and my vote is mainly based on that. Good luck!\n`
-            commentBody += '#### Get Noticed!\n';
-            commentBody += `- Did you know project owners can manually vote with their own voting power or by voting power delegated to their projects? Ask the project owner to review your contributions!\n`
-          }
-
-          commentBody += '#### Community-Driven Witness!\n';
-
-          commentBody += `I am the first and only Steem Community-Driven Witness. <a href="https://discord.gg/zTrEMqB">Participate on Discord</a>. Lets GROW TOGETHER!\n`
-          commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for my Witness With SteemConnect</a>\n`
-          commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-proxy?proxy=utopian-io&approve=1">Proxy vote to Utopian Witness with SteemConnect</a>\n`
-          commentBody += `- Or vote/proxy on <a href="https://steemit.com/~witnesses">Steemit Witnesses</a>\n`
-          commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
-          commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
-
-          console.log('--------------------------------------\n');
-          console.log('https://utopian.io/utopian-io/@'+post.author+'/'+post.permlink);
-          console.log('VOTE:' + finalVote + '\n');
-          console.log('CATEGORY', category);
-          console.log(commentBody);
-          console.log('--------------------------------------\n');
 
           let i = 0;
-          const comment = () => {
+          /*const comment = () => {
             SteemConnect.comment(
                 post.author,
                 post.permlink,
@@ -343,7 +344,7 @@ conn.once('open', function ()
               console.log("VOTED");
               comment();
             }
-          });
+          });*/
 
         }, index * 30000);
       })
@@ -352,7 +353,7 @@ conn.once('open', function ()
 
   Stats.get()
       .then(stats => {
-        if (stats.bot_is_voting === true) {
+        /*if (stats.bot_is_voting === true) {
           console.log("I AM ALREADY VOTING. DON'T GET ME STRESSED!");
           conn.close();
           process.exit();
@@ -368,7 +369,7 @@ conn.once('open', function ()
               }
               if (res.body.access_token) {
                 SteemConnect.setAccessToken(res.body.access_token);
-              }
+              }*/
               checkStatus(function(){
                 const {categories} = stats;
                 Post
@@ -535,8 +536,8 @@ conn.once('open', function ()
                                               // fallback mechanism for big accounts never voting at their 100%. Using instead the impact on their vote on the amount of rewards
                                               totalWeightPercentage = totalWeightPercentage + (upvotePercentageOnTotal > upVote.percent ? upvotePercentageOnTotal : upVote.percent);
                                             });
-
-                                            const averageWeightPercentage = totalWeightPercentage / upVotes.length / 100;
+                                            const upVotesLength=upVotes.length==0?1:upVotes.length;
+                                            const averageWeightPercentage = totalWeightPercentage / upVotesLength / 100;
                                             const rankConsensus = averageWeightPercentage * upVotes.length / 100;
                                             let finalScore = rankConsensus;
 
@@ -609,7 +610,7 @@ conn.once('open', function ()
                               });
                             });
                           });
-                    });
+                //    });
               });
             });
       });
