@@ -1,14 +1,11 @@
 import Project from '../models/project.model';
 import User from '../models/user.model';
 import userCtrl from '../controllers/user.controller';
-//import {Client, PrivateKey} from 'dsteem'
-import { key_utils } from 'steem/lib/auth/ecc';
-//import config from '../../config/config';
+import Sponsor from '../models/sponsor.model';
 import * as R from 'ramda';
 const steemconnect = require('sc2-sdk');
 import steemAPI from '../steemAPI';
 import * as request from 'superagent';
-//const dSteemClient = new Client(config.steemNode);
 
 function get(req, res, next) {
     const { platform, externalId } = req.params;
@@ -32,6 +29,43 @@ function get(req, res, next) {
         .catch(e => next(e));
 }
 
+
+function createBeneficiarySponsor (account, project, callback) {
+    Sponsor.get(account.name).then((beneficiarySponsor) => {
+        if (!beneficiarySponsor) {
+            const newBeneficiarySponsor = new Sponsor({
+                account: account.name,
+                vesting_shares: 0,
+                percentage_total_vesting_shares: 0,
+                total_paid_rewards: 0,
+                should_receive_rewards: 0,
+                opted_out: false,
+                is_witness: false,
+                projects: [{
+                    external_id: project.external_id,
+                    platform: project.platform,
+                    steem_account: project.steem_account.account,
+                }],
+            });
+            newBeneficiarySponsor.save()
+                .then(() => callback(true))
+                .catch(e => callback(false));
+        } else {
+            beneficiarySponsor.projects = [
+                ...beneficiarySponsor.projects.filter(projectDelegating => projectDelegating.steem_account.account === project.steem_account.account),
+                {
+                    external_id: project.external_id,
+                    platform: project.platform,
+                    steem_account: project.steem_account.account,
+                }
+            ];
+            beneficiarySponsor.save()
+                .then(() => callback(true))
+                .catch(e => callback(false));
+        }
+    });
+}
+
 function createSponsor(req, res, next) {
     const { platform, externalId } = req.params;
     const external_id = parseInt(externalId);
@@ -46,23 +80,39 @@ function createSponsor(req, res, next) {
                     if(!isSponsor) {
                         const newSponsor = {
                             account: account.name,
-                            vesting_shares: 0,
                         };
-
                         project.sponsors = [
                             ...project.sponsors,
                             newSponsor
                         ];
                         project.save()
-                            .then(savedProject => res.json(newSponsor))
+                            .then(savedProject => {
+                                createBeneficiarySponsor(account, project, (beneficiarySponsor) => {
+                                    if (beneficiarySponsor) {
+                                        res.status(200).json(newSponsor);
+                                    } else {
+                                        res.status(500).json({
+                                            message: 'Cannot save the sponsor. Please contact an administrator.'
+                                        });
+                                    }
+                                });
+                            })
                             .catch(e => {
                                 res.status(500).json({
-                                    message: 'Cannot save the sponsor. Please try again later.'
+                                    message: 'Cannot save the project. Please contact an administrator.'
                                 });
                                 next(e);
                             });
                     } else {
-                        res.status(200).json(isSponsor);
+                        createBeneficiarySponsor(account, project, (beneficiarySponsor) => {
+                            if (beneficiarySponsor) {
+                                res.status(200).json(isSponsor);
+                            } else {
+                                res.status(500).json({
+                                    message: 'Cannot save the sponsor. Please contact an administrator.'
+                                });
+                            }
+                        });
                     }
                 });
             } else {
@@ -97,49 +147,6 @@ function create(req, res, next) {
                             if (projects.length) {
                                 const isProjectMaintainer = R.find(R.propEq("id", external_id))(projects);
                                 if (isProjectMaintainer) {
-                                    /*
-                                     const createSuggestedPassword = () => {
-                                     const PASSWORD_LENGTH = 32;
-                                     const privateKey = key_utils.get_random_key();
-                                     return privateKey.toWif().substring(3, 3 + PASSWORD_LENGTH);
-                                     };
-
-                                     const creator = 'utopian-io';
-                                     const creatorKey = PrivateKey.fromLogin(creator, config.credentials.utopianPrivatePass, 'active');
-                                     const newAccountPassword = createSuggestedPassword();
-
-                                     const newAccountName = `${project_name}.utp`;
-
-                                     const doReg = async function() {
-                                     return new Promise(async function(resolve, reject) {
-                                     try {
-                                     await dSteemClient.broadcast.createAccount({
-                                     creator, username: newAccountName, password: newAccountPassword
-                                     }, creatorKey);
-
-                                     const project = new Project({
-                                     name: project_name,
-                                     platform,
-                                     external_id,
-                                     steem_account: {
-                                     account: newAccountName,
-                                     password: newAccountPassword,
-                                     }
-                                     });
-
-                                     const res = await project.save();
-                                     resolve(res);
-                                     } catch(err) {
-                                     reject(err);
-                                     }
-                                     });
-                                     }
-                                     return doReg().then(() => {
-                                     res.json({
-                                     project_name: newAccountName
-                                     });
-                                     }).catch((err) => res.status(500).json({error_message: err}))
-                                     */
                                     const newAccountName = `${project_name}.utp`;
                                     return Project.get(platform, external_id)
                                         .then(project => {

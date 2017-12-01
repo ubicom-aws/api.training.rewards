@@ -129,7 +129,7 @@ function getGithubRepos(user, callback) {
     }
 
     request.get('https://api.github.com/user/repos')
-        .query({ access_token: user.github.token })
+        .query({ access_token: user.github.token, per_page: 100 })
         .then(function (response) {
             if (response && response.body.length) {
                 const repos = (response.body.filter(repo => repo.owner.login === user.github.account && repo.private === false));
@@ -138,7 +138,7 @@ function getGithubRepos(user, callback) {
                 }
                 var orgs = new Array();
                 request.get('https://api.github.com/user/orgs')
-                    .query({ access_token: user.github.token })
+                    .query({ access_token: user.github.token, per_page: 100 })
                     .then(function (resp) {
                         if (resp && resp.body) {
                             const organizations = resp.body;
@@ -151,7 +151,7 @@ function getGithubRepos(user, callback) {
                             }
                             for (var j = 0; j < orgs.length; ++j) {
                                 request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
-                                    .query({ access_token: user.github.token })
+                                    .query({ access_token: user.github.token, per_page: 100 })
                                     .then(function (respo) {
                                         if (respo && respo.body) {
                                             for (var m = 0; m < respo.body.length; ++m) {
