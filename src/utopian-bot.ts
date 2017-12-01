@@ -535,8 +535,8 @@ conn.once('open', function ()
                                               // fallback mechanism for big accounts never voting at their 100%. Using instead the impact on their vote on the amount of rewards
                                               totalWeightPercentage = totalWeightPercentage + (upvotePercentageOnTotal > upVote.percent ? upvotePercentageOnTotal : upVote.percent);
                                             });
-
-                                            const averageWeightPercentage = totalWeightPercentage / upVotes.length / 100;
+                                            const upVotesLength=upVotes.length==0?1:upVotes.length;
+                                            const averageWeightPercentage = totalWeightPercentage / upVotesLength / 100;
                                             const rankConsensus = averageWeightPercentage * upVotes.length / 100;
                                             let finalScore = rankConsensus;
 
@@ -609,7 +609,7 @@ conn.once('open', function ()
                               });
                             });
                           });
-                    });
+                   });
               });
             });
       });
