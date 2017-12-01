@@ -92,6 +92,16 @@ conn.once('open', function ()
                                                                 sponsor.should_receive_rewards = waitForNextRewards;
                                                             }
 
+                                                            if (sponsor.account === 'flauwy') {
+                                                                console.log(delegationDate);
+                                                                console.log(total_paid_authors)
+                                                            }
+
+                                                            if (sponsor.account === 'jesta') {
+                                                                console.log(delegationDate);
+                                                                console.log(total_paid_authors)
+                                                            }
+
                                                             sponsor.vesting_shares = currentVestingShares;
                                                             sponsor.percentage_total_vesting_shares = percentageTotalShares;
                                                             sponsor.is_witness = isWitness;
