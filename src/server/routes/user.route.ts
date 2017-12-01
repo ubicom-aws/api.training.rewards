@@ -7,8 +7,8 @@ const router = express.Router(); // eslint-disable-line new-cap
 
 router.route('/')
   /** GET /api/users - Get list of users */
-  .get(userCtrl.list)
   .post(validate(paramValidation.createUser), userCtrl.create);
+  //.get(userCtrl.list)
 
 router.route('/:userId')
   .get(userCtrl.get)

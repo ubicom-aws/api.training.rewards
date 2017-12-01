@@ -119,7 +119,21 @@ function getBan(req, res, next) {
  * @returns {User}
  */
 function get(req, res) {
-    return res.json(req.user);
+    const user = req.user;
+    return res.json({
+        account: user.account,
+        banReason: user.banReason,
+        bannedBy: user.bannedBy,
+        bannedUntil: user.bannedUntil,
+        banned: user.banned,
+        details: user.details,
+        github:{
+            login: user.github.login,
+            account: user.github.account,
+            scopeVersion: user.github.scopeVersion,
+            avatar_url: user.github.avatar_url,
+        }
+    });
 }
 
 function getGithubRepos(user, callback) {
