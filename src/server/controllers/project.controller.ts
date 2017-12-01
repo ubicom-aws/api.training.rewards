@@ -52,7 +52,7 @@ function createBeneficiarySponsor (account, project, callback) {
                 .catch(e => callback(false));
         } else {
             beneficiarySponsor.projects = [
-                ...beneficiarySponsor.projects.filter(projectDelegating => projectDelegating.steem_account.account === project.steem_account.account),
+                ...beneficiarySponsor.projects.filter(projectDelegating => projectDelegating.steem_account.account !== project.steem_account.account),
                 {
                     external_id: project.external_id,
                     platform: project.platform,
