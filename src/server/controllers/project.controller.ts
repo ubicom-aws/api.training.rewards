@@ -51,7 +51,7 @@ function createBeneficiarySponsor (account, project, callback) {
                 .then(() => callback(true))
                 .catch(e => callback(false));
         } else {
-            if (!R.find(R.propEq('steem_account', project.steem_account))(beneficiarySponsor.projects)) {
+            if (!R.find(R.propEq('steem_account', project.steem_account.account))(beneficiarySponsor.projects)) {
                 beneficiarySponsor.projects = [
                     ...beneficiarySponsor.projects,
                     {
