@@ -357,8 +357,9 @@ conn.once('open', function ()
           conn.close();
           process.exit();
         }
-        request
-            .get(`https://v2.steemconnect.com/api/oauth2/token?refresh_token=${refreshToken}&client_secret=${secret}&scope=vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance,offline`)
+        const scBase = process.env.STEEMCONNECT_HOST || 'https://v2.steemconnect.com';
+        request // SCBASE
+            .get(`${scBase}/api/oauth2/token?refresh_token=${refreshToken}&client_secret=${secret}&scope=vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance,offline`)
             .end((err, res) => {
               if (!res.body.access_token) {
                 console.log("COULD NOT GET ACCESS TOKEN", res);
@@ -392,7 +393,7 @@ conn.once('open', function ()
                               "ideas": {
                                 "difficulty" : 1*DIFFICULTY_MULTIPLIER,
                                 "total_vote_weight": 0,
-                                "max_vote": 10,
+                                "max_vote": 5,
                                 "min_vote": 2,
                               },
                               "sub-projects": {
@@ -409,13 +410,13 @@ conn.once('open', function ()
                               },
                               "bug-hunting": {
                                 "total_vote_weight": 0,
-                                "max_vote": 10,
+                                "max_vote": 5,
                                 "min_vote": 2,
                                 "difficulty" : 1*DIFFICULTY_MULTIPLIER
                               },
                               "translations": {
                                 "total_vote_weight": 0,
-                                "max_vote": MAX_VOTE_EVER,
+                                "max_vote": 25,
                                 "min_vote": 10,
                                 "difficulty" : 1.5*DIFFICULTY_MULTIPLIER
                               },
@@ -424,17 +425,16 @@ conn.once('open', function ()
                                 "max_vote": MAX_VOTE_EVER,
                                 "min_vote": 10,
                                 "difficulty" : 1.5*DIFFICULTY_MULTIPLIER
-
                               },
                               "analysis": {
                                 "total_vote_weight": 0,
-                                "max_vote": MAX_VOTE_EVER,
+                                "max_vote": 20,
                                 "min_vote": 8,
                                 "difficulty" : 1.8*DIFFICULTY_MULTIPLIER
                               },
                               "social": {
                                 "total_vote_weight": 0,
-                                "max_vote": 25,
+                                "max_vote": 20,
                                 "min_vote": 5,
                                 "difficulty" : 1.5*DIFFICULTY_MULTIPLIER
                               },
@@ -446,13 +446,13 @@ conn.once('open', function ()
                               },
                               "tutorials": {
                                 "total_vote_weight": 0,
-                                "max_vote": 20,
+                                "max_vote": 15,
                                 "min_vote": 8,
                                 "difficulty" : 1.55*DIFFICULTY_MULTIPLIER
                               },
                               "video-tutorials": {
                                 "total_vote_weight": 0,
-                                "max_vote": 20,
+                                "max_vote": 15,
                                 "min_vote": 8,
                                 "difficulty" : 1.65*DIFFICULTY_MULTIPLIER
                               },
@@ -464,13 +464,13 @@ conn.once('open', function ()
                               },
                               "blog": {
                                 "total_vote_weight": 0,
-                                "max_vote": 10,
+                                "max_vote": 5,
                                 "min_vote": 2,
                                 "difficulty" : 1*DIFFICULTY_MULTIPLIER
                               },
                               "tasks-requests": {
                                 "total_vote_weight": 0,
-                                "max_vote": 15,
+                                "max_vote": 10,
                                 "min_vote": 5,
                                 "difficulty" : 1.1*DIFFICULTY_MULTIPLIER
                               },

@@ -28,7 +28,7 @@ const UserSchema = new mongoose.Schema({
   details: {
     type: Object,
     default: {
-      createdBy: 'steem',
+      recoveryAccount: 'steem',
       emailVerified: false,
       confirmed: false,
       connectedToSteem: false,
