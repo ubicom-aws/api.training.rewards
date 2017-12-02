@@ -33,12 +33,26 @@ conn.once('open', function ()
                             setTimeout(function(){
                                 steemApi.getVestingDelegations(sponsor.account, -1, 1000, function(err, delegations) {
                                     const isDelegating = R.find(R.propEq('delegatee', 'utopian-io'))(delegations);
+                                    let currentVestingShares = isDelegating ? parseInt(isDelegating.vesting_shares) : 0;
+                                    let delegationDate = isDelegating ? isDelegating.min_delegation_time : new Date().toISOString();
+
+                                    if(sponsor.projects && sponsor.projects.length) {
+                                        sponsor.projects.forEach(project => {
+                                            const delegatingToProject = R.find(R.propEq('delegatee', project.steem_account))(delegations);
+                                            if(delegatingToProject) {
+                                                currentVestingShares = currentVestingShares + parseInt(delegatingToProject.vesting_shares);
+                                                if (delegationDate > delegatingToProject.min_delegation_time) {
+                                                    delegationDate = delegatingToProject.min_delegation_time;
+                                                }
+                                            }
+                                        });
+                                    }
 
                                     steemApi.getWitnessByAccount(sponsor.account, function(witnessErr, witnessRes) {
                                         const isWitness = witnessRes && witnessRes.owner ? true : false;
 
-                                        if (isDelegating) {
-                                            const delegationDate = isDelegating.min_delegation_time;
+                                        if (currentVestingShares > 0) {
+                                            //const delegationDate = isDelegating.min_delegation_time;
                                             const query = {
                                                 created:
                                                     {
@@ -55,9 +69,9 @@ conn.once('open', function ()
                                                     Post
                                                         .list({skip: 0, limit: count, query})
                                                         .then(posts => {
-                                                            const currentVestingShares = isDelegating ? parseInt(isDelegating.vesting_shares) : 0;
+                                                            //const currentVestingShares = isDelegating ? parseInt(isDelegating.vesting_shares) : 0;
                                                             const percentageTotalShares = (currentVestingShares / total_vesting_shares) * 100;
-                                                            let total_paid_authors = stats.total_paid_authors;
+                                                            let total_paid_authors = 0;
 
                                                             posts.forEach(post => {
                                                                 const payoutDetails = calculatePayout(post);
