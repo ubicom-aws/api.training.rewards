@@ -31,8 +31,8 @@ function load(req, res, next, id) {
 function createToken(req, res, next) {
 
     const { code } = req.query;
-
-    request.get(`https://v2.steemconnect.com/api/oauth2/token?code=${code}&client_secret=${process.env.UTOPIAN_STEEMCONNECT_SECRET}&scope=offline,vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance`)
+    const steemConnectBase = process.env.STEEMCONNECT_HOST || "https://v2.steemconnect.com"; // SCBASE
+    request.get(`${steemConnectBase}/api/oauth2/token?code=${code}&client_secret=${process.env.UTOPIAN_STEEMCONNECT_SECRET}&scope=offline,vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance`)
         .end(function(err, resRefresh){
             if (resRefresh && resRefresh.text) {
                 const response = JSON.parse(resRefresh.text) || null;
@@ -295,7 +295,7 @@ async function updateSchema(user, account) {
     if (!user.schemaVersion) user.schemaVersion = 0;
     if (user.schemaVersion < 1) {
         var details = {
-            createdBy: 'steem',
+            recoveryAccount: 'steem',
             emailVerified: false,
             confirmed: false,
             lastUpdate: Date.now,
@@ -311,7 +311,7 @@ async function updateSchema(user, account) {
             }
             const acct = accounts[0];
             if (acct) {
-                if (acct.recovery_account) details.createdBy = acct.recovery_account;
+                if (acct.recovery_account) details.recoveryAccount = acct.recovery_account;
                 details.lastUpdate = Date.now;
                 details.confirmed = true;
                 details.connectedToSteem = true;
