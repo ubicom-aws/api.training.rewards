@@ -51,17 +51,21 @@ function createBeneficiarySponsor (account, project, callback) {
                 .then(() => callback(true))
                 .catch(e => callback(false));
         } else {
-            beneficiarySponsor.projects = [
-                ...beneficiarySponsor.projects.filter(projectDelegating => projectDelegating.steem_account !== project.steem_account),
-                {
-                    external_id: project.external_id,
-                    platform: project.platform,
-                    steem_account: project.steem_account.account,
-                }
-            ];
-            beneficiarySponsor.save()
-                .then(() => callback(true))
-                .catch(e => callback(false));
+            if (!R.find(R.propEq('steem_account', project.steem_account))(beneficiarySponsor.projects)) {
+                beneficiarySponsor.projects = [
+                    ...beneficiarySponsor.projects,
+                    {
+                        external_id: project.external_id,
+                        platform: project.platform,
+                        steem_account: project.steem_account.account,
+                    }
+                ];
+                beneficiarySponsor.save()
+                    .then(() => callback(true))
+                    .catch(e => callback(false));
+            } else {
+                callback(true);
+            }
         }
     });
 }
