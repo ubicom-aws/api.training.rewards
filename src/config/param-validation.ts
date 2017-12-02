@@ -73,22 +73,18 @@ export default {
       account: Joi.string().required(),
       referrer: Joi.string(),
     },
-    params: {
-    }
+    params: {}
   },
   removeMod: {
     body: {
       account: Joi.string().required(),
     },
-    params: {
-    }
+    params: {}
   },
-
-  // POST /api/auth/login
   login: {
     body: {
-      username: Joi.string().required(),
-      password: Joi.string().required()
-    }
+      code: Joi.string().required(),
+    },
+    params: {}
   }
 };

@@ -17,13 +17,13 @@ const UserSchema = new mongoose.Schema({
   },
   github: Object,
   refresh_token: String,
+  sc2: new mongoose.Schema({
+    token: String,
+    expiry: Date
+  }),
   createdAt: {
     type: Date,
     default: Date.now
-  },
-  banned: {
-    type: Number,
-    default: 0,
   },
   details: {
     type: Object,
@@ -36,9 +36,13 @@ const UserSchema = new mongoose.Schema({
       votingForWiteness: false,
     }
   },
+  banned: {
+    type: Number,
+    default: 0,
+  },
   bannedBy: {
     type: String,
-    default: "<anonymous mod>",
+    default: "",
   },
   bannedUntil: {
     type: Date,
@@ -46,9 +50,8 @@ const UserSchema = new mongoose.Schema({
   },
   banReason: {
     type: String,
-    default: "Violation of the Utopian Rules",
-  },
-  
+    default: "",
+  }
 });
 
 export interface UserModelListOpts {

@@ -76,7 +76,7 @@ function list(req, res, next) {
   Moderator.list()
     .then(moderators => res.json({
       total: moderators.length,
-      results: moderators
+      results: moderators.filter(mod => !mod.banned)
     }))
     .catch(e => next(e));
 }
