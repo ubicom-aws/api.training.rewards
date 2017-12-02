@@ -138,8 +138,8 @@ function create(req, res, next) {
     const platform = req.body.platform;
     const external_id = req.body.external_id;
     const project_name = req.body.project_name;
-
-    steemconnect.setBaseURL('https://v2.steemconnect.com');
+    const scBase = process.env.STEEMCONNECT_HOST || 'https://v2.steemconnect.com';
+    steemconnect.setBaseURL(scBase); // SCBASE
     steemconnect.setAccessToken(access_token);
     steemconnect.me().then((resp) => {
         if (resp && resp.user) {
@@ -215,8 +215,8 @@ function voteWithSponsors(req, res, next) {
     const vote = req.body.vote;
     const author = req.body.author;
     const permlink = req.body.permlink;
-
-    steemconnect.setBaseURL('https://v2.steemconnect.com');
+    const scBase = process.env.STEEMCONNECT_HOST || 'https://v2.steemconnect.com';
+    steemconnect.setBaseURL(scBase);
     steemconnect.setAccessToken(access_token);
     steemconnect.me().then((resp) => {
         if (resp && resp.user) {
@@ -233,7 +233,8 @@ function voteWithSponsors(req, res, next) {
                                             if (project.sponsorship.enabled === true) {
                                                 const voter = project.steem_account.account;
                                                 const refresh_token = project.steem_account.refresh_token;
-                                                request.get('https://v2.steemconnect.com/api/oauth2/token?scope=offline,vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance')
+                                                const steemconnectBase = process.env.STEEMCONNECT_HOST || 'https://v2.steemconect.com';
+                                                request.get(`${steemconnectBase}/api/oauth2/token?scope=offline,vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance`)
                                                     .query({ refresh_token, client_secret: process.env.UTOPIAN_STEEMCONNECT_SECRET })
                                                     .then(function (tokenRes) {
                                                         const token = tokenRes.body;

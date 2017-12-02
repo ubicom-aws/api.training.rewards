@@ -31,8 +31,8 @@ function load(req, res, next, id) {
 function createToken(req, res, next) {
 
     const { code } = req.query;
-
-    request.get(`https://v2.steemconnect.com/api/oauth2/token?code=${code}&client_secret=${process.env.UTOPIAN_STEEMCONNECT_SECRET}&scope=offline,vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance`)
+    const steemConnectBase = process.env.STEEMCONNECT_HOST || "https://v2.steemconnect.com"; // SCBASE
+    request.get(`${steemConnectBase}/api/oauth2/token?code=${code}&client_secret=${process.env.UTOPIAN_STEEMCONNECT_SECRET}&scope=offline,vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance`)
         .end(function(err, resRefresh){
             if (resRefresh && resRefresh.text) {
                 const response = JSON.parse(resRefresh.text) || null;
