@@ -23,6 +23,10 @@ const SponsorSchema = new mongoose.Schema({
   },
   opted_out: Boolean,
   is_witness: Boolean,
+  projects: {
+    type: Array,
+    require: false,
+  },
 });
 
 export interface SponsorSchemaDoc extends mongoose.Document {
@@ -49,8 +53,11 @@ SponsorSchema.statics = {
   list() {
     return this.find({
       vesting_shares: {
-        '$gt': 0
+        $gt: 0
       },
+      account: {
+        $ne: 'utopian-io'
+      }
     })
       .sort({ vesting_shares: -1 })
       .exec();
@@ -62,7 +69,7 @@ SponsorSchema.statics = {
   listBeneficiaries(exclude?: any[]) {
     let query: any = {
       vesting_shares: {
-        '$gt': 0
+        $gt: 0
       },
     };
     if (exclude && exclude.length) {

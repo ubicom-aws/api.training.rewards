@@ -36,6 +36,7 @@ function create(req, res, next) {
               should_receive_rewards: 0,
               opted_out: false,
               is_witness: false,
+              projects: [],
             });
 
             newSponsor.save()

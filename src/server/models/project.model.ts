@@ -27,16 +27,6 @@ const RejectStatus = {
     required: false,
   }
 };
-const ProjectSponsor = {
-  account: {
-    type: String,
-    required: true,
-  },
-  vesting_shares: {
-    type: Number,
-    required: true,
-  }
-}
 const ProjectSchema = new mongoose.Schema({
   name: {
     type: String,
