@@ -42,6 +42,7 @@ interface Server {
 interface Config {
   env: string;
   steemNode: string;
+  steemconnectHost: string;
   mongooseDebug: boolean;
   mongo: string;
   server: Server;
@@ -51,6 +52,7 @@ interface Config {
 const config: Config = {
   env: envVars.NODE_ENV,
   steemNode: envVars.STEEM_NODE,
+  steemconnectHost: envVars.STEEMCONNECT_HOST,
   mongooseDebug: envVars.MONGOOSE_DEBUG,
   credentials: {
     githubSecret: envVars.UTOPIAN_GITHUB_SECRET,

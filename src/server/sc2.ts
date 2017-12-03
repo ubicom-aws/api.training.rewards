@@ -1,7 +1,8 @@
 import * as request from 'superagent';
 import * as user from './models/user.model';
+import config from '../config/config';
 
-const BASE_URL = `${process.env.STEEMCONNECT_HOST}/api`;
+const BASE_URL = `${config.steemconnectHost}/api`;
 const SECRET = process.env.UTOPIAN_STEEMCONNECT_SECRET;
 
 export interface AuthResponse {

@@ -6,6 +6,7 @@ import * as R from 'ramda';
 const steemconnect = require('sc2-sdk');
 import steemAPI from '../steemAPI';
 import * as request from 'superagent';
+import config from '../../config/config';
 
 function get(req, res, next) {
     const { platform, externalId } = req.params;
@@ -138,8 +139,7 @@ function create(req, res, next) {
     const platform = req.body.platform;
     const external_id = req.body.external_id;
     const project_name = req.body.project_name;
-    const scBase = process.env.STEEMCONNECT_HOST || 'https://v2.steemconnect.com';
-    steemconnect.setBaseURL(scBase); // SCBASE
+    steemconnect.setBaseURL(config.steemconnectHost);
     steemconnect.setAccessToken(access_token);
     steemconnect.me().then((resp) => {
         if (resp && resp.user) {
@@ -215,8 +215,7 @@ function voteWithSponsors(req, res, next) {
     const vote = req.body.vote;
     const author = req.body.author;
     const permlink = req.body.permlink;
-    const scBase = process.env.STEEMCONNECT_HOST || 'https://v2.steemconnect.com';
-    steemconnect.setBaseURL(scBase);
+    steemconnect.setBaseURL(config.steemconnectHost);
     steemconnect.setAccessToken(access_token);
     steemconnect.me().then((resp) => {
         if (resp && resp.user) {
@@ -233,7 +232,7 @@ function voteWithSponsors(req, res, next) {
                                             if (project.sponsorship.enabled === true) {
                                                 const voter = project.steem_account.account;
                                                 const refresh_token = project.steem_account.refresh_token;
-                                                const steemconnectBase = process.env.STEEMCONNECT_HOST || 'https://v2.steemconect.com';
+                                                const steemconnectBase = config.steemconnectHost;
                                                 request.get(`${steemconnectBase}/api/oauth2/token?scope=offline,vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance`)
                                                     .query({ refresh_token, client_secret: process.env.UTOPIAN_STEEMCONNECT_SECRET })
                                                     .then(function (tokenRes) {

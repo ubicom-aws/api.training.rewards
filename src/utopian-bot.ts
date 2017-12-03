@@ -357,8 +357,8 @@ conn.once('open', function ()
           conn.close();
           process.exit();
         }
-        const scBase = process.env.STEEMCONNECT_HOST;
-        request // SCBASE
+        const scBase = config.steemconnectHost;
+        request
             .get(`${scBase}/api/oauth2/token?refresh_token=${refreshToken}&client_secret=${secret}&scope=vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance,offline`)
             .end((err, res) => {
               if (!res.body.access_token) {
