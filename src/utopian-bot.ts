@@ -405,7 +405,7 @@ conn.once('open', function ()
                               "development": {
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
-                                "min_vote": 10,
+                                "min_vote": 15,
                                 "difficulty" : 2*DIFFICULTY_MULTIPLIER
                               },
                               "bug-hunting": {
