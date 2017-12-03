@@ -33,7 +33,7 @@ export async function send(endpoint: string, opts?: SendOpts) {
 }
 
 export async function getTokenFromCode(code: string): Promise<AuthResponse> {
-  const auth = `/ouath2/token?code=${code}&client_secret=${SECRET}`;
+  const auth = `/oauth2/token?code=${code}&client_secret=${SECRET}`;
   const data: AuthResponse = await send(auth);
   if (!(data.username && data.access_token && data.expires_in)) {
     throw new Error('Missing username, access_token, or expires_in');
