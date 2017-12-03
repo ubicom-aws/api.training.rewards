@@ -14,6 +14,9 @@ function get(req, res, next) {
 }
 
 function create(req, res, next) {
+  if (res.locals.user.banned) {
+    return res.status(HttpStatus.FORBIDDEN);
+  }
   const author = req.body.author;
   const permlink = req.body.permlink;
   let attempts = 0;

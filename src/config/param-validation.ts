@@ -34,14 +34,12 @@ export default {
     body: {
       author: Joi.string().required(),
       permlink: Joi.string().required(),
-      vote: Joi.number().required(),
-      access_token: Joi.string().required(),
+      vote: Joi.number().required()
     }
   },
   createProject: {
     body: {
       owner: Joi.string().required(),
-      access_token: Joi.string().required(),
       platform: Joi.string().required(),
       external_id: Joi.number().required(),
       project_name: Joi.string().required(),

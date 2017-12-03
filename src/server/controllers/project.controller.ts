@@ -135,12 +135,11 @@ function createSponsor(req, res, next) {
 
 function create(req, res, next) {
     const owner = req.body.owner;
-    const access_token = req.body.access_token;
     const platform = req.body.platform;
     const external_id = req.body.external_id;
     const project_name = req.body.project_name;
     steemconnect.setBaseURL(config.steemconnectHost);
-    steemconnect.setAccessToken(access_token);
+    steemconnect.setAccessToken(res.locals.user.sc2.token);
     steemconnect.me().then((resp) => {
         if (resp && resp.user) {
             const user = resp.user;
@@ -209,14 +208,13 @@ function create(req, res, next) {
 }
 
 function voteWithSponsors(req, res, next) {
-    const access_token = req.body.access_token;
     const platform = req.params.platform;
     const external_id = parseInt(req.params.externalId);
     const vote = req.body.vote;
     const author = req.body.author;
     const permlink = req.body.permlink;
     steemconnect.setBaseURL(config.steemconnectHost);
-    steemconnect.setAccessToken(access_token);
+    steemconnect.setAccessToken(res.locals.user.sc2.token);
     steemconnect.me().then((resp) => {
         if (resp && resp.user) {
             const user = resp.user;
