@@ -87,12 +87,12 @@ function get(req, res) {
     bannedUntil: user.bannedUntil,
     banned: user.banned,
     details: user.details,
-    github:{
+    github: user.github ? {
       login: user.github.login,
       account: user.github.account,
       scopeVersion: user.github.scopeVersion,
       avatar_url: user.github.avatar_url,
-    }
+    } : undefined
   });
 }
 
