@@ -5,8 +5,9 @@ import * as sc2Ctrl from '../controllers/sc2.controller';
 
 const router = express.Router();
 
-router.route('/profile').post(sc2Ctrl.profile);
-router.route('/update_profile').put(sc2Ctrl.updateProfile);
+router.route('/profile')
+      .post(sc2Ctrl.profile)
+      .put(sc2Ctrl.updateProfile);
 router.route('/broadcast').post(sc2Ctrl.broadcast);
 
 export default router;
