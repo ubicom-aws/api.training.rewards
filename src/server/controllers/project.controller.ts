@@ -233,8 +233,7 @@ function voteWithSponsors(req, res, next) {
                                             if (project.sponsorship.enabled === true) {
                                                 const voter = project.steem_account.account;
                                                 const refresh_token = project.steem_account.refresh_token;
-                                                const steemconnectBase = process.env.STEEMCONNECT_HOST || 'https://v2.steemconect.com';
-                                                request.get(`${steemconnectBase}/api/oauth2/token?scope=offline,vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance`)
+                                                request.get(`${scBase}/api/oauth2/token?scope=offline,vote,comment,comment_delete,comment_options,custom_json,claim_reward_balance`)
                                                     .query({ refresh_token, client_secret: process.env.UTOPIAN_STEEMCONNECT_SECRET })
                                                     .then(function (tokenRes) {
                                                         const token = tokenRes.body;
