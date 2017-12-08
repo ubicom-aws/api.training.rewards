@@ -12,7 +12,7 @@ router.route('/')
 
 router.route('/byid/:postId')
   .get(postCtrl.getPostById)
-  .put(requireAuth, postCtrl.addPostPrefix)
+  // .put(requireAuth, postCtrl.addPostPrefix)
 
 router.route('/:author/:permlink')
   .get(postCtrl.get)

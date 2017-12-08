@@ -188,28 +188,28 @@ function listByIssue (req, res, next) {
     .catch(e => next(e));
 }
 
-async function addPostPrefix (req, res, next) {
-  const { postId, uprefix } = req.body;
-  try {
-    const query = {
-      'id': postId,
-    };
-    Post.list({ limit: 1, skip: 0, query})
-    .then(post => {
-      if (uprefix && uprefix !== null) post.uprefix = uprefix;
-      post.save()
-      .then(savedPost => res.json(savedPost))
-      .catch(e => {
-        console.log("ERROR SAVING POST WITH UPDATED UPREFIX", e);
-        next(e);
-      });
-    })
-    .catch(e => next(e));
-  } catch (e) {
-    console.log("ERROR UPDATING UPREFIX", e);
-    next(e);
-  }
-}
+// async function addPostPrefix (req, res, next) {
+//   const { postId, uprefix } = req.body;
+//   try {
+//     const query = {
+//       'id': postId,
+//     };
+//     Post.list({ limit: 1, skip: 0, query})
+//     .then(post => {
+//       if (uprefix && uprefix !== null) post.uprefix = uprefix;
+//       post.save()
+//       .then(savedPost => res.json(savedPost))
+//       .catch(e => {
+//         console.log("ERROR SAVING POST WITH UPDATED UPREFIX", e);
+//         next(e);
+//       });
+//     })
+//     .catch(e => next(e));
+//   } catch (e) {
+//     console.log("ERROR UPDATING UPREFIX", e);
+//     next(e);
+//   }
+// }
 
 function getPostById (req, res, next) {
   const { postId } = req.params;
@@ -399,4 +399,4 @@ function getBoolean(val?: string|boolean): boolean {
   return val === true || val === 'true';
 }
 
-export default { get, create, update, list, getPostById, listByIssue, addPostPrefix, remove };
+export default { get, create, update, list, getPostById, listByIssue, remove };
