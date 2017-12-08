@@ -73,6 +73,7 @@ async function update(req, res, next) {
   const pending = getBoolean(req.body.pending);
   const reviewed = getBoolean(req.body.reviewed);
   const moderator = req.body.moderator || null;
+  const uprefix = req.body.uprefix || null;
 
   try {
     const post = await Post.get(author, permlink);
@@ -94,6 +95,7 @@ async function update(req, res, next) {
     }
     if (updatedPost.json_metadata.app !== 'utopian/1.0.0') updatedPost.json_metadata.app = 'utopian/1.0.0';
     if (updatedPost.json_metadata.community !== 'utopian') updatedPost.json_metadata.community = 'utopian';
+    if (uprefix && uprefix !== null) updatedPost.json_metadata.uprefix = uprefix;
     // making sure the repository does not get deleted
     if (!updatedPost.json_metadata.repository) updatedPost.json_metadata.repository = post.json_metadata.repository;
     if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
@@ -104,6 +106,9 @@ async function update(req, res, next) {
 
     if (moderator) {
       post.moderator = moderator;
+    }
+    if (uprefix && uprefix !== null) {
+      post.uprefix = uprefix;
     }
 
     if (reviewed) {
@@ -181,6 +186,61 @@ function listByIssue (req, res, next) {
       ...post
     }))
     .catch(e => next(e));
+}
+
+async function addPostPrefix (req, res, next) {
+  const { postId, uprefix } = req.body;
+  try {
+    const query = {
+      'id': postId,
+    };
+    Post.list({ limit: 1, skip: 0, query})
+    .then(post => {
+      if (uprefix && uprefix !== null) post.uprefix = uprefix;
+      post.save()
+      .then(savedPost => res.json(savedPost))
+      .catch(e => {
+        console.log("ERROR SAVING POST WITH UPDATED UPREFIX", e);
+        next(e);
+      });
+    })
+    .catch(e => next(e));
+  } catch (e) {
+    console.log("ERROR UPDATING UPREFIX", e);
+    next(e);
+  }
+}
+
+function getPostById (req, res, next) {
+  const { postId } = req.params;
+  console.log(postId);
+
+  if (postId === parseInt(postId, 10) || !isNaN(postId)) {
+      const query = {
+        'id': postId,
+      };
+
+      Post.list({ limit: 1, skip: 0, query })
+      .then(post => {
+        res.json({
+        url: post[0].url,
+        });
+      })
+      .catch(e => next(e));
+  } else {
+      const query = {
+        'json_metadata.uprefix': postId.toLowerCase(),
+      };
+
+      Post.list({ limit: 1, skip: 0, query })
+      .then(post => {
+        res.json({
+        url: post[0].url,
+        });
+      })
+      .catch(e => next(e));
+
+  }
 }
 
 function list(req, res, next) {
@@ -339,4 +399,4 @@ function getBoolean(val?: string|boolean): boolean {
   return val === true || val === 'true';
 }
 
-export default { get, create, update, list, listByIssue, remove };
+export default { get, create, update, list, getPostById, listByIssue, addPostPrefix, remove };

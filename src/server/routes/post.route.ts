@@ -10,6 +10,10 @@ router.route('/')
   .get(postCtrl.list)
   .post(requireAuth, validate(paramValidation.createPost), postCtrl.create);
 
+router.route('/byid/:postId')
+  .get(postCtrl.getPostById)
+  .put(requireAuth, postCtrl.addPostPrefix)
+
 router.route('/:author/:permlink')
   .get(postCtrl.get)
   .put(requireAuth, postCtrl.update)
