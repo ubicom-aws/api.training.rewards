@@ -391,7 +391,7 @@ conn.once('open', function ()
 
                             var categories_pool = {
                               "ideas": {
-                                "difficulty" : 1*DIFFICULTY_MULTIPLIER,
+                                "difficulty" : 0.8*DIFFICULTY_MULTIPLIER,
                                 "total_vote_weight": 0,
                                 "max_vote": 5,
                                 "min_vote": 2,
@@ -406,7 +406,7 @@ conn.once('open', function ()
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
                                 "min_vote": 15,
-                                "difficulty" : 2*DIFFICULTY_MULTIPLIER
+                                "difficulty" : 2.2*DIFFICULTY_MULTIPLIER
                               },
                               "bug-hunting": {
                                 "total_vote_weight": 0,
@@ -417,20 +417,20 @@ conn.once('open', function ()
                               "translations": {
                                 "total_vote_weight": 0,
                                 "max_vote": 25,
-                                "min_vote": 10,
-                                "difficulty" : 1.5*DIFFICULTY_MULTIPLIER
+                                "min_vote": 6.5,
+                                "difficulty" : 1.7*DIFFICULTY_MULTIPLIER
                               },
                               "graphics": {
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
-                                "min_vote": 10,
-                                "difficulty" : 1.5*DIFFICULTY_MULTIPLIER
+                                "min_vote": 7.5,
+                                "difficulty" : 1.7*DIFFICULTY_MULTIPLIER
                               },
                               "analysis": {
                                 "total_vote_weight": 0,
                                 "max_vote": 20,
                                 "min_vote": 8,
-                                "difficulty" : 1.8*DIFFICULTY_MULTIPLIER
+                                "difficulty" : 1.6*DIFFICULTY_MULTIPLIER
                               },
                               "social": {
                                 "total_vote_weight": 0,
@@ -447,14 +447,14 @@ conn.once('open', function ()
                               "tutorials": {
                                 "total_vote_weight": 0,
                                 "max_vote": 15,
-                                "min_vote": 8,
-                                "difficulty" : 1.55*DIFFICULTY_MULTIPLIER
+                                "min_vote": 5.5,
+                                "difficulty" : 1.7*DIFFICULTY_MULTIPLIER
                               },
                               "video-tutorials": {
                                 "total_vote_weight": 0,
                                 "max_vote": 15,
                                 "min_vote": 8,
-                                "difficulty" : 1.65*DIFFICULTY_MULTIPLIER
+                                "difficulty" : 1.7*DIFFICULTY_MULTIPLIER
                               },
                               "copywriting": {
                                 "total_vote_weight": 0,
