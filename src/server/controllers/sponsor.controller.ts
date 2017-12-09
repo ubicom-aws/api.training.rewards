@@ -20,9 +20,9 @@ function listBeneficiaries(req, res, next) {
 }
 
 function create(req, res, next) {
-  const account = req.body.account.replace('@', '');
+  const sponsor = req.body.sponsor.replace('@', '');
 
-  steemAPI.getAccounts([account], (err, accounts) => {
+  steemAPI.getAccounts([sponsor], (err, accounts) => {
     if (!err) {
       if (accounts && accounts.length === 1) {
         const account = accounts[0];
@@ -34,6 +34,9 @@ function create(req, res, next) {
               percentage_total_vesting_shares: 0,
               total_paid_rewards: 0,
               should_receive_rewards: 0,
+              opted_out: false,
+              is_witness: false,
+              projects: [],
             });
 
             newSponsor.save()

@@ -6,7 +6,7 @@ import { calculatePayout } from './server/steemitHelpers';
 import config from './config/config';
 
 (mongoose as any).Promise = Promise;
-mongoose.connect(`${config.mongo.host}`);
+mongoose.connect(config.mongo);
 
 const conn = mongoose.connection;
 conn.once('open', function ()

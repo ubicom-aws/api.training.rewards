@@ -15,9 +15,10 @@
     "npm": ">=5.0.0"
   },
   "scripts": {
-    "dev-server": "cross-env NODE_ENV=development PORT=4040 gulp serve",
-    "start": "cross-env NODE_ENV=production PORT=443 gulp serve",
+    "dev-server": "cross-env NODE_ENV=development SERVER_PORT=4040 gulp serve",
+    "start": "cross-env NODE_ENV=production SERVER_PORT=443 gulp serve",
     "updater-posts": "node ./dist/updater-posts.js",
+    "create-account": "node ./dist/create-account.js",
     "utopian-bot": "node ./dist/utopian-bot.js $REFRESH_TOKEN $CLIENT_SECRET",
     "stats-categories": "node ./dist/stats-categories.js",
     "stats-moderators-shares": "node ./dist/stats-moderators-shares.js",
@@ -73,6 +74,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.0.5",
+    "@types/express": "^4.0.39",
     "@types/mocha": "^2.2.44",
     "@types/mongodb": "^2.2.15",
     "@types/mongoose": "^4.7.27",

@@ -6,8 +6,6 @@ import userCtrl from '../controllers/user.controller';
 const router = express.Router(); // eslint-disable-line new-cap
 
 router.route('/')
-  /** GET /api/users - Get list of users */
-  .get(userCtrl.list)
   .post(validate(paramValidation.createUser), userCtrl.create);
 
 router.route('/:userId')
@@ -15,8 +13,12 @@ router.route('/:userId')
   .put(validate(paramValidation.updateUser), userCtrl.update)
   .delete(userCtrl.remove);
 
-router.route('/:userId/projects')
-  .get(userCtrl.getProjects);
+router.route('/:userId/repos')
+  .get(userCtrl.getRepos);
+
+router.route('/:userId/ban')
+  .get(userCtrl.getBan)
+  .post(validate(paramValidation.banUser), userCtrl.ban)
 
 router.route('/:userId/platforms/:platform')
   .get(userCtrl.get)

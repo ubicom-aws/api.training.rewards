@@ -9,6 +9,11 @@ export default {
       state: Joi.string(),
     }
   },
+  confirmExistence: {
+    body: {
+      account: Joi.string().required(),
+    }
+  },
   createPost: {
     body: {
       author: Joi.string().required(),
@@ -17,7 +22,27 @@ export default {
   },
   createSponsor: {
     body: {
-      account: Joi.string().required(),
+      sponsor: Joi.string().required(),
+    }
+  },
+  createProjectSponsor: {
+    body: {
+      sponsor: Joi.string().required(),
+    }
+  },
+  voteWithSponsors: {
+    body: {
+      author: Joi.string().required(),
+      permlink: Joi.string().required(),
+      vote: Joi.number().required()
+    }
+  },
+  createProject: {
+    body: {
+      owner: Joi.string().required(),
+      platform: Joi.string().required(),
+      external_id: Joi.number().required(),
+      project_name: Joi.string().required(),
     }
   },
   // UPDATE /api/users/:userId
@@ -30,12 +55,34 @@ export default {
       userId: Joi.string().hex().required()
     }
   },
-
-  // POST /api/auth/login
+  banUser: {
+    body: {
+      account: Joi.string(),
+      banned: Joi.number().integer().min(0).max(9),
+      bannedBy: Joi.string(),
+      banReason: Joi.string(),
+    },
+    params: {
+      userId: Joi.string(),
+    }
+  },
+  createMod: {
+    body: {
+      account: Joi.string().required(),
+      referrer: Joi.string(),
+    },
+    params: {}
+  },
+  removeMod: {
+    body: {
+      account: Joi.string().required(),
+    },
+    params: {}
+  },
   login: {
     body: {
-      username: Joi.string().required(),
-      password: Joi.string().required()
-    }
+      code: Joi.string().required(),
+    },
+    params: {}
   }
 };

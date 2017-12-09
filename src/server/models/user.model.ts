@@ -11,11 +11,46 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  schemaVersion: {
+    type: Number,
+    default: 0,
+  },
   github: Object,
   refresh_token: String,
+  sc2: new mongoose.Schema({
+    token: String,
+    expiry: Date
+  }),
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  details: {
+    type: Object,
+    default: {
+      recoveryAccount: 'steem',
+      emailVerified: false,
+      confirmed: false,
+      connectedToSteem: false,
+      lastUpdate: Date.now,
+      votingForWiteness: false,
+    }
+  },
+  banned: {
+    type: Number,
+    default: 0,
+  },
+  bannedBy: {
+    type: String,
+    default: "",
+  },
+  bannedUntil: {
+    type: Date,
+    default: new Date(0),
+  },
+  banReason: {
+    type: String,
+    default: "",
   }
 });
 

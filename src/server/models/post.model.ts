@@ -9,195 +9,195 @@ import APIError from '../helpers/APIError';
 const PostSchema = new mongoose.Schema({
   abs_rshares: {
     type: Number,
-    required: true,
+    //required: true,
   },
   active: {
     type: String,
-    required: true,
+    //required: true,
   },
   active_votes: {
     type: Array,
-    required: false,
+    //required: false,
   },
   allow_curation_rewards: {
     type: Boolean,
-    required: true,
+    //required: true,
   },
   allow_replies: {
     type: Boolean,
-    required: true,
+    //required: true,
   },
   allow_votes: {
     type: Boolean,
-    required: true,
+    //required: true,
   },
   author: {
     type: String,
-    required: true,
+    //required: true,
   },
   author_reputation: {
     type: Number,
-    required: true,
+    //required: true,
   },
   author_rewards: {
     type: Number,
-    required: true,
+    //required: true,
   },
   beneficiaries: {
     type: Array,
-    required: false,
+    //required: false,
   },
   body: {
     type: String,
-    required: true,
+    //required: true,
   },
   body_length: {
     type: Number,
-    required: true,
+    //required: true,
   },
   cashout_time: {
     type: String,
-    required: true,
+    //required: true,
   },
   category: {
     type: String,
-    required: true,
+    //required: true,
   },
   children: {
     type: Number,
-    required: true,
+    //required: true,
   },
   children_abs_rshares: {
     type: Number,
-    required: true,
+    //required: true,
   },
   created: {
     type: String,
-    required: true,
+    //required: true,
   },
   curator_payout_value: {
     type: String,
-    required: true,
+    //required: true,
   },
   depth: {
     type: Number,
-    required: true,
+    //required: true,
   },
   id: {
     type: Number,
-    required: true,
+    //required: true,
   },
   json_metadata: {
     type: Object,
-    required: true,
+    //required: true,
   },
   last_payout: {
     type: String,
-    required: true,
+    //required: true,
   },
   last_update: {
     type: String,
-    required: true,
+    //required: true,
   },
   max_accepted_payout: {
     type: String,
-    required: true,
+    //required: true,
   },
   max_cashout_time: {
     type: String,
-    required: true,
+    //required: true,
   },
   net_rshares: {
     type: Number,
-    required: true,
+    //required: true,
   },
   net_votes: {
     type: Number,
-    required: true,
+    //required: true,
   },
   parent_author: {
     type: String,
-    required: false,
+    //required: false,
   },
   parent_permlink: {
     type: String,
-    required: true,
+    //required: true,
   },
   pending_payout_value: {
     type: String,
-    required: true,
+    //required: true,
   },
   percent_steem_dollars: {
     type: Number,
-    required: true,
+    //required: true,
   },
   permlink: {
     type: String,
-    required: true,
+    //required: true,
   },
   promoted : {
     type: String,
-    required: true,
+    //required: true,
   },
   reblogged_by: {
     type: Array,
-    required: false,
+    //required: false,
   },
   replies: {
     type: Array,
-    required: false,
+    //required: false,
   },
   reward_weight: {
     type: Number,
-    required: true,
+    //required: true,
   },
   root_comment: {
     type: Number,
-    required: true,
+    //required: true,
   },
   root_title: {
     type: String,
-    required: true,
+    //required: true,
   },
   title: {
     type: String,
-    required: true,
+    //required: true,
   },
   total_payout_value: {
     type: String,
-    required: true,
+    //required: true,
   },
   total_pending_payout_value: {
     type: String,
-    required: true,
+    //required: true,
   },
   total_vote_weight: {
     type: Number,
-    required: true,
+    //required: true,
   },
   url: {
     type: String,
-    required: true,
+    //required: true,
   },
   vote_rshares: {
     type: Number,
-    required: true,
+    //required: true,
   },
   reviewed: {
     type: Boolean,
-    required: false,
+    //required: false,
   },
   flagged: {
     type: Boolean,
-    required: false,
+    //required: false,
   },
   pending: {
     type: Boolean,
-    required: false,
+    //required: false,
   },
   moderator: {
     type: String,
-    required: false,
+    //required: false,
   },
 });
 

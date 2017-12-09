@@ -24,8 +24,8 @@ gulp.task('ts', () => {
 gulp.task('nodemon', ['ts'], () =>
   nodemon({
     script: path.join('dist', 'server', 'index.js'),
-    ext: 'js',
-    ignore: ['node_modules/**/*.js', 'dist/**/*.js'],
+    ext: 'ts',
+    ignore: ['node_modules/**', 'dist/**'],
     tasks: ['ts']
   })
 );
