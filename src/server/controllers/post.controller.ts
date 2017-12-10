@@ -73,7 +73,7 @@ async function update(req, res, next) {
   const pending = getBoolean(req.body.pending);
   const reviewed = getBoolean(req.body.reviewed);
   const moderator = req.body.moderator || null;
-  const uprefix = req.body.uprefix || null;
+  const revisionReason = req.body.reason || "";
 
   try {
     const post = await Post.get(author, permlink);
@@ -95,7 +95,8 @@ async function update(req, res, next) {
     }
     if (updatedPost.json_metadata.app !== 'utopian/1.0.0') updatedPost.json_metadata.app = 'utopian/1.0.0';
     if (updatedPost.json_metadata.community !== 'utopian') updatedPost.json_metadata.community = 'utopian';
-    if (uprefix && uprefix !== null) updatedPost.json_metadata.uprefix = uprefix;
+    if (!updatedPost.json_metadata.revisionHistory) updatedPost.json_metadata.revisionHistory = [];
+    updatedPost.json_metadata.revisionHistory.push([revisionReason, new Date(Date.now())]); 
     // making sure the repository does not get deleted
     if (!updatedPost.json_metadata.repository) updatedPost.json_metadata.repository = post.json_metadata.repository;
     if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
@@ -106,9 +107,6 @@ async function update(req, res, next) {
 
     if (moderator) {
       post.moderator = moderator;
-    }
-    if (uprefix && uprefix !== null) {
-      post.uprefix = uprefix;
     }
 
     if (reviewed) {
