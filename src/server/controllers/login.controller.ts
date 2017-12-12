@@ -1,9 +1,9 @@
 import * as HttpStatus from 'http-status';
-import {getTokenFromCode} from '../sc2';
+import {getToken} from '../sc2';
 import * as express from 'express';
 import * as crypto from 'crypto';
 import Session from '../models/session.model';
-import User from '../models/user.model';
+import User, { UserSchemaDoc } from '../models/user.model';
 import steemAPI from '../steemAPI';
 
 const ALPHA_NUMERIC = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -62,7 +62,7 @@ export async function steemconnect(req: express.Request,
     return res.status(HttpStatus.OK);
   }
   try {
-    const token = await getTokenFromCode(req.body.code);
+    const token = await getToken(req.body.code);
     if (!token) return res.status(HttpStatus.UNAUTHORIZED);
 
     let user: any = await User.findOne({ account: token.username });
@@ -74,10 +74,7 @@ export async function steemconnect(req: express.Request,
       user: user._id
     });
 
-    user.sc2 = {};
-    user.sc2.token = token.access_token;
-    user.sc2.expiry = session.expiry;
-
+    user.setSC2Token(token);
     await user.save();
     await session.save();
 
