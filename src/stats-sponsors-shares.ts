@@ -18,9 +18,9 @@ conn.once('open', function ()
         .then(stats => {
             // @TODO should be used to increment the stats based on last check, instead then rechecking from the start
             const lastCheck = stats.stats_sponsors_shares_last_check;
-            //const paidRewardsDate = '1969-12-31T23:59:59';
+            const paidRewardsDate = '1969-12-31T23:59:59';
             const now = new Date().toISOString();
-            //const dedicatedPercentageSponsors = 20;
+            const dedicatedPercentageSponsors = 20;
 
             Sponsor.listAll()
                 .then(sponsors => {
@@ -34,17 +34,16 @@ conn.once('open', function ()
                                 steemApi.getVestingDelegations(sponsor.account, -1, 1000, function(err, delegations) {
                                     const isDelegating = R.find(R.propEq('delegatee', 'utopian-io'))(delegations);
                                     let currentVestingShares = isDelegating ? parseInt(isDelegating.vesting_shares) : 0;
-                                    // let delegationDate = isDelegating ? isDelegating.min_delegation_time : new Date().toISOString();
+                                    let delegationDate = isDelegating ? isDelegating.min_delegation_time : new Date().toISOString();
 
-                                    // TODO to be removed once delegation will be split internally
                                     if(sponsor.projects && sponsor.projects.length) {
                                         sponsor.projects.forEach(project => {
                                             const delegatingToProject = R.find(R.propEq('delegatee', project.steem_account))(delegations);
                                             if(delegatingToProject) {
                                                 currentVestingShares = currentVestingShares + parseInt(delegatingToProject.vesting_shares);
-                                                /*if (delegationDate > delegatingToProject.min_delegation_time) {
+                                                if (delegationDate > delegatingToProject.min_delegation_time) {
                                                     delegationDate = delegatingToProject.min_delegation_time;
-                                                }*/
+                                                }
                                             }
                                         });
                                     }
@@ -53,23 +52,8 @@ conn.once('open', function ()
                                         const isWitness = witnessRes && witnessRes.owner ? true : false;
 
                                         if (currentVestingShares > 0) {
-                                            const percentageTotalShares = (currentVestingShares / total_vesting_shares) * 100;
-                                            sponsor.vesting_shares = currentVestingShares;
-                                            sponsor.percentage_total_vesting_shares = percentageTotalShares;
-                                            sponsor.is_witness = isWitness;
-
-                                            sponsor.save(savedSponsor => {
-                                                if ((sponsorsIndex + 1) === sponsors.length) {
-                                                    stats.stats_sponsors_shares_last_check = now;
-                                                    stats.save().then(() => {
-                                                        conn.close();
-                                                        process.exit(0);
-                                                    });
-                                                }
-                                            });
-
                                             //const delegationDate = isDelegating.min_delegation_time;
-                                            /*const query = {
+                                            const query = {
                                                 created:
                                                     {
                                                         $gte: delegationDate
@@ -95,7 +79,8 @@ conn.once('open', function ()
                                                             });
 
                                                             const totalDedicatedSponsors = (total_paid_authors * dedicatedPercentageSponsors) / 100;
-                                                            const shouldHaveReceivedRewards = (percentageTotalShares * totalDedicatedSponsors) / 100;
+                                                            //const shouldHaveReceivedRewards = (percentageTotalShares * totalDedicatedSponsors) / 100;
+                                                            const shouldHaveReceivedRewards = sponsor.should_receive_rewards;
                                                             const total_paid_rewards = sponsor.total_paid_rewards;
 
                                                             if (shouldHaveReceivedRewards >= total_paid_rewards) {
@@ -122,7 +107,7 @@ conn.once('open', function ()
                                                                 }
                                                             });
                                                         });
-                                                }); */
+                                                });
                                         } else {
                                             sponsor.vesting_shares = 0;
                                             sponsor.percentage_total_vesting_shares = 0;

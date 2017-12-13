@@ -39,12 +39,13 @@ conn.once('open', function () {
                       .countAll({query: queryTotalModerated})
                       .then(currentModerated => {
                         const percentageTotalShares = (currentModerated / countPosts) * 100;
-                        //const total_paid_authors = stats.total_paid_authors;
+                        const total_paid_authors = stats.total_paid_authors;
                         //const totalDedicatedModerators = (total_paid_authors * dedicatedPercentageModerators) / 100;
                         //const shouldHaveReceivedRewards = (percentageTotalShares * totalDedicatedModerators) / 100;
-                        //const total_paid_rewards = moderator.total_paid_rewards;
+                        const shouldHaveReceivedRewards = moderator.should_receive_rewards;
+                        const total_paid_rewards = moderator.total_paid_rewards;
 
-                        /*if (shouldHaveReceivedRewards >= total_paid_rewards) {
+                        if (shouldHaveReceivedRewards >= total_paid_rewards) {
                           const mustReceiveRewards = shouldHaveReceivedRewards - total_paid_rewards;
                           moderator.should_receive_rewards = mustReceiveRewards;
                         }
@@ -52,7 +53,7 @@ conn.once('open', function () {
                         if (shouldHaveReceivedRewards <= total_paid_rewards) {
                           const waitForNextRewards = 0;
                           moderator.should_receive_rewards = waitForNextRewards;
-                        }*/
+                        }
 
                         moderator.total_moderated = currentModerated;
                         moderator.percentage_total_rewards_moderators = percentageTotalShares;
