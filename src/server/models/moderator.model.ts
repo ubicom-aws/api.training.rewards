@@ -71,13 +71,7 @@ ModeratorSchema.statics = {
   listBeneficiaries(exclude?: any[]) {
     let query: any = {
       total_moderated: {
-        '$gt': 0
-      },
-      banned: {
-        '$ne': true,
-      },
-      reviewed: {
-        '$eq': true,
+        $gt: 0
       },
     };
 
@@ -91,8 +85,7 @@ ModeratorSchema.statics = {
     }
 
     return this.find(query)
-      .sort({ should_receive_rewards: -1 })
-      .limit(2)
+      .sort({ total_moderated: -1 })
       .exec();
   }
 };
