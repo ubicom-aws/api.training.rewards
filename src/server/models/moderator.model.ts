@@ -32,6 +32,8 @@ const ModeratorSchema = new mongoose.Schema({
 });
 
 export interface ModeratorSchemaDoc extends mongoose.Document {
+  isBanned(): boolean;
+  isReviewed(): boolean;
 }
 
 export interface ModeratorSchemaModel extends mongoose.Model<ModeratorSchemaDoc> {
@@ -39,6 +41,15 @@ export interface ModeratorSchemaModel extends mongoose.Model<ModeratorSchemaDoc>
   list(): any;
   listAll(): any;
   listBeneficiaries(exclude?: any[]): any;
+}
+
+ModeratorSchema.methods = {
+  isBanned() {
+    return this.banned;
+  },
+  isReviewed() {
+    return !this.banned && this.reviewed === true;
+  }
 }
 
 ModeratorSchema.statics = {

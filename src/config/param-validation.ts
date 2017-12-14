@@ -20,6 +20,15 @@ export default {
       permlink: Joi.string().required(),
     }
   },
+  editPost: {
+    body: {
+      author: Joi.string().required(),
+      permlink: Joi.string().required(),
+      title: Joi.string().required(),
+      body: Joi.string().required(),
+      json_metadata: Joi.object().required()
+    }
+  },
   createSponsor: {
     body: {
       sponsor: Joi.string().required(),

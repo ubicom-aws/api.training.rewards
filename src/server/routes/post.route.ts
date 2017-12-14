@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as validate from 'express-validation';
 import paramValidation from '../../config/param-validation';
 import postCtrl from '../controllers/post.controller';
-import { requireAuth } from './middleware';
+import { requireAuth, requireMod } from './middleware';
 
 const router = express.Router();
 
@@ -13,6 +13,11 @@ router.route('/')
 router.route('/byid/:postId')
   .get(postCtrl.getPostById)
   // .put(requireAuth, postCtrl.addPostPrefix)
+
+router.route('/edit')
+  .post(requireAuth,
+        validate(paramValidation.editPost),
+        postCtrl.edit);
 
 router.route('/:author/:permlink')
   .get(postCtrl.get)

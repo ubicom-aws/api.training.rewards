@@ -1,9 +1,11 @@
-import * as HttpStatus from 'http-status';
+import Moderator from '../models/moderator.model';
 import APIError from '../helpers/APIError';
-import * as request from 'superagent';
+import * as HttpStatus from 'http-status';
 import Post from '../models/post.model';
 import User from '../models/user.model';
+import * as request from 'superagent';
 import steemAPI from '../steemAPI';
+import * as sc2 from '../sc2';
 
 function get(req, res, next) {
   Post.get(req.params.author, req.params.permlink)
@@ -66,6 +68,62 @@ function create(req, res, next) {
   doCreate();
 }
 
+async function edit(req, res, next) {
+  const metadata = req.body.json_metadata;
+  const params = {
+    parent_author: '',
+    parent_permlink: '',
+    author: req.body.author,
+    permlink: req.body.permlink,
+    title: req.body.title,
+    body: req.body.body,
+    json_metadata: JSON.stringify(metadata),
+  };
+
+  try {
+    // Only grant cross-edit permissions to mods
+    if (res.locals.user.account !== params.author) {
+      const mod = await Moderator.get(res.locals.user.account);
+      if (!(mod && mod.isReviewed())) {
+        return res.sendStatus(HttpStatus.FORBIDDEN);
+      }
+    }
+
+    // Validate post exists to avoid creating posts
+    const post = await Post.get(params.author, params.permlink);
+    const updatedPost: any = await new Promise((resolve, reject) => {
+      steemAPI.getContent(params.author, params.permlink, (e, p) => {
+        if (e) {
+          return reject(e);
+        }
+        resolve(p);
+      })
+    });
+
+    if (!(updatedPost && updatedPost.author && updatedPost.permlink)) {
+      throw new Error('Cannot create posts from edit endpoint');
+    }
+
+    // Broadcast the updated post
+    const user = await User.get(params.author);
+    await sc2.send('/broadcast', {
+      user,
+      data: {
+        operations: [['comment', params]]
+      }
+    });
+
+    // Update the post in the DB
+    Object.assign(post, updatedPost);
+    post.title = params.title;
+    post.body = params.body;
+    post.json_metadata = metadata;
+    await post.save();
+  } catch (e) {
+    next(e);
+  }
+}
+
 async function update(req, res, next) {
   const author = req.params.author;
   const permlink = req.params.permlink;
@@ -73,7 +131,6 @@ async function update(req, res, next) {
   const pending = getBoolean(req.body.pending);
   const reviewed = getBoolean(req.body.reviewed);
   const moderator = req.body.moderator || null;
-  const uprefix = req.body.uprefix || null;
 
   try {
     const post = await Post.get(author, permlink);
@@ -95,7 +152,6 @@ async function update(req, res, next) {
     }
     if (updatedPost.json_metadata.app !== 'utopian/1.0.0') updatedPost.json_metadata.app = 'utopian/1.0.0';
     if (updatedPost.json_metadata.community !== 'utopian') updatedPost.json_metadata.community = 'utopian';
-    if (uprefix && uprefix !== null) updatedPost.json_metadata.uprefix = uprefix;
     // making sure the repository does not get deleted
     if (!updatedPost.json_metadata.repository) updatedPost.json_metadata.repository = post.json_metadata.repository;
     if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
@@ -106,9 +162,6 @@ async function update(req, res, next) {
 
     if (moderator) {
       post.moderator = moderator;
-    }
-    if (uprefix && uprefix !== null) {
-      post.uprefix = uprefix;
     }
 
     if (reviewed) {
@@ -188,59 +241,17 @@ function listByIssue (req, res, next) {
     .catch(e => next(e));
 }
 
-// async function addPostPrefix (req, res, next) {
-//   const { postId, uprefix } = req.body;
-//   try {
-//     const query = {
-//       'id': postId,
-//     };
-//     Post.list({ limit: 1, skip: 0, query})
-//     .then(post => {
-//       if (uprefix && uprefix !== null) post.uprefix = uprefix;
-//       post.save()
-//       .then(savedPost => res.json(savedPost))
-//       .catch(e => {
-//         console.log("ERROR SAVING POST WITH UPDATED UPREFIX", e);
-//         next(e);
-//       });
-//     })
-//     .catch(e => next(e));
-//   } catch (e) {
-//     console.log("ERROR UPDATING UPREFIX", e);
-//     next(e);
-//   }
-// }
-
 function getPostById (req, res, next) {
   const { postId } = req.params;
-  console.log(postId);
+  const query = {
+    'id': postId,
+  };
 
-  if (postId === parseInt(postId, 10) || !isNaN(postId)) {
-      const query = {
-        'id': postId,
-      };
-
-      Post.list({ limit: 1, skip: 0, query })
-      .then(post => {
-        res.json({
-        url: post[0].url,
-        });
-      })
-      .catch(e => next(e));
-  } else {
-      const query = {
-        'json_metadata.uprefix': postId.toLowerCase(),
-      };
-
-      Post.list({ limit: 1, skip: 0, query })
-      .then(post => {
-        res.json({
-        url: post[0].url,
-        });
-      })
-      .catch(e => next(e));
-
-  }
+  Post.list({ limit: 1, skip: 0, query }).then(post => {
+    res.json({
+      url: post[0].url,
+    });
+  }).catch(e => next(e));
 }
 
 function list(req, res, next) {
@@ -399,4 +410,13 @@ function getBoolean(val?: string|boolean): boolean {
   return val === true || val === 'true';
 }
 
-export default { get, create, update, list, getPostById, listByIssue, remove };
+export default {
+  get,
+  create,
+  edit,
+  update,
+  list,
+  getPostById,
+  listByIssue,
+  remove
+};
