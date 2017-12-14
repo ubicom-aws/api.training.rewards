@@ -17,8 +17,8 @@
   "scripts": {
     "dev-server": "cross-env NODE_ENV=development SERVER_PORT=4040 gulp serve",
     "start": "cross-env NODE_ENV=production SERVER_PORT=443 gulp serve",
+    "utopian-pay": "node ./dist/utopian-pay.js $TEST $WIF",
     "updater-posts": "node ./dist/updater-posts.js",
-    "create-account": "node ./dist/create-account.js",
     "utopian-bot": "node ./dist/utopian-bot.js $REFRESH_TOKEN $CLIENT_SECRET",
     "stats-categories": "node ./dist/stats-categories.js",
     "stats-moderators-shares": "node ./dist/stats-moderators-shares.js",

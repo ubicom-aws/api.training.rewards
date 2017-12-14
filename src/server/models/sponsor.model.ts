@@ -57,7 +57,7 @@ SponsorSchema.statics = {
       },
       account: {
         $ne: 'utopian-io'
-      }
+      },
     })
       .sort({ vesting_shares: -1 })
       .exec();
@@ -71,6 +71,12 @@ SponsorSchema.statics = {
       vesting_shares: {
         $gt: 0
       },
+      account: {
+        $ne: 'utopian-io'
+      },
+      opted_out: {
+        $ne: true
+      }
     };
     if (exclude && exclude.length) {
       query = {
@@ -81,8 +87,7 @@ SponsorSchema.statics = {
       }
     }
     return this.find(query)
-      .sort({ should_receive_rewards: -1 })
-      .limit(6)
+      .sort({ vesting_shares: -1 })
       .exec();
   }
 };

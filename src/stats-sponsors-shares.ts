@@ -79,7 +79,8 @@ conn.once('open', function ()
                                                             });
 
                                                             const totalDedicatedSponsors = (total_paid_authors * dedicatedPercentageSponsors) / 100;
-                                                            const shouldHaveReceivedRewards = (percentageTotalShares * totalDedicatedSponsors) / 100;
+                                                            //const shouldHaveReceivedRewards = (percentageTotalShares * totalDedicatedSponsors) / 100;
+                                                            const shouldHaveReceivedRewards = sponsor.should_receive_rewards;
                                                             const total_paid_rewards = sponsor.total_paid_rewards;
 
                                                             if (shouldHaveReceivedRewards >= total_paid_rewards) {
