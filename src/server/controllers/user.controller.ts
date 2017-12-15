@@ -91,6 +91,7 @@ function get(req, res) {
       login: user.github.login,
       account: user.github.account,
       scopeVersion: user.github.scopeVersion,
+      lastSynced: (user.github.lastSynced) ? (user.github.lastSynced) : null,
       avatar_url: user.github.avatar_url,
     } : undefined
   });
@@ -207,6 +208,7 @@ function create(req, res, next) {
                                           account: githubUserName,
                                           token: access_token,
                                           scopeVersion: scopeVersion,
+                                          lastSynced: new Date(),
                                           ...githubUser,
                                       };
                                       user.save()
@@ -220,6 +222,7 @@ function create(req, res, next) {
                                               account: githubUserName,
                                               token: access_token,
                                               scopeVersion: scopeVersion,
+                                              lastSynced: new Date(),
                                               ...githubUser,
                                           }
                                       });
