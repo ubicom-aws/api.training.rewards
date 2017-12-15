@@ -263,7 +263,7 @@ function list(req, res, next) {
     },
   };
 
-  if (section !== 'author') {
+  if (section !== 'author' && status !== 'flagged') {
     query = {
       ...query,
       reviewed: true,
