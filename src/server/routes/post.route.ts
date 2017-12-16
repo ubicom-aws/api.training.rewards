@@ -10,6 +10,9 @@ router.route('/')
   .get(postCtrl.list)
   .post(requireAuth, validate(paramValidation.createPost), postCtrl.create);
 
+router.route('/top')
+  .get(postCtrl.top);
+
 router.route('/byid/:postId')
   .get(postCtrl.getPostById)
   // .put(requireAuth, postCtrl.addPostPrefix)
