@@ -195,6 +195,10 @@ const PostSchema = new mongoose.Schema({
     type: Boolean,
     //required: false,
   },
+  reserved: {
+    type: Boolean,
+    default: false,
+  },
   moderator: {
     type: String,
     //required: false,

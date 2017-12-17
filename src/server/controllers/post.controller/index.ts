@@ -73,6 +73,7 @@ async function update(req, res, next) {
   const flagged = getBoolean(req.body.flagged);
   const pending = getBoolean(req.body.pending);
   const reviewed = getBoolean(req.body.reviewed);
+  const reserved = getBoolean(req.body.reserved);
   const moderator = req.body.moderator || null;
   const uprefix = req.body.uprefix || null;
 
@@ -149,6 +150,10 @@ async function update(req, res, next) {
       post.pending = false;
     } else if (pending) {
       post.pending = true;
+      post.reviewed = false;
+      post.flagged = false;
+    } else if (reserved) {
+      post.pending = false;
       post.reviewed = false;
       post.flagged = false;
     }
