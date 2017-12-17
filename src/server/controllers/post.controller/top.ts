@@ -2,31 +2,22 @@ import Post from '../../models/post.model';
 import { updatePost } from './update';
 import debug from './debug';
 
-async function updateRewards(startDate: Date, endDate: Date, limit: number) {
-  const data = await Post.aggregate([
-    basicMatch(startDate, endDate),
-    {
-      $match: {
-        cashout_time: {
-          $ne: "1969-12-31T23:59:59"
-        }
-      }
-    },
-    {
-      $group: {
-        _id: '$json_metadata.repository.full_name',
-        posts: {
-          $addToSet: {
-            author: '$author',
-            permlink: '$permlink'
-          }
-        }
-      }
-    },
-    {
+async function updateRewards(startDate: Date, endDate: Date, limit?: number) {
+  const aggregateQuery: any[] = [
+    aggregateMatch(startDate, endDate),
+    ...aggregateGroup({
+      author: '$author',
+      permlink: '$permlink'
+    })
+  ];
+
+  if (limit) {
+    aggregateQuery.push({
       $limit: limit
-    }
-  ]);
+    });
+  }
+
+  const data = await Post.aggregate(aggregateQuery);
   for (const repo of data) {
     for (const post of repo['posts']) {
       const author = post.author;
@@ -47,6 +38,7 @@ export async function top(req, res, next) {
       limit = 5,
       start_date = new Date(0),
       end_date = new Date(),
+      sort_by = 'contributions', // 'contributions' or 'rewards'
       include_rewards = false
     } = req.query;
 
@@ -59,20 +51,25 @@ export async function top(req, res, next) {
     limit = parseInt(limit);
     include_rewards = getBoolean(include_rewards);
 
-    if (include_rewards) await updateRewards(start_date, end_date, limit);
-    const data = await Post.aggregate([
-      basicMatch(start_date, end_date),
-      basicGroup(include_rewards),
-      {
-        $sort: {
-          count: -1
-        }
-      },
-      {
-        $limit: limit
-      }
-    ]);
+    if (include_rewards) {
+      await updateRewards(start_date, end_date,
+                          sort_by === 'contributions' ? limit : undefined);
+    }
 
+    const aggregateQuery: any[] = [
+      aggregateMatch(start_date, end_date),
+      ...aggregateGroup(include_rewards ? {
+        total_pending_rewards: '$total_pending_payout_value',
+        total_payout_value: '$total_payout_value'
+      } : undefined)
+    ];
+    if (sort_by === 'contributions') {
+      aggregateQuery.push({
+        $limit: limit
+      });
+    }
+
+    const data = await Post.aggregate(aggregateQuery);
     if (include_rewards) {
       // Aggregate the rewards
       for (const repo of data) {
@@ -82,18 +79,22 @@ export async function top(req, res, next) {
           const paid = parseFloat(post.total_payout_value.split(' ')[0]);
           rewards += pending + paid;
         }
-        repo['rewards'] = rewards.toFixed(3) + ' SBD';
+        repo['rewards'] = rewards;
         repo['posts'] = undefined;
+      }
+      if (sort_by === 'rewards') {
+        data.sort((a: any, b: any) => b.rewards - a.rewards);
       }
     }
 
+    data.length = limit;
     return res.json(data);
   } catch (e) {
     next(e);
   }
 }
 
-function basicMatch(startDate: Date, endDate: Date) {
+function aggregateMatch(startDate: Date, endDate: Date) {
   return {
     $match: {
       'json_metadata.repository.full_name': {$ne: null},
@@ -106,26 +107,24 @@ function basicMatch(startDate: Date, endDate: Date) {
   };
 }
 
-function basicGroup(includeRewards: boolean) {
+function aggregateGroup(addToSet?: any) {
   let group: any = {
     _id: '$json_metadata.repository.full_name',
     count: {$sum: 1},
   };
 
-  if (includeRewards) {
+  if (addToSet) {
     group = {
       ...group,
       posts: {
-        $addToSet: {
-          total_pending_rewards: '$total_pending_payout_value',
-          total_payout_value: '$total_payout_value'
-        }
+        $addToSet: addToSet
       }
     };
   }
-  return {
-    $group: group
-  };
+  return [
+    { $group: group },
+    { $sort: { count: -1 } }
+  ];
 }
 
 function getBoolean(val?: string|boolean): boolean {
