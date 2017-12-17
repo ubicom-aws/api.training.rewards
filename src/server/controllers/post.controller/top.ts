@@ -87,7 +87,7 @@ export async function top(req, res, next) {
       }
     }
 
-    data.length = limit;
+    if (data.length > limit) data.length = limit;
     return res.json(data);
   } catch (e) {
     next(e);
