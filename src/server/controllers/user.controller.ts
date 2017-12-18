@@ -87,11 +87,12 @@ function get(req, res) {
     bannedUntil: user.bannedUntil,
     banned: user.banned,
     details: user.details,
+    repos: user.repos ? (user.repos) : undefined,
     github: user.github ? {
       login: user.github.login,
       account: user.github.account,
       scopeVersion: user.github.scopeVersion,
-      lastSynced: (user.github.lastSynced) ? (user.github.lastSynced) : null,
+      lastSynced: (user.github.lastSynced) ? (user.github.lastSynced) : undefined,
       avatar_url: user.github.avatar_url,
     } : undefined
   });
@@ -99,6 +100,7 @@ function get(req, res) {
 
 function getGithubRepos(user, callback) {
   var result = new Array();
+  console.log("getting github repos:", user);
   if (!user || !user.github || !user.github.token) {
     return callback(result);
   }
