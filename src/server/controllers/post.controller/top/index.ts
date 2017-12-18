@@ -54,10 +54,20 @@ export function bypassRateLimit(req, res, next): boolean {
     limit = Number(limit);
     include_rewards = getBoolean(include_rewards);
 
-    if (isNaN(limit)) {
+    if (isNaN(limit) || limit > 100) {
       res.json({
         error: 'limit is invalid or too high'
       });
+      return true;
+    } else if (include_rewards
+        && end_date.getTime() - start_date.getTime() > 8 * 24 * 60 * 60 * 1000) {
+      res.json({
+        error: 'date range with rewards included must be less than 8 days apart'
+      });
+    }
+
+    if (!include_rewards) {
+      next();
       return true;
     }
   } catch (e) {
