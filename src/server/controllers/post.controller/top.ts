@@ -3,6 +3,15 @@ import { getUpdatedPost } from './update';
 import debug from './debug';
 
 export async function top(req, res, next) {
+  let socketOpen = true;
+  res.socket.setKeepAlive(true, 5000);
+  res.socket.on('close', () => {
+    socketOpen = false;
+  })
+  res.writeHead(200, {
+    'Content-Type': 'application/json'
+  });
+
   try {
     let {
       limit = 5,
@@ -22,8 +31,12 @@ export async function top(req, res, next) {
     include_rewards = getBoolean(include_rewards);
 
     if (include_rewards) {
-      await updateRewards(start_date, end_date,
-                          sort_by === 'contributions' ? limit : undefined);
+      const limiter = sort_by === 'contributions' ? limit : undefined;
+      await updateRewards(start_date, end_date, limiter, () => {
+        // Keep the connection alive
+        if (socketOpen) res.write('\n');
+        return socketOpen;
+      });
     }
 
     const aggregateQuery: any[] = [
@@ -58,13 +71,17 @@ export async function top(req, res, next) {
     }
 
     if (data.length > limit) data.length = limit;
-    return res.json(data);
+    return res.end(JSON.stringify(data));
   } catch (e) {
-    next(e);
+    console.log('Failed to retrieve top projects', e);
+    res.end();
   }
 }
 
-async function updateRewards(startDate: Date, endDate: Date, limit?: number) {
+async function updateRewards(startDate: Date,
+                              endDate: Date,
+                              limit?: number,
+                              onUpdate?: Function) {
   const aggregateQuery: any[] = [
     aggregateMatch(startDate, endDate),
     ...aggregateGroup({
@@ -80,16 +97,39 @@ async function updateRewards(startDate: Date, endDate: Date, limit?: number) {
   }
 
   const data = await Post.aggregate(aggregateQuery);
+  if (debug.enabled) {
+    let count = 0;
+    for (const repo of data) {
+      for (const post of repo['posts']) count++;
+    }
+    debug('%d posts need to be updated', count);
+  }
+
+loop:
   for (const repo of data) {
-    for (const post of repo['posts']) {
-      const author = post.author;
-      const permlink = post.permlink;
-      try {
+    const posts: any[] = repo['posts'];
+    for (let i = 0; i < posts.length;) {
+      const proms: Promise<any>[] = [];
+      for (let x = 0; x < 5; ++x) {
+        if (x + i >= posts.length) {
+          break;
+        }
+        const post = posts[i++];
+        const author = post.author;
+        const permlink = post.permlink;
         debug('Updating post %s/%s', author, permlink);
-        const post = await getUpdatedPost(author, permlink);
-        post.save();
+        proms.push(getUpdatedPost(author, permlink));
+      }
+      try {
+        const completed = await Promise.all(proms);
+        for (const c of completed) {
+          c.save();
+        }
       } catch (e) {
-        console.log('Failed to update post', e);
+        console.log('Failed to update posts', e);
+      }
+      if (onUpdate && !onUpdate()) {
+        break loop;
       }
     }
   }
