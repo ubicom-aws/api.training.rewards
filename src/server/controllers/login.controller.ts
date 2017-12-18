@@ -1,23 +1,11 @@
-import * as HttpStatus from 'http-status';
-import {getToken} from '../sc2';
-import * as express from 'express';
-import * as crypto from 'crypto';
-import Session from '../models/session.model';
 import User, { UserSchemaDoc } from '../models/user.model';
+import { genSecureAlphaNumeric } from '../helpers/string';
+import Session from '../models/session.model';
+import * as HttpStatus from 'http-status';
+import * as express from 'express';
 import steemAPI from '../steemAPI';
-
-const ALPHA_NUMERIC = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-function genSecureAlphaNumeric(size: number): string {
-  const secure = crypto.randomBytes(size);
-  const charLen = ALPHA_NUMERIC.length;
-  let ascii = '';
-  for (const byte of secure) {
-    // Range from ASCII
-    ascii += ALPHA_NUMERIC[byte % charLen];
-  }
-  return ascii;
-}
+import * as crypto from 'crypto';
+import {getToken} from '../sc2';
 
 async function createUser(account: string) {
   var details = {

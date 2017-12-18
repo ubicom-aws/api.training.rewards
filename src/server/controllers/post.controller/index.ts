@@ -1,11 +1,11 @@
 import APIError from '../../helpers/APIError';
+import { top } from './top';
 import Post from '../../models/post.model';
 import User from '../../models/user.model';
 import * as HttpStatus from 'http-status';
 import { getUpdatedPost } from './update';
 import * as request from 'superagent';
 import steemAPI from '../../steemAPI';
-import { top } from './top';
 
 function get(req, res, next) {
   Post.get(req.params.author, req.params.permlink)
@@ -340,4 +340,13 @@ function getBoolean(val?: string|boolean): boolean {
   return val === true || val === 'true';
 }
 
-export default { get, create, update, list, top, getPostById, listByIssue, remove };
+export default {
+  get,
+  create,
+  update,
+  list,
+  top,
+  getPostById,
+  listByIssue,
+  remove
+};

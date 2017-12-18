@@ -3,6 +3,50 @@ import Session from '../models/session.model';
 import * as HttpStatus from 'http-status';
 import * as express from 'express';
 
+export interface RateLimit {
+  lastHit: number;
+  reset: Function;
+}
+
+export type BypassCheck = (req: express.Request,
+                            res: express.Response,
+                            next: express.NextFunction) => boolean;
+
+export function rateLimit(minWaitTime = 60000, bypassCheck?: BypassCheck) {
+  const users: {[account: string]: RateLimit} = {};
+  return (req: express.Request,
+          res: express.Response,
+          next: express.NextFunction) => {
+    if (!res.locals.user) {
+      return res.sendStatus(HttpStatus.UNAUTHORIZED);
+    }
+
+    let user = users[res.locals.user.account];
+    if (!user) {
+      user = users[res.locals.user.account] = {
+        lastHit: 0,
+        reset: () => {
+          user.lastHit = 0;
+        }
+      };
+    }
+    res.locals.rateLimit = user;
+    if (bypassCheck && bypassCheck(req, res, next)) {
+      return;
+    }
+
+    const now = Date.now();
+    if ((now - user.lastHit) <= minWaitTime) {
+      res.status(HttpStatus.TOO_MANY_REQUESTS);
+      return res.json({
+        try_again: Math.round((minWaitTime - (now - user.lastHit)) / 1000)
+      });
+    }
+    user.lastHit = now;
+    next();
+  };
+}
+
 export function requireAuth(req: express.Request,
                             res: express.Response,
                             next: express.NextFunction) {
