@@ -65,11 +65,6 @@ export function bypassRateLimit(req, res, next): boolean {
         error: 'date range with rewards included must be less than 8 days apart'
       });
     }
-
-    if (!include_rewards) {
-      next();
-      return true;
-    }
   } catch (e) {
     next(e);
     return true;
@@ -100,6 +95,11 @@ export function bypassRateLimit(req, res, next): boolean {
     cacheId,
     ...query
   };
+
+  if (!include_rewards) {
+    next();
+    return true;
+  }
   return false;
 }
 
@@ -153,7 +153,7 @@ export async function top(req, res, next) {
     cached.results = data;
     setTimeout(() => {
       delete cached[params.cacheId];
-    }, 1000 * 60 * 60 * 12);
+    }, params.include_rewards ? 1000 * 60 * 60 * 12 : 1000 * 60 * 5);
   } catch (e) {
     console.log('Failed to retrieve top projects', e);
     cached.status = TaskStatus.ERROR;
