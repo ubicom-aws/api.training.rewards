@@ -6,7 +6,6 @@ import * as HttpStatus from 'http-status';
 import { updateRewards } from './rewards';
 import * as crypto from 'crypto';
 import debug from '../debug';
-import { setTimeout } from 'timers';
 
 const cache: {[key: string]: TaskModel} = {};
 
@@ -33,6 +32,7 @@ export interface TopQueryParams {
   end_date: Date;
   sort_by: TopSortBy;
   include_rewards: boolean;
+  only_new: boolean;
 }
 
 export interface CacheableQueryParams extends TopQueryParams {
@@ -45,7 +45,8 @@ export function bypassRateLimit(req, res, next): boolean {
     start_date = new Date(0),
     end_date = new Date(),
     sort_by = 'contributions',
-    include_rewards = false
+    include_rewards = false,
+    only_new = false
   } = req.query;
 
   try {
@@ -53,6 +54,7 @@ export function bypassRateLimit(req, res, next): boolean {
     if (typeof(end_date) === 'string') end_date = new Date(end_date);
     limit = Number(limit);
     include_rewards = getBoolean(include_rewards);
+    only_new = getBoolean(only_new);
 
     if (isNaN(limit) || limit > 100) {
       res.json({
@@ -75,7 +77,8 @@ export function bypassRateLimit(req, res, next): boolean {
     start_date,
     end_date,
     sort_by,
-    include_rewards
+    include_rewards,
+    only_new
   };
 
   const cryptoHash = crypto.createHash('md5');
@@ -117,32 +120,43 @@ export async function top(req, res, next) {
     }
 
     const aggregateQuery: any[] = [
-      aggregateMatch(params.start_date, params.end_date),
+      aggregateMatch(params.only_new ? undefined : params.start_date, params.end_date),
       ...aggregateGroup(params.include_rewards ? {
         total_pending_rewards: '$total_pending_payout_value',
         total_payout_value: '$total_payout_value'
       } : undefined)
     ];
-    if (params.sort_by === 'contributions') {
-      aggregateQuery.push({
-        $limit: params.limit
-      });
-    }
 
-    const data = await Post.aggregate(aggregateQuery);
-    if (params.include_rewards) {
-      // Aggregate the rewards
-      for (const repo of data) {
+    const data: any[] = await Post.aggregate(aggregateQuery);
+    if (params.only_new || params.include_rewards) {
+      for (let i = data.length - 1; i >= 0; --i) {
+        const repo = data[i];
+        let blacklist = false;
         let rewards = 0;
         for (const post of repo['posts']) {
-          const pending = parseFloat(post.total_pending_rewards.split(' ')[0]);
-          const paid = parseFloat(post.total_payout_value.split(' ')[0]);
-          rewards += pending + paid;
+          if (params.only_new
+              && (new Date(post.created).getTime())
+                    < params.start_date.getTime()) {
+            blacklist = true;
+            break;
+          }
+          if (params.include_rewards) {
+            const pending = parseFloat(post.total_pending_rewards.split(' ')[0]);
+            const paid = parseFloat(post.total_payout_value.split(' ')[0]);
+            rewards += pending + paid;
+          }
         }
-        repo['rewards'] = rewards;
+        if (blacklist) {
+          data.splice(i, 1);
+          continue;
+        }
+        if (params.include_rewards) {
+          repo['rewards'] = rewards;
+        }
         repo['posts'] = undefined;
       }
-      if (params.sort_by === 'rewards') {
+
+      if (params.include_rewards && params.sort_by === 'rewards') {
         data.sort((a: any, b: any) => b.rewards - a.rewards);
       }
     }
