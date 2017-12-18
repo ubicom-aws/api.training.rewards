@@ -31,10 +31,8 @@ const UserSchema = new mongoose.Schema({
     type: Object,
     default: {
       recoveryAccount: 'steem',
-      emailVerified: false,
-      confirmed: false,
       connectedToSteem: false,
-      lastUpdate: Date.now,
+      lastUpdate: Date.now(),
       votingForWiteness: false,
     }
   },
