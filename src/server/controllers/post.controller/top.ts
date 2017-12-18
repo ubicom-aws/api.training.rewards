@@ -1,36 +1,6 @@
 import Post from '../../models/post.model';
-import { updatePost } from './update';
+import { getUpdatedPost } from './update';
 import debug from './debug';
-
-async function updateRewards(startDate: Date, endDate: Date, limit?: number) {
-  const aggregateQuery: any[] = [
-    aggregateMatch(startDate, endDate),
-    ...aggregateGroup({
-      author: '$author',
-      permlink: '$permlink'
-    })
-  ];
-
-  if (limit) {
-    aggregateQuery.push({
-      $limit: limit
-    });
-  }
-
-  const data = await Post.aggregate(aggregateQuery);
-  for (const repo of data) {
-    for (const post of repo['posts']) {
-      const author = post.author;
-      const permlink = post.permlink;
-      try {
-        debug('Updating post %s/%s', author, permlink);
-        await updatePost(author, permlink);
-      } catch (e) {
-        console.log('Failed to update post', e);
-      }
-    }
-  }
-}
 
 export async function top(req, res, next) {
   try {
@@ -91,6 +61,37 @@ export async function top(req, res, next) {
     return res.json(data);
   } catch (e) {
     next(e);
+  }
+}
+
+async function updateRewards(startDate: Date, endDate: Date, limit?: number) {
+  const aggregateQuery: any[] = [
+    aggregateMatch(startDate, endDate),
+    ...aggregateGroup({
+      author: '$author',
+      permlink: '$permlink'
+    })
+  ];
+
+  if (limit) {
+    aggregateQuery.push({
+      $limit: limit
+    });
+  }
+
+  const data = await Post.aggregate(aggregateQuery);
+  for (const repo of data) {
+    for (const post of repo['posts']) {
+      const author = post.author;
+      const permlink = post.permlink;
+      try {
+        debug('Updating post %s/%s', author, permlink);
+        const post = await getUpdatedPost(author, permlink);
+        post.save();
+      } catch (e) {
+        console.log('Failed to update post', e);
+      }
+    }
   }
 }
 

@@ -2,6 +2,7 @@ import APIError from '../../helpers/APIError';
 import Post from '../../models/post.model';
 import User from '../../models/user.model';
 import * as HttpStatus from 'http-status';
+import { getUpdatedPost } from './update';
 import * as request from 'superagent';
 import steemAPI from '../../steemAPI';
 import { top } from './top';
@@ -34,15 +35,11 @@ function create(req, res, next) {
         }, attempts * 1000);
         return;
       }
-      // hard fix for edge cases where json_metadata is empty
-      const parsedJson = post.json_metadata && post.json_metadata !== '' ?
-          JSON.parse(post.json_metadata) :
-          {};
 
       const newPost = new Post({
         ...post,
         reviewed: false,
-        json_metadata: parsedJson,
+        json_metadata: JSON.parse(post.json_metadata),
       });
 
       try {
@@ -75,44 +72,11 @@ async function update(req, res, next) {
   const reviewed = getBoolean(req.body.reviewed);
   const reserved = getBoolean(req.body.reserved);
   const moderator = req.body.moderator || null;
-  const uprefix = req.body.uprefix || null;
 
   try {
-    const post = await Post.get(author, permlink);
-    const updatedPost: any = await new Promise((resolve, reject) => {
-      steemAPI.getContent(author, permlink, (e, p) => {
-        if (e) {
-          return reject(e);
-        }
-        resolve(p);
-      })
-    });
+    const post = await getUpdatedPost(author, permlink);
 
-    updatedPost.json_metadata = updatedPost.json_metadata && updatedPost.json_metadata !== '' ?
-                                  JSON.parse(updatedPost.json_metadata) : {};
-
-    // @UTOPIAN @TODO bad patches. Needs to have a specific place where the put the utopian data so it does not get overwritten
-    if (!updatedPost.json_metadata.type && post.json_metadata.type) {
-      updatedPost.json_metadata.type = post.json_metadata.type;
-    }
-    if (updatedPost.json_metadata.app !== 'utopian/1.0.0') updatedPost.json_metadata.app = 'utopian/1.0.0';
-    if (updatedPost.json_metadata.community !== 'utopian') updatedPost.json_metadata.community = 'utopian';
-    if (uprefix && uprefix !== null) updatedPost.json_metadata.uprefix = uprefix;
-    // making sure the repository does not get deleted
-    if (!updatedPost.json_metadata.repository) updatedPost.json_metadata.repository = post.json_metadata.repository;
-    if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
-    if (!updatedPost.json_metadata.pullRequests && post.json_metadata.pullRequests) updatedPost.json_metadata.pullRequests = post.json_metadata.pullRequests;
-    if (!updatedPost.json_metadata.issue && post.json_metadata.issue) updatedPost.json_metadata.issue = post.json_metadata.issue;
-
-    updatedPost.json_metadata.type = updatedPost.json_metadata.type.replace("announcement-", "task-");
-
-    if (moderator) {
-      post.moderator = moderator;
-    }
-    if (uprefix && uprefix !== null) {
-      post.uprefix = uprefix;
-    }
-
+    if (moderator) post.moderator = moderator;
     if (reviewed) {
       post.reviewed = true;
       post.pending = false;
@@ -158,12 +122,6 @@ async function update(req, res, next) {
       post.flagged = false;
     }
 
-    for (var prop in updatedPost) {
-      if (updatedPost[prop] !== post[prop]) {
-        post[prop] = updatedPost[prop];
-      }
-    }
-
     try {
       const savedPost = await post.save();
       res.json(savedPost);
@@ -193,29 +151,6 @@ function listByIssue (req, res, next) {
     }))
     .catch(e => next(e));
 }
-
-// async function addPostPrefix (req, res, next) {
-//   const { postId, uprefix } = req.body;
-//   try {
-//     const query = {
-//       'id': postId,
-//     };
-//     Post.list({ limit: 1, skip: 0, query})
-//     .then(post => {
-//       if (uprefix && uprefix !== null) post.uprefix = uprefix;
-//       post.save()
-//       .then(savedPost => res.json(savedPost))
-//       .catch(e => {
-//         console.log("ERROR SAVING POST WITH UPDATED UPREFIX", e);
-//         next(e);
-//       });
-//     })
-//     .catch(e => next(e));
-//   } catch (e) {
-//     console.log("ERROR UPDATING UPREFIX", e);
-//     next(e);
-//   }
-// }
 
 function getPostById (req, res, next) {
   const { postId } = req.params;
