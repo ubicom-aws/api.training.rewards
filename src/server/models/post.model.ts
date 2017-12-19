@@ -216,7 +216,14 @@ PostSchema.index(
       "title": 5
     }
   }
-)
+);
+
+PostSchema.index({
+  'author': 1,
+  'permlink': 1,
+}, {
+  unique: true,
+});
 
 export interface PostSchemaDoc extends mongoose.Document {
 }
