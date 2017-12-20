@@ -15,7 +15,7 @@ conn.once('open', function ()
   Stats.get().then(stats => {
     const limit = 500;
     // get all the posts in the editable window (7 days + 1)
-    const activeSince = new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000)));
+    const activeSince = new Date((new Date().getTime() - ((7 + 1) * 24 * 60 * 60 * 1000)));
     const query = {
       created:
           {
