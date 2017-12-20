@@ -13,38 +13,48 @@ const conn = mongoose.connection;
 conn.once('open', function ()
 {
   Stats.get().then(stats => {
-    // @TODO should be used to increment the stats based on last check, instead then rechecking from the start
-    const lastCheck = stats.stats_last_updated_posts;
-    const now = new Date().toISOString();
-    // updating only posts created in last 7 days
-    const activeSince = new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000)));
+    const limit = 500;
+    // get all the posts in the editable window (7 days + 1)
+    const activeSince = new Date((new Date().getTime() - ((7 + 1) * 24 * 60 * 60 * 1000)));
     const query = {
       created:
-        {
-          $gte: activeSince.toISOString()
-        }
+          {
+            $gte: activeSince.toISOString()
+          }
     };
-
-    Post
-      .countAll({ query })
-      .then(count => {
-        if (count === 0) {
-          console.log(`NO POSTS TO UPDATE. ENDED.`);
-          process.exit(0);
-        } else {
-          console.log(`${count} ACTIVE POSTS. CHECKING AND UPDATING`);
-        }
-
-        Post
-          .list({ skip: 0, limit: count, query })
+    const updatePosts = (skip = 0) => {
+      Post
+          .list({ skip, limit })
           .then(posts => {
-            if(posts.length > 0) {
-              posts.forEach((post, index) => {
-                setTimeout(function(){
-                  steemApi.getContent(post.author, post.permlink, (err, updatedPost) => {
-                    if (!err) {
-                      console.log(`---- NOW CHECKING POST ${post.permlink} by ${post.author} ----\n`);
 
+            if (!posts.length) {
+              const now = new Date().toISOString();
+
+              stats.stats_last_updated_posts = now;
+
+              return stats.save().then(() => {
+                console.log("DONE");
+                conn.close();
+                process.exit(0);
+              });
+            }
+
+            if(posts.length > 0) {
+              posts.forEach((post, indexPosts) => {
+                setTimeout(() => {
+                  steemApi.getContent(post.author, post.permlink, (err, updatedPost) => {
+                    console.log(`----NOW CHECKING POST ${post.permlink} by ${post.author}----\n`);
+
+                    if (err) {
+                      console.log(`CANNOT RETRIEVE POST - STEEM ERROR ${err}\n`);
+
+                      if (indexPosts + 1 === posts.length) {
+                        console.log("----RECURSIVE OPERATION----", posts.length + skip);
+                        updatePosts(posts.length + skip);
+                      }
+                    }
+
+                    if (!err) {
                       updatedPost.json_metadata = JSON.parse(updatedPost.json_metadata);
 
                       // @UTOPIAN @TODO bad patches. Needs to have a specific place where the put the utopian data so it does not get overwritten
@@ -63,40 +73,34 @@ conn.once('open', function ()
                       for (var prop in updatedPost) {
                         if (updatedPost[prop] !== post[prop]) {
                           post[prop] = updatedPost[prop];
-                          console.log(`UPDATED PROP ${prop} was ${JSON.stringify(post[prop])} now is ${JSON.stringify(updatedPost[prop])}\n`);
+                          //console.log(`UPDATED PROP ${prop} was ${JSON.stringify(post[prop])} now is ${JSON.stringify(updatedPost[prop])}\n`);
                         }
                       }
 
-                      post.save()
-                        .then(() => console.log(`POST UPDATED SUCCESSFULLY\n`))
-                        .catch(e => {
-                          console.log(`ERROR UPDATING POST ${e}\n`);
-                        })
-                        .finally(() => {
-                          if ((index + 1) === count) {
-                            conn.close();
-                            process.exit(0);
-                          }
-                        })
-                    } else {
-                      console.log(`CANNOT RETRIEVE POST - STEEM ERROR ${err}\n`);
-                      if ((index + 1) === count) {
-                        stats.stats_last_updated_posts = now;
+                      post.save().then(() => {
+                        console.log(`POST UPDATED SUCCESSFULLY\n`);
 
-                        stats.save().then(savedStats => {
-                          conn.close();
-                          process.exit(0);
-                        });
-                      }
+                        if (indexPosts + 1 === posts.length) {
+                          console.log("----RECURSIVE OPERATION----", posts.length + skip);
+                          updatePosts(posts.length + skip);
+                        }
+                      }).catch(e => {
+                        console.log(`ERROR UPDATING POST ${e}\n`);
+                        if (indexPosts + 1 === posts.length) {
+                          console.log("----RECURSIVE OPERATION----", posts.length + skip);
+                          updatePosts(posts.length + skip);
+                        }
+                      });
                     }
                   });
-                }, index * 3000);
+                }, 1000 * indexPosts);
               });
             }
-          })
-          .catch(e => console.log(`CANNOT RETRIEVE POSTS FROM MONGO ${e}\n`));
-      })
-      .catch(e => console.log(`CANNOT COUNT ACTIVE POSTS IN MONGO ${e}\n`));
+          });
+    };
+
+    updatePosts();
+
   }).catch(e => {
     console.log("ERROR STATS", e);
     conn.close();
