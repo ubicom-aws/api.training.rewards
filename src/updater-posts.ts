@@ -44,26 +44,18 @@ conn.once('open', function ()
                   console.log(`----NOW CHECKING POST ${post.permlink} by ${post.author}----\n`);
                   try {
                     const updatedPost = await getUpdatedPost(post.author, post.permlink);
-                    post.save().then(() => {
+                    try {
+                      await post.save();
                       console.log(`POST UPDATED SUCCESSFULLY\n`);
-
-                      if (indexPosts + 1 === posts.length) {
-                        console.log("----RECURSIVE OPERATION----", posts.length + skip);
-                        updatePosts(posts.length + skip);
-                      }
-                    }).catch(e => {
+                    } catch (e) {
                       console.log(`ERROR UPDATING POST ${e}\n`);
-                      if (indexPosts + 1 === posts.length) {
-                        console.log("----RECURSIVE OPERATION----", posts.length + skip);
-                        updatePosts(posts.length + skip);
-                      }
-                    });
+                    }
                   } catch (err) {
                     console.log(`CANNOT RETRIEVE POST - STEEM ERROR ${err}\n`);
-                    if (indexPosts + 1 === posts.length) {
-                      console.log("----RECURSIVE OPERATION----", posts.length + skip);
-                      updatePosts(posts.length + skip);
-                    }
+                  }
+                  if (indexPosts + 1 === posts.length) {
+                    console.log("----RECURSIVE OPERATION----", posts.length + skip);
+                    updatePosts(posts.length + skip);
                   }
                 }, 1000 * indexPosts);
               });
