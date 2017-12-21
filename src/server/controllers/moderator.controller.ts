@@ -12,6 +12,7 @@ function create(req,res,next) {
   const supermoderator = false;
   const apprentice = true;
   const total_paid_rewards = 0;
+  const total_paid_rewards_steem = 0;
   const should_receive_rewards = 0;
   const total_moderated = 0;
   const percentage_total_rewards_moderators = 0;
@@ -24,6 +25,7 @@ function create(req,res,next) {
     supermoderator: supermoderator,
     apprentice: apprentice,
     total_paid_rewards: total_paid_rewards,
+    total_paid_rewards_steem: total_paid_rewards_steem,
     should_receive_rewards: should_receive_rewards,
     total_moderated: total_moderated,
     percentage_total_rewards_moderators: percentage_total_rewards_moderators,
