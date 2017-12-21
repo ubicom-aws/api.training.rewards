@@ -39,6 +39,31 @@ export async function broadcast(req: express.Request,
                                 res: express.Response,
                                 next: express.NextFunction) {
   try {
+    if (req.body.operations) {
+      const ops: any[][] = req.body.operations;
+      for (const op of ops) {
+        if (op[0] !== 'comment') {
+          continue;
+        }
+        const data = op[1];
+        if (!data.json_metadata || data.parent_author || data.parent_permlink) {
+          continue;
+        }
+        const meta = JSON.parse(data.json_metadata);
+        if (meta.repository) {
+          const repo = meta.repository;
+          meta.repository = {
+            id: repo.id,
+            name: repo.name,
+            full_name: repo.full_name,
+            html_url: repo.html_url,
+            fork: repo.fork
+          };
+        }
+        data.json_metadata = JSON.stringify(meta);
+      }
+    }
+
     const json = await sc2.send('/broadcast', {
       user: res.locals.user,
       data: req.body
