@@ -133,8 +133,9 @@ async function update(req, res, next) {
     }
 
     try {
+      const user = await User.get(post.author);
       await sc2.send('/broadcast', {
-        user: res.locals.user,
+        user,
         data: {
           operations: [[
             'comment',

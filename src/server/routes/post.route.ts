@@ -1,8 +1,8 @@
 import { bypassRateLimit } from '../controllers/post.controller/top';
 import paramValidation from '../../config/param-validation';
+import { requireAuth, requireMod } from './middleware';
 import postCtrl from '../controllers/post.controller';
 import * as validate from 'express-validation';
-import { requireAuth } from './middleware';
 import { rateLimit } from './middleware';
 import * as express from 'express';
 
@@ -21,7 +21,7 @@ router.route('/byid/:postId')
 
 router.route('/:author/:permlink')
   .get(postCtrl.get)
-  .put(requireAuth, postCtrl.update)
-  .delete(requireAuth, postCtrl.remove);
+  .put(requireAuth, requireMod, postCtrl.update)
+  .delete(requireAuth, requireMod, postCtrl.remove);
 
 export default router;
