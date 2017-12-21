@@ -26,6 +26,7 @@ const ModeratorSchema = new mongoose.Schema({
     required: false,
   },
   total_paid_rewards: Number,
+  total_paid_rewards_steem: Number,
   should_receive_rewards: Number,
   total_moderated: Number,
   percentage_total_rewards_moderators: Number,
@@ -72,6 +73,12 @@ ModeratorSchema.statics = {
     let query: any = {
       total_moderated: {
         $gt: 0
+      },
+      banned: {
+        $ne: true,
+      },
+      reviewed: {
+        '$eq': true,
       },
     };
 

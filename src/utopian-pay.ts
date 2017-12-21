@@ -5,6 +5,7 @@ import Moderator from './server/models/moderator.model';
 import Stats from './server/models/stats.model';
 import config from './config/config';
 import * as steem from 'steem';
+import * as R from 'ramda';
 
 (mongoose as any).Promise = Promise;
 mongoose.connect(config.mongo);
@@ -82,7 +83,7 @@ conn.once('open', function ()
                         const totalSteem = steem.formatter.vestToSteem(totalVests, props.total_vesting_shares, props.total_vesting_fund_steem);
                         let totalPaidSponsors = 0;
                         let totalPaidModerators = 0;
-                        let supervisors = {};
+                        let supervisors = Array();
 
                         console.log("TOTAL STEEM CALCULATED FROM VESTS", totalSteem);
 
@@ -95,7 +96,7 @@ conn.once('open', function ()
                                         const sponsorPayout = (sponsorPercent * totalSteem / 100) > 0.001 ? (sponsorPercent * totalSteem / 100) : 0.001;
 
                                         const finalSponsorPayout = `${sponsorPayout.toFixed(3)} STEEM`;
-                                        const memoSponsor = `Hello ${sponsor.account}, here your weekly payout as a Sponsor.`;
+                                        const memoSponsor = `Hello ${sponsor.account}, here is your weekly payout as a Sponsor.`;
 
                                         totalPaidSponsors = totalPaidSponsors + sponsorPayout;
 
@@ -112,13 +113,16 @@ conn.once('open', function ()
 
                                                     console.log(`>-- $$ PAID SPONSOR ${sponsor.account}: ${finalSponsorPayout}`);
 
-                                                    if (sponsorIndex + 1 === sponsors.length) {
-                                                        console.log("-------------------------------------");
-                                                        console.log("SPONSORS PAID SUCCESSFULLY: ", totalPaidSponsors);
-                                                        console.log("-------------------------------------");
+                                                    sponsor.total_paid_rewards_steem = (sponsor.total_paid_rewards_steem || 0) + sponsorPayout;
+                                                    sponsor.save().then(() => {
+                                                            if (sponsorIndex + 1 === sponsors.length) {
+                                                                console.log("-------------------------------------");
+                                                                console.log("SPONSORS PAID SUCCESSFULLY: ", totalPaidSponsors);
+                                                                console.log("-------------------------------------");
 
-                                                        done();
-                                                    }
+                                                                done();
+                                                            }
+                                                        });
                                                 });
                                             }, 30000 * sponsorIndex);
                                         }
@@ -146,7 +150,7 @@ conn.once('open', function ()
                                         const moderatorPayout = (moderatorPercent * totalSteem / 100) >= 0.001 ? (moderatorPercent * totalSteem / 100) : 0.001;
 
                                         const finalModeratorPayout = `${moderatorPayout.toFixed(3)} STEEM`;
-                                        const memoModerator = `Hello ${moderator.account}, here your weekly payout as a Moderator.`;
+                                        const memoModerator = `Hello ${moderator.account}, here is your weekly payout as a Moderator.`;
 
                                         totalPaidModerators = totalPaidModerators + moderatorPayout;
 
@@ -156,8 +160,22 @@ conn.once('open', function ()
                                         // supervisors get 20% of the shares of their own moderators
                                         // these shares are not removed by the moderator but paid by the system
                                         if (moderator.referrer) {
-                                            const currentSupervisorsShares = supervisors[moderator.referrer] ? supervisors[moderator.referrer] : 0;
-                                            supervisors[moderator.referrer] = currentSupervisorsShares + moderatorShares;
+                                            const sup = R.find(R.propEq('account', moderator.referrer))(supervisors);
+
+                                            if (sup) {
+                                                supervisors = [
+                                                    ...supervisors.filter(supervisor => supervisor.account !== sup.account),
+                                                    {
+                                                        account: sup.account,
+                                                        supervisor_moderators_shares: sup.supervisor_moderators_shares + moderatorShares
+                                                    }
+                                                ]
+                                            } else {
+                                                supervisors.push({
+                                                    account: moderator.referrer,
+                                                    supervisor_moderators_shares: moderatorShares,
+                                                })
+                                            }
                                         }
 
                                         if (!TEST) {
@@ -171,13 +189,16 @@ conn.once('open', function ()
 
                                                     console.log(`>-- $$ PAID MODERATOR ${moderator.account}: ${finalModeratorPayout}`);
 
-                                                    if (moderatorIndex + 1 === moderators.length) {
-                                                        console.log("-------------------------------------");
-                                                        console.log("MODERATORS PAID SUCCESSFULLY: ", totalPaidModerators);
-                                                        console.log("-------------------------------------");
+                                                    moderator.total_paid_rewards_steem = (moderator.total_paid_rewards_steem || 0) + moderatorPayout;
+                                                    moderator.save().then(() => {
+                                                        if (moderatorIndex + 1 === moderators.length) {
+                                                            console.log("-------------------------------------");
+                                                            console.log("MODERATORS PAID SUCCESSFULLY: ", totalPaidModerators);
+                                                            console.log("-------------------------------------");
 
-                                                        done();
-                                                    }
+                                                            done();
+                                                        }
+                                                    });
                                                 });
                                             }, 30000 * moderatorIndex);
                                         }
@@ -198,46 +219,50 @@ conn.once('open', function ()
                         };
                         const paySupervisors = () => {
                             let totalPaidSupervisors = 0;
-                            let supervisorsCount = Object.keys(supervisors).length;
-                            let supervisorsIndex = 0;
 
-                            for(var supervisor in supervisors) {
-                                const modsShares = supervisors[supervisor];
+                            supervisors.forEach((supervisor, supervisorsIndex) => {
+                                const modsShares = supervisor.supervisor_moderators_shares;
                                 const supervisorShares = 20 * modsShares / 100;
                                 const supervisorPercent = supervisorShares * percentModerators / 100;
                                 const supervisorPayout = (supervisorPercent * totalSteem / 100) >= 0.001 ? (supervisorPercent * totalSteem / 100) : 0.001;
                                 const finalSupervisorPayout = `${supervisorPayout.toFixed(3)} STEEM`;
-                                const memoSupervisor = `Hello ${supervisor}, here your weekly payout as a Supervisor.`;
+                                const memoSupervisor = `Hello ${supervisor.account}, here is your weekly payout as a Supervisor.`;
 
                                 totalPaidSupervisors = totalPaidSupervisors + supervisorPayout;
 
-                                console.log(`> $$ PAYOUT SUPERVISOR ${supervisor}: ${finalSupervisorPayout}`);
+                                console.log(`> $$ PAYOUT SUPERVISOR ${supervisor.account}: ${finalSupervisorPayout}`);
 
                                 if (!TEST) {
                                     setTimeout(function() {
-                                        steem.broadcast.transfer(WIF, payAccount, supervisor, finalSupervisorPayout, memoSupervisor, function(err, result) {
+                                        steem.broadcast.transfer(WIF, payAccount, supervisor.account, finalSupervisorPayout, memoSupervisor, function(err, result) {
                                             if (err) {
-                                                console.log("!----------COULD NOT PAY SUPERVISOR----------!", supervisor);
+                                                console.log("!----------COULD NOT PAY SUPERVISOR----------!", supervisor.account);
                                                 console.log(err);
                                                 return;
                                             }
 
-                                            console.log(`>-- $$ PAID SUPERVISOR ${supervisor}: ${finalSupervisorPayout}`);
+                                            console.log(`>-- $$ PAID SUPERVISOR ${supervisor.account}: ${finalSupervisorPayout}`);
 
-                                            if (supervisorsIndex + 1 === supervisorsCount) {
-                                                console.log("-------------------------------------");
-                                                console.log("SUPERVISORS PAID SUCCESSFULLY: ", totalPaidSupervisors);
-                                                console.log("-------------------------------------");
+                                            Moderator.get(supervisor.account).then((sup) => {
+                                                sup.total_paid_rewards_steem = (sup.total_paid_rewards_steem || 0) + supervisorPayout;
 
-                                                console.log("EVERYONE HAS BEEN PAID FOR THIS WEEK. SEE YOU NEXT WEEK!");
-                                                conn.close();
-                                                process.exit();
-                                            }
+                                                sup.save().then(() => {
+                                                    if (supervisorsIndex + 1 === supervisors.length) {
+                                                        console.log("-------------------------------------");
+                                                        console.log("SUPERVISORS PAID SUCCESSFULLY: ", totalPaidSupervisors);
+                                                        console.log("-------------------------------------");
+
+                                                        console.log("EVERYONE HAS BEEN PAID FOR THIS WEEK. SEE YOU NEXT WEEK!");
+                                                        conn.close();
+                                                        process.exit();
+                                                    }
+                                                });
+                                            });
                                         });
                                     }, 30000 * supervisorsIndex);
                                 }
 
-                                if (TEST && supervisorsIndex + 1 === supervisorsCount) {
+                                if (TEST && supervisorsIndex + 1 === supervisors.length) {
                                     console.log("-------------------------------------");
                                     console.log("SUPERVISORS PAID SUCCESSFULLY: ", totalPaidSupervisors);
                                     console.log("-------------------------------------");
@@ -246,8 +271,8 @@ conn.once('open', function ()
                                     conn.close();
                                     process.exit();
                                 }
-                                supervisorsIndex++;
-                            }
+                            });
+
                         };
 
                         paySponsors(() => {
