@@ -25,8 +25,6 @@
     "stats-sponsors-shares": "node ./dist/stats-sponsors-shares.js",
     "stats-total-paid": "node ./dist/stats-total-paid.js",
     "stats-total-pending": "node ./dist/stats-total-pending.js",
-    "stats-total-paid-sponsors": "node ./dist/stats-total-paid-sponsors.js",
-    "stats-total-paid-moderators": "node ./dist/stats-total-paid-moderators.js",
     "start:debug": "cross-env DEBUG=api.utopian.io:* yarn start",
     "build": "gulp",
     "test": "cross-env NODE_ENV=test npx mocha --ui bdd --reporter spec --colors --recursive -r ts-node/register tests/index.ts"
