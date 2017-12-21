@@ -1,5 +1,6 @@
-import * as HttpStatus from 'http-status';
 import Session from '../models/session.model';
+import * as HttpStatus from 'http-status';
+import * as request from 'superagent';
 import * as express from 'express';
 import * as sc2 from '../sc2';
 
@@ -50,8 +51,11 @@ export async function broadcast(req: express.Request,
           continue;
         }
         const meta = JSON.parse(data.json_metadata);
-        if (meta.repository) {
-          const repo = meta.repository;
+        if (meta.repository && meta.repository.full_name) {
+          let repo = meta.repository;
+          if (!repo.id) {
+            repo = await getGithubRepo(repo.full_name);
+          }
           meta.repository = {
             id: repo.id,
             name: repo.name,
@@ -72,4 +76,8 @@ export async function broadcast(req: express.Request,
   } catch (e) {
     next(e);
   }
+}
+
+function getGithubRepo(name: string) {
+  return request.get(`https://api.github.com/repos/${name.toLowerCase()}`);
 }
