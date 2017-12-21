@@ -19,6 +19,7 @@ export async function getUpdatedPost(author: string, permlink: string) {
   if (!updatedPost.json_metadata.pullRequests && post.json_metadata.pullRequests) updatedPost.json_metadata.pullRequests = post.json_metadata.pullRequests;
   if (!updatedPost.json_metadata.issue && post.json_metadata.issue) updatedPost.json_metadata.issue = post.json_metadata.issue;
   updatedPost.json_metadata.type = updatedPost.json_metadata.type.replace("announcement-", "task-");
+  updatedPost.json_metadata.moderator = post.json_metadata.moderator;
 
   Object.assign(post, updatedPost);
   return post;

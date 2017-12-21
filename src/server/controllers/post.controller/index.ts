@@ -6,10 +6,20 @@ import * as HttpStatus from 'http-status';
 import { getUpdatedPost } from './update';
 import * as request from 'superagent';
 import steemAPI from '../../steemAPI';
+import * as sc2 from '../../sc2';
 
 function get(req, res, next) {
   Post.get(req.params.author, req.params.permlink)
     .then((post) => {
+      if (post.json_metadata.moderator) {
+        // Added for backwards compatibility with the front end
+        const mod = post.json_metadata.moderator;
+        post.moderator = mod.account;
+        post.pending = mod.pending;
+        post.reviewed = mod.reviewed;
+        post.flagged = mod.flagged;
+      }
+
       res.json(post);
     })
     .catch(e => next(e));
@@ -68,19 +78,19 @@ async function update(req, res, next) {
   const author = req.params.author;
   const permlink = req.params.permlink;
   const flagged = getBoolean(req.body.flagged);
-  const pending = getBoolean(req.body.pending);
-  const reviewed = getBoolean(req.body.reviewed);
   const reserved = getBoolean(req.body.reserved);
   const moderator = req.body.moderator || null;
+  const pending = getBoolean(req.body.pending);
+  const reviewed = getBoolean(req.body.reviewed);
 
   try {
     const post = await getUpdatedPost(author, permlink);
 
-    if (moderator) post.moderator = moderator;
+    if (moderator) post.json_metadata.moderator.account = moderator;
     if (reviewed) {
-      post.reviewed = true;
-      post.pending = false;
-      post.flagged = false;
+      post.json_metadata.moderator.reviewed = true;
+      post.json_metadata.moderator.pending = false;
+      post.json_metadata.moderator.flagged = false;
 
       if (post.json_metadata.type === 'bug-hunting') {
         try {
@@ -109,20 +119,38 @@ async function update(req, res, next) {
         }
       }
     } else if (flagged) {
-      post.flagged = true;
-      post.reviewed = false;
-      post.pending = false;
+      post.json_metadata.moderator.flagged = true;
+      post.json_metadata.moderator.reviewed = false;
+      post.json_metadata.moderator.pending = false;
     } else if (pending) {
-      post.pending = true;
-      post.reviewed = false;
-      post.flagged = false;
+      post.json_metadata.moderator.pending = true;
+      post.json_metadata.moderator.reviewed = false;
+      post.json_metadata.moderator.flagged = false;
     } else if (reserved) {
-      post.pending = false;
-      post.reviewed = false;
-      post.flagged = false;
+      post.json_metadata.moderator.pending = false;
+      post.json_metadata.moderator.reviewed = false;
+      post.json_metadata.moderator.flagged = false;
     }
 
     try {
+      await sc2.send('/broadcast', {
+        user: res.locals.user,
+        data: {
+          operations: [[
+            'comment',
+            {
+              parent_author: post.parent_author,
+              parent_permlink: post.parent_permlink,
+              author: post.author,
+              permlink: post.permlink,
+              title: post.title,
+              body: post.body,
+              json_metadata: JSON.stringify(post.json_metadata),
+            }
+          ]]
+        }
+      });
+
       const savedPost = await post.save();
       res.json(savedPost);
     } catch (e) {

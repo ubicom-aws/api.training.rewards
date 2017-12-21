@@ -47,7 +47,7 @@ export async function broadcast(req: express.Request,
           continue;
         }
         const data = op[1];
-        if (!data.json_metadata || data.parent_author || data.parent_permlink) {
+        if (!data.json_metadata || data.parent_author) {
           continue;
         }
         const meta = JSON.parse(data.json_metadata);
