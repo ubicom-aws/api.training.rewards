@@ -488,8 +488,8 @@ conn.once('open', function ()
                               },
                               "tasks-requests": {
                                 "total_vote_weight": 0,
-                                "max_vote": 10,
-                                "min_vote": 5,
+                                "max_vote": 6,
+                                "min_vote": 3,
                                 "difficulty" : 1.1*DIFFICULTY_MULTIPLIER
                               },
                             };
