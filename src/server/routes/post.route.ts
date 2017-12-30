@@ -12,7 +12,7 @@ router.route('/')
   .post(requireAuth, validate(paramValidation.createPost), postCtrl.create);
 
 router.route('/top')
-  .get(requireAuth, processQueryParams, postCtrl.top);
+  .get(processQueryParams, postCtrl.top);
 
 router.route('/byid/:postId')
   .get(postCtrl.getPostById)
