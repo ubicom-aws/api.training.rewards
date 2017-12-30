@@ -26,11 +26,17 @@ export enum TopSortBy {
   REWARDS = 'rewards'
 }
 
+export enum RetrieveBy {
+  PROJECTS = 'projects',
+  CONTRIBUTIONS = 'contributions'
+}
+
 export interface TopQueryParams {
   limit: number;
   start_date: Date;
   end_date: Date;
   sort_by: TopSortBy;
+  retrieve_by: RetrieveBy;
   include_rewards: boolean;
   only_new: boolean;
 }
@@ -43,8 +49,9 @@ export function bypassRateLimit(req, res, next): boolean {
   let {
     limit = 5,
     start_date = new Date(0),
-    end_date = new Date(),
-    sort_by = 'contributions',
+    end_date = currentDay(),
+    sort_by = TopSortBy.CONTRIBUTIONS,
+    retrieve_by = RetrieveBy.PROJECTS,
     include_rewards = false,
     only_new = false
   } = req.query;
@@ -61,7 +68,7 @@ export function bypassRateLimit(req, res, next): boolean {
         error: 'limit is invalid or too high'
       });
       return true;
-    } else if (include_rewards
+    } else if ((include_rewards || retrieve_by === RetrieveBy.CONTRIBUTIONS)
         && end_date.getTime() - start_date.getTime() > 8 * 24 * 60 * 60 * 1000) {
       res.json({
         error: 'date range with rewards included must be less than 8 days apart'
@@ -77,6 +84,7 @@ export function bypassRateLimit(req, res, next): boolean {
     start_date,
     end_date,
     sort_by,
+    retrieve_by,
     include_rewards,
     only_new
   };
@@ -114,51 +122,68 @@ export async function top(req, res, next) {
   };
   res.json(cached);
   try {
-    if (params.include_rewards) {
-      const limiter = params.sort_by === 'contributions' ? params.limit : undefined;
+    debug('Running a fresh retrieval on %s', params.cacheId);
+    if (params.include_rewards || params.retrieve_by === RetrieveBy.CONTRIBUTIONS) {
+      const limiter = params.retrieve_by === RetrieveBy.PROJECTS
+                      && params.sort_by === TopSortBy.CONTRIBUTIONS
+                      ? params.limit : undefined;
       await updateRewards(params.start_date, params.end_date, limiter);
     }
 
     const aggregateQuery: any[] = [
-      aggregateMatch(params.only_new ? undefined : params.start_date, params.end_date),
-      ...aggregateGroup(params.include_rewards ? {
-        total_pending_rewards: '$total_pending_payout_value',
-        total_payout_value: '$total_payout_value'
-      } : undefined)
+      aggregateMatch(params.only_new ? undefined : params.start_date, params.end_date)
     ];
 
+    if (params.retrieve_by === RetrieveBy.PROJECTS) {
+      aggregateQuery.push(...aggregateGroup(params.include_rewards ? {
+        total_pending_rewards: '$total_pending_payout_value',
+        total_payout_value: '$total_payout_value'
+      } : undefined));
+    }
+
     const data: any[] = await Post.aggregate(aggregateQuery);
-    if (params.only_new || params.include_rewards) {
-      for (let i = data.length - 1; i >= 0; --i) {
-        const repo = data[i];
-        let blacklist = false;
-        let rewards = 0;
-        for (const post of repo['posts']) {
-          if (params.only_new
-              && (new Date(post.created).getTime())
-                    < params.start_date.getTime()) {
-            blacklist = true;
-            break;
+    if (params.retrieve_by === RetrieveBy.PROJECTS) {
+      if (params.only_new || params.include_rewards) {
+        for (let i = data.length - 1; i >= 0; --i) {
+          const repo = data[i];
+          let blacklist = false;
+          let rewards = 0;
+          for (const post of repo['posts']) {
+            if (params.only_new && (new Date(post.created).getTime()) < params.start_date.getTime()) {
+              blacklist = true;
+              break;
+            }
+            if (params.include_rewards) rewards += postRewards(post);
+          }
+          if (blacklist) {
+            data.splice(i, 1);
+            continue;
           }
           if (params.include_rewards) {
-            const pending = parseFloat(post.total_pending_rewards.split(' ')[0]);
-            const paid = parseFloat(post.total_payout_value.split(' ')[0]);
-            rewards += pending + paid;
+            repo['rewards'] = rewards;
           }
         }
-        if (blacklist) {
+      }
+      for (const repo of data) {
+        repo['posts'] = undefined;
+      }
+    } else if (params.retrieve_by === RetrieveBy.CONTRIBUTIONS) {
+      for (let i = data.length - 1; i >= 0; --i) {
+        const post = data[i];
+        if (params.only_new
+            && (new Date(post.created).getTime()) < params.start_date.getTime()) {
           data.splice(i, 1);
           continue;
         }
-        if (params.include_rewards) {
-          repo['rewards'] = rewards;
-        }
-        repo['posts'] = undefined;
+        if (params.include_rewards) post.rewards = postRewards(post);
       }
+      if (params.sort_by === TopSortBy.CONTRIBUTIONS) {
+        data.sort((a: any, b: any) => b.active_votes.length - a.active_votes.length);
+      }
+    }
 
-      if (params.include_rewards && params.sort_by === 'rewards') {
-        data.sort((a: any, b: any) => b.rewards - a.rewards);
-      }
+    if (params.include_rewards && params.sort_by === TopSortBy.REWARDS) {
+      data.sort((a: any, b: any) => b.rewards - a.rewards);
     }
 
     if (data.length > params.limit) data.length = params.limit;
@@ -169,10 +194,27 @@ export async function top(req, res, next) {
       delete cached[params.cacheId];
     }, params.include_rewards ? 1000 * 60 * 60 * 12 : 1000 * 60 * 5);
   } catch (e) {
-    console.log('Failed to retrieve top projects', e);
+    console.log('Failed to retrieve top projects or contributions', e);
     cached.status = TaskStatus.ERROR;
     cached.statusMessage = e.message;
   }
+}
+
+function currentDay(): Date {
+  const date = new Date();
+  date.setUTCHours(0);
+  date.setUTCMinutes(0);
+  date.setUTCSeconds(0);
+  date.setUTCMilliseconds(0);
+  return date;
+}
+
+function postRewards(post: any): number {
+  const pending = parseFloat(post.pending_payout_value.split(' ')[0]);
+  const paid = parseFloat(post.total_payout_value.split(' ')[0]);
+  post.pending_payout_value = undefined;
+  post.total_payout_value = undefined;
+  return pending + paid;
 }
 
 function getBoolean(val?: string|boolean): boolean {
