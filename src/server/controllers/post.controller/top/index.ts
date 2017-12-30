@@ -108,6 +108,7 @@ export async function top(req, res, next) {
           continue;
         }
         post.rewards = postRewards(post);
+        post.utopian_url = `https://utopian.io${post.url}`;
       }
       if (params.sort_by === TopSortBy.CONTRIBUTIONS) {
         data.sort((a: any, b: any) => b.active_votes.length - a.active_votes.length);
@@ -121,7 +122,9 @@ export async function top(req, res, next) {
     if (data.length > params.limit) data.length = params.limit;
     if (params.retrieve_by === RetrieveBy.PROJECTS) {
       for (const repo of data) {
+        const gh = await githubRepo(repo['_id']);
         repo['github'] = await githubRepo(repo['_id']);
+        repo['project_url'] = `https://utopian.io/project/${repo['_id']}/github/${gh['id']}/all`;
       }
     }
 
