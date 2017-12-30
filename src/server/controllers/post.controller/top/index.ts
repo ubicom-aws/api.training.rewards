@@ -2,6 +2,7 @@ import { aggregateMatch, aggregateGroup } from './aggregate';
 import Post from '../../../models/post.model';
 import { getUpdatedPost } from '../update';
 import * as HttpStatus from 'http-status';
+import * as request from 'superagent';
 import * as crypto from 'crypto';
 
 export enum TopSortBy {
@@ -118,12 +119,40 @@ export async function top(req, res, next) {
     }
 
     if (data.length > params.limit) data.length = params.limit;
+    if (params.retrieve_by === RetrieveBy.PROJECTS) {
+      for (const repo of data) {
+        repo['github'] = await githubRepo(repo['_id']);
+      }
+    }
+
     res.json(data);
   } catch (e) {
     console.log('Failed to retrieve top data', e);
     res.json({
       error: 'Failed to retrieve top data'
     });
+  }
+}
+
+async function githubRepo(fullName: string): Promise<any> {
+  try {
+    const res = (await request.get(`https://api.github.com/repos/${fullName}`, {
+      deadline: 5000
+    })).body;
+    return {
+      id: res.id,
+      name: res.name,
+      html_url: res.html_url,
+      description: res.description,
+      homepage: res.homepage,
+      language: res.language,
+      license: res.license
+    };
+  } catch (e) {
+    console.log('Failed to retrieve project', fullName, e);
+    return {
+      error: e.message
+    };
   }
 }
 
