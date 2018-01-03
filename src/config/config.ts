@@ -39,6 +39,12 @@ interface Server {
   key?: string;
 }
 
+interface Credentials {
+  githubSecret: string;
+  githubClientId: string;
+  steemConnectSecret: string;
+}
+
 interface Config {
   env: string;
   steemNode: string;
@@ -46,7 +52,7 @@ interface Config {
   mongooseDebug: boolean;
   mongo: string;
   server: Server;
-  credentials: any;
+  credentials: Credentials;
 }
 
 const config: Config = {
