@@ -61,7 +61,10 @@ export async function broadcast(req: express.Request,
             name: repo.name,
             full_name: repo.full_name,
             html_url: repo.html_url,
-            fork: repo.fork
+            fork: repo.fork,
+            owner: repo.owner ? {
+              login: repo.owner.login
+            } : undefined
           };
         }
         data.json_metadata = JSON.stringify(meta);
