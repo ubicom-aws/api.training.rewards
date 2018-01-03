@@ -85,6 +85,9 @@ async function update(req, res, next) {
 
   try {
     const post = await getUpdatedPost(author, permlink);
+    if (!post.json_metadata.moderator) {
+      post.json_metadata.moderator = {};
+    }
 
     if (moderator) post.json_metadata.moderator.account = moderator;
     if (reviewed) {
