@@ -1,4 +1,5 @@
 import { aggregateMatch, aggregateGroup } from './aggregate';
+import config from '../../../../config/config';
 import Post from '../../../models/post.model';
 import { getUpdatedPost } from '../update';
 import * as HttpStatus from 'http-status';
@@ -141,6 +142,9 @@ async function githubRepo(fullName: string): Promise<any> {
   try {
     const res = (await request.get(`https://api.github.com/repos/${fullName}`, {
       deadline: 5000
+    }).query({
+      client_id: config.credentials.githubClientId,
+      client_secret: config.credentials.githubSecret
     })).body;
     return {
       id: res.id,
