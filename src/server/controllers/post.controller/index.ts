@@ -8,21 +8,25 @@ import * as request from 'superagent';
 import steemAPI from '../../steemAPI';
 import * as sc2 from '../../sc2';
 
+function postMapper(post) {
+  // Enable backwards compatibility for the front end
+  if (post.json_metadata.moderator) {
+    const mod = post.json_metadata.moderator;
+    post.moderator = mod.account;
+    post.pending = mod.pending;
+    post.reviewed = mod.reviewed;
+    post.flagged = mod.flagged;
+  }
+  return post;
+}
+
+function sendPost(res, post) {
+  res.json(postMapper(post));
+}
+
 function get(req, res, next) {
   Post.get(req.params.author, req.params.permlink)
-    .then((post) => {
-      if (post.json_metadata.moderator) {
-        // Added for backwards compatibility with the front end
-        const mod = post.json_metadata.moderator;
-        post.moderator = mod.account;
-        post.pending = mod.pending;
-        post.reviewed = mod.reviewed;
-        post.flagged = mod.flagged;
-      }
-
-      res.json(post);
-    })
-    .catch(e => next(e));
+    .then(post => sendPost(res, post)).catch(e => next(e));
 }
 
 function create(req, res, next) {
@@ -64,7 +68,7 @@ function create(req, res, next) {
       }
 
       newPost.save()
-          .then(savedPost => res.json(savedPost))
+          .then(savedPost => sendPost(res, savedPost))
           .catch(e => {
             console.log("ERROR SAVING POST", e);
             next(e);
@@ -156,7 +160,7 @@ async function update(req, res, next) {
       });
 
       const savedPost = await post.save();
-      res.json(savedPost);
+      sendPost(res, savedPost);
     } catch (e) {
       console.log("ERROR REVIEWING POST", e);
       next(e);
@@ -178,9 +182,7 @@ function listByIssue (req, res, next) {
   };
 
   Post.list({ limit: 1, skip: 0, query })
-    .then(post => res.json({
-      ...post
-    }))
+    .then(post => sendPost(res, post))
     .catch(e => next(e));
 }
 
@@ -189,30 +191,15 @@ function getPostById (req, res, next) {
   console.log(postId);
 
   if (postId === parseInt(postId, 10) || !isNaN(postId)) {
-      const query = {
-        'id': postId,
-      };
+    const query = {
+      'id': postId,
+    };
 
-      Post.list({ limit: 1, skip: 0, query })
-      .then(post => {
-        res.json({
+    Post.list({ limit: 1, skip: 0, query }).then(post => {
+      res.json({
         url: post[0].url,
-        });
-      })
-      .catch(e => next(e));
-  } else {
-      const query = {
-        'json_metadata.uprefix': postId.toLowerCase(),
-      };
-
-      Post.list({ limit: 1, skip: 0, query })
-      .then(post => {
-        res.json({
-        url: post[0].url,
-        });
-      })
-      .catch(e => next(e));
-
+      });
+    }).catch(e => next(e));
   }
 }
 
@@ -351,9 +338,9 @@ function list(req, res, next) {
   Post.countAll({ query })
     .then(count => {
       Post.list({ limit, skip, query, sort, select })
-        .then(posts => res.json({
+        .then((posts: any[]) => res.json({
           total: count,
-          results: posts
+          results: posts.map(postMapper)
         }))
         .catch(e => next(e));
 
@@ -364,7 +351,7 @@ function list(req, res, next) {
 function remove(req, res, next) {
   const post = req.post;
   post.remove()
-    .then(deletedPost => res.json(deletedPost))
+    .then(deletedPost => sendPost(res, deletedPost))
     .catch(e => next(e));
 }
 
