@@ -1,9 +1,8 @@
-import { bypassRateLimit } from '../controllers/post.controller/top';
+import { processQueryParams } from '../controllers/post.controller/top';
 import paramValidation from '../../config/param-validation';
 import { requireAuth, requireMod } from './middleware';
 import postCtrl from '../controllers/post.controller';
 import * as validate from 'express-validation';
-import { rateLimit } from './middleware';
 import * as express from 'express';
 
 const router = express.Router();
@@ -13,7 +12,7 @@ router.route('/')
   .post(requireAuth, validate(paramValidation.createPost), postCtrl.create);
 
 router.route('/top')
-  .get(requireAuth, rateLimit(300000, bypassRateLimit), postCtrl.top);
+  .get(processQueryParams, postCtrl.top);
 
 router.route('/byid/:postId')
   .get(postCtrl.getPostById)

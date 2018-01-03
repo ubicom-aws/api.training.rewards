@@ -35,7 +35,6 @@ const StatsSchema = new mongoose.Schema({
   stats_paid_sponsors_last_check: String,
   stats_total_paid_last_post_date: String,
   stats_total_pending_last_post_date: String,
-  stats_moderators_shares_last_post_date: String,
   stats_moderator_shares_last_check: String,
   stats_sponsors_shares_last_check: String,
   stats_total_paid_last_check: String,

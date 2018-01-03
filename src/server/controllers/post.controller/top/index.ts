@@ -1,29 +1,18 @@
 import { aggregateMatch, aggregateGroup } from './aggregate';
-import { RateLimit } from '../../../routes/middleware';
 import Post from '../../../models/post.model';
 import { getUpdatedPost } from '../update';
 import * as HttpStatus from 'http-status';
-import { updateRewards } from './rewards';
+import * as request from 'superagent';
 import * as crypto from 'crypto';
-import debug from '../debug';
-
-const cache: {[key: string]: TaskModel} = {};
-
-export enum TaskStatus {
-  ERROR = -1,
-  SUCCESS = 0,
-  IN_PROGRESS = 1
-}
-
-export interface TaskModel {
-  status: TaskStatus;
-  statusMessage: string;
-  results?: any;
-}
 
 export enum TopSortBy {
   CONTRIBUTIONS = 'contributions',
   REWARDS = 'rewards'
+}
+
+export enum RetrieveBy {
+  PROJECTS = 'projects',
+  CONTRIBUTIONS = 'contributions'
 }
 
 export interface TopQueryParams {
@@ -31,20 +20,17 @@ export interface TopQueryParams {
   start_date: Date;
   end_date: Date;
   sort_by: TopSortBy;
-  include_rewards: boolean;
+  retrieve_by: RetrieveBy;
   only_new: boolean;
 }
 
-export interface CacheableQueryParams extends TopQueryParams {
-  cacheId: string;
-}
-
-export function bypassRateLimit(req, res, next): boolean {
+export function processQueryParams(req, res, next): void {
   let {
     limit = 5,
     start_date = new Date(0),
     end_date = new Date(),
-    sort_by = 'contributions',
+    sort_by = TopSortBy.CONTRIBUTIONS,
+    retrieve_by = RetrieveBy.PROJECTS,
     include_rewards = false,
     only_new = false
   } = req.query;
@@ -56,20 +42,15 @@ export function bypassRateLimit(req, res, next): boolean {
     include_rewards = getBoolean(include_rewards);
     only_new = getBoolean(only_new);
 
-    if (isNaN(limit) || limit > 100) {
+    if (isNaN(limit)) {
       res.json({
-        error: 'limit is invalid or too high'
+        error: 'limit is invalid'
       });
-      return true;
-    } else if (include_rewards
-        && end_date.getTime() - start_date.getTime() > 8 * 24 * 60 * 60 * 1000) {
-      res.json({
-        error: 'date range with rewards included must be less than 8 days apart'
-      });
+      return;
     }
   } catch (e) {
     next(e);
-    return true;
+    return;
   }
 
   const query: TopQueryParams = {
@@ -77,102 +58,113 @@ export function bypassRateLimit(req, res, next): boolean {
     start_date,
     end_date,
     sort_by,
-    include_rewards,
+    retrieve_by,
     only_new
   };
-
-  const cryptoHash = crypto.createHash('md5');
-  const buf = cryptoHash.update(JSON.stringify(query)).digest();
-  const cacheId = buf.toString('hex');
-
-  if (cache[cacheId]) {
-    const cached = cache[cacheId];
-    if (cached.status === TaskStatus.ERROR) {
-      delete cache[cacheId];
-    }
-    res.json(cache[cacheId]);
-    return true;
-  }
-
-  req.query = {
-    cacheId,
-    ...query
-  };
-
-  if (!include_rewards) {
-    next();
-    return true;
-  }
-  return false;
+  req.query = query;
+  next();
 }
 
 export async function top(req, res, next) {
-  const params: CacheableQueryParams = req.query;
-  const cached: TaskModel = cache[params.cacheId] = {
-    status: TaskStatus.IN_PROGRESS,
-    statusMessage: TaskStatus[TaskStatus.IN_PROGRESS]
-  };
-  res.json(cached);
+  const params: TopQueryParams = req.query;
   try {
-    if (params.include_rewards) {
-      const limiter = params.sort_by === 'contributions' ? params.limit : undefined;
-      await updateRewards(params.start_date, params.end_date, limiter);
-    }
-
     const aggregateQuery: any[] = [
-      aggregateMatch(params.only_new ? undefined : params.start_date, params.end_date),
-      ...aggregateGroup(params.include_rewards ? {
-        total_pending_rewards: '$total_pending_payout_value',
-        total_payout_value: '$total_payout_value'
-      } : undefined)
+      aggregateMatch(params.only_new ? undefined : params.start_date, params.end_date)
     ];
 
+    if (params.retrieve_by === RetrieveBy.PROJECTS) {
+      aggregateQuery.push(...aggregateGroup({
+        pending_payout_value: '$pending_payout_value',
+        total_payout_value: '$total_payout_value'
+      }));
+    }
+
     const data: any[] = await Post.aggregate(aggregateQuery);
-    if (params.only_new || params.include_rewards) {
+    if (params.retrieve_by === RetrieveBy.PROJECTS) {
       for (let i = data.length - 1; i >= 0; --i) {
         const repo = data[i];
         let blacklist = false;
         let rewards = 0;
         for (const post of repo['posts']) {
-          if (params.only_new
-              && (new Date(post.created).getTime())
-                    < params.start_date.getTime()) {
+          if (params.only_new && (new Date(post.created).getTime()) < params.start_date.getTime()) {
             blacklist = true;
             break;
           }
-          if (params.include_rewards) {
-            const pending = parseFloat(post.total_pending_rewards.split(' ')[0]);
-            const paid = parseFloat(post.total_payout_value.split(' ')[0]);
-            rewards += pending + paid;
-          }
+          rewards += postRewards(post);
         }
         if (blacklist) {
           data.splice(i, 1);
           continue;
         }
-        if (params.include_rewards) {
-          repo['rewards'] = rewards;
-        }
+        repo['rewards'] = rewards;
         repo['posts'] = undefined;
       }
-
-      if (params.include_rewards && params.sort_by === 'rewards') {
-        data.sort((a: any, b: any) => b.rewards - a.rewards);
+    } else if (params.retrieve_by === RetrieveBy.CONTRIBUTIONS) {
+      for (let i = data.length - 1; i >= 0; --i) {
+        const post = data[i];
+        if (params.only_new
+            && (new Date(post.created).getTime()) < params.start_date.getTime()) {
+          data.splice(i, 1);
+          continue;
+        }
+        post.rewards = postRewards(post);
+        post.utopian_url = `https://utopian.io${post.url}`;
+      }
+      if (params.sort_by === TopSortBy.CONTRIBUTIONS) {
+        data.sort((a: any, b: any) => b.active_votes.length - a.active_votes.length);
       }
     }
 
+    if (params.sort_by === TopSortBy.REWARDS) {
+      data.sort((a: any, b: any) => b.rewards - a.rewards);
+    }
+
     if (data.length > params.limit) data.length = params.limit;
-    cached.status = TaskStatus.SUCCESS;
-    cached.statusMessage = TaskStatus[TaskStatus.SUCCESS];
-    cached.results = data;
-    setTimeout(() => {
-      delete cached[params.cacheId];
-    }, params.include_rewards ? 1000 * 60 * 60 * 12 : 1000 * 60 * 5);
+    if (params.retrieve_by === RetrieveBy.PROJECTS) {
+      for (const repo of data) {
+        const gh = await githubRepo(repo['_id']);
+        repo['github'] = await githubRepo(repo['_id']);
+        repo['project_url'] = `https://utopian.io/project/${repo['_id']}/github/${gh['id']}/all`;
+      }
+    }
+
+    res.json(data);
   } catch (e) {
-    console.log('Failed to retrieve top projects', e);
-    cached.status = TaskStatus.ERROR;
-    cached.statusMessage = e.message;
+    console.log('Failed to retrieve top data', e);
+    res.json({
+      error: 'Failed to retrieve top data'
+    });
   }
+}
+
+async function githubRepo(fullName: string): Promise<any> {
+  try {
+    const res = (await request.get(`https://api.github.com/repos/${fullName}`, {
+      deadline: 5000
+    })).body;
+    return {
+      id: res.id,
+      name: res.name,
+      html_url: res.html_url,
+      description: res.description,
+      homepage: res.homepage,
+      language: res.language,
+      license: res.license
+    };
+  } catch (e) {
+    console.log('Failed to retrieve project', fullName, e);
+    return {
+      error: e.message
+    };
+  }
+}
+
+function postRewards(post: any): number {
+  const pending = parseFloat(post.pending_payout_value.split(' ')[0]);
+  const paid = parseFloat(post.total_payout_value.split(' ')[0]);
+  post.pending_payout_value = undefined;
+  post.total_payout_value = undefined;
+  return pending + paid;
 }
 
 function getBoolean(val?: string|boolean): boolean {
