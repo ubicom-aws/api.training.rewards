@@ -3,7 +3,6 @@ import * as Promise from 'bluebird';
 import * as R from 'ramda';
 import Sponsor from './server/models/sponsor.model';
 import Stats from './server/models/stats.model';
-import Post from './server/models/post.model';
 import config from './config/config';
 import steemApi from './server/steemAPI';
 import { calculatePayout } from './server/steemitHelpers';

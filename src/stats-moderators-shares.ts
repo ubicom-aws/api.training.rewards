@@ -38,7 +38,7 @@ conn.once('open', function () {
             Moderator.listAll().then(moderators => {
                 moderators.forEach((moderator, indexMods) => {
                     const query = {
-                        moderator: moderator.account,
+                        'json_metadata.moderator.account': moderator.account,
                     };
 
                     Post.count(query).then(currentModerated => {

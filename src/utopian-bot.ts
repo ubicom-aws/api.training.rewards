@@ -27,7 +27,7 @@ conn.once('open', function ()
   var post_index=0;
 
   const query = {
-    reviewed: true,
+    'json_metadata.moderator.reviewed': true,
     author: { $ne: botAccount },
     'active_votes.voter': { $ne: botAccount },
     created: {
