@@ -192,7 +192,7 @@ function list(req, res, next) {
   let select: any = {}
 
   let query: any = {
-    flagged: {
+    'json_metadata.moderator.flagged': {
       $ne : true,
     },
   };
@@ -200,7 +200,7 @@ function list(req, res, next) {
   if (section !== 'author' && status !== 'flagged') {
     query = {
       ...query,
-      reviewed: true,
+      'json_metadata.moderator.reviewed': true,
     }
   }
 
@@ -235,8 +235,8 @@ function list(req, res, next) {
   if (filterBy === 'review') {
     query = {
       ...query,
-      reviewed: false,
-      moderator: {
+      'json_metadata.moderator.reviewed': {$ne: true},
+      'json_metadata.moderator.account': {
         $ne: moderator,
       }
     }
@@ -246,7 +246,7 @@ function list(req, res, next) {
   if (status === 'pending') {
     query = {
       ...query,
-      pending: true,
+      'json_metadata.moderator.pending': true,
       moderator,
     }
   }
@@ -254,7 +254,7 @@ function list(req, res, next) {
   if (status === 'flagged') {
     query = {
       ...query,
-      flagged: true,
+      'json_metadata.moderator.flagged': true,
     }
   }
 
