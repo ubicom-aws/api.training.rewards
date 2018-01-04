@@ -29,53 +29,22 @@ function get(req, res, next) {
     .then(post => sendPost(res, post)).catch(e => next(e));
 }
 
-function create(req, res, next) {
+async function create(req, res, next) {
   if (res.locals.user.banned) {
     return res.status(HttpStatus.FORBIDDEN);
   }
   const author = req.body.author;
   const permlink = req.body.permlink;
-  let attempts = 0;
-
-  const doCreate = () => {
-    steemAPI.getContent(author, permlink, async (err, post) => {
-      if (err || !author || !permlink) {
-        if (++attempts > 10) {
-          console.log('ERROR GETTING CONTENT', err);
-          return res.status(500);
-        }
-        setTimeout(() => {
-          doCreate();
-        }, attempts * 1000);
-        return;
-      }
-
-      const newPost = new Post({
-        ...post,
-        reviewed: false,
-        json_metadata: JSON.parse(post.json_metadata),
-      });
-
-      try {
-        const dbPost = await Post.get(author, permlink);
-        if (dbPost) {
-          return res.json(dbPost);
-        }
-      } catch (e) {
-        if (!(e instanceof APIError && e.status === HttpStatus.NOT_FOUND)) {
-          return next(e);
-        }
-      }
-
-      newPost.save()
-          .then(savedPost => sendPost(res, savedPost))
-          .catch(e => {
-            console.log("ERROR SAVING POST", e);
-            next(e);
-          });
-    });
-  };
-  doCreate();
+  try {
+    const dbPost = await Post.get(author, permlink);
+    if (dbPost) {
+      sendPost(res, dbPost);
+    }
+  } catch (e) {
+    if (!(e instanceof APIError && e.status === HttpStatus.NOT_FOUND)) {
+      return next(e);
+    }
+  }
 }
 
 async function update(req, res, next) {

@@ -3,7 +3,6 @@ import * as mongoose from 'mongoose';
 import { getUpdatedPost } from './server/controllers/post.controller/update';
 import Post from './server/models/post.model';
 import Stats from './server/models/stats.model';
-import steemApi from './server/steemAPI';
 import config from './config/config';
 
 mongoose.connect(config.mongo);

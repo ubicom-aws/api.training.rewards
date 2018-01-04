@@ -1,5 +1,7 @@
 import Session from '../models/session.model';
 import * as HttpStatus from 'http-status';
+import { getContent } from '../steemAPI';
+import Post from '../models/post.model';
 import * as request from 'superagent';
 import * as express from 'express';
 import * as sc2 from '../sc2';
@@ -50,6 +52,10 @@ export async function broadcast(req: express.Request,
         if (!data.json_metadata || data.parent_author) {
           continue;
         }
+        if (res.locals.user.banned) {
+          // User is banned from creating posts on Utopian
+          return res.status(HttpStatus.FORBIDDEN);
+        }
         const meta = JSON.parse(data.json_metadata);
         if (meta.repository && meta.repository.full_name) {
           let repo = meta.repository;
@@ -75,6 +81,32 @@ export async function broadcast(req: express.Request,
       user: res.locals.user,
       data: req.body
     });
+    for (const op of json.result.operations) {
+      if (op[0] !== 'comment') {
+        continue;
+      } else if (op[1].parent_author) {
+        continue;
+      }
+
+      let post: any = {};
+      let attempts = 0;
+      while (!(post.author && post.permlink) && (++attempts < 100)) {
+        try {
+          post = await getContent(op[1].author, op[1].permlink);
+        } catch (e) {
+          console.log('Failed to get content of new post', e);
+        }
+        if (!(post.author && post.permlink)) {
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      }
+
+      let newPost = new Post({
+        ...post,
+        json_metadata: JSON.parse(post.json_metadata),
+      });
+      await newPost.save();
+    }
     return res.json(json);
   } catch (e) {
     next(e);
