@@ -18,14 +18,16 @@ export function handleUpdatedPost(post: any, updatedPost: any): any {
   if (!updatedPost.json_metadata.pullRequests && post.json_metadata.pullRequests) updatedPost.json_metadata.pullRequests = post.json_metadata.pullRequests;
   if (!updatedPost.json_metadata.issue && post.json_metadata.issue) updatedPost.json_metadata.issue = post.json_metadata.issue;
   updatedPost.json_metadata.type = updatedPost.json_metadata.type.replace("announcement-", "task-");
+  // Temporary upgrade patch
   if (post.json_metadata.moderator === undefined) {
-    // Upgrade from the old format to the new, this will no longer be required
-    // on 18-01-11 when the old format is completely removed
     post.json_metadata.moderator = {
+      account: post.moderator,
       reviewed: post.reviewed,
       pending: post.pending,
       flagged: post.flagged
     };
+  } else if (post.moderator && post.json_metadata.moderator.account === undefined) {
+    post.json_metadata.moderator.account = post.moderator;
   }
   updatedPost.json_metadata.moderator = post.json_metadata.moderator;
 
