@@ -225,6 +225,11 @@ PostSchema.index({
   unique: true,
 });
 
+PostSchema.pre('save', function(this: PostSchemaDoc, next) {
+  this.markModified('json_metadata.moderator');
+  next();
+});
+
 export interface PostSchemaDoc extends mongoose.Document {
 }
 
