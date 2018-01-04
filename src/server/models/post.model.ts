@@ -200,7 +200,7 @@ const PostSchema = new mongoose.Schema({
     default: false,
   },
   moderator: {
-    type: String,
+    type: Object,
     //required: false,
   },
 });
