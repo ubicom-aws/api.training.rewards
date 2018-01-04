@@ -128,6 +128,7 @@ async function update(req, res, next) {
         }
       });
 
+      post.markModified('json_metadata.moderator');
       const savedPost = await post.save();
       sendPost(res, savedPost);
     } catch (e) {
