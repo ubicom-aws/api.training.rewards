@@ -9,13 +9,13 @@ import steemAPI from '../../steemAPI';
 import * as sc2 from '../../sc2';
 
 function postMapper(post) {
-  // Enable backwards compatibility for the front end
   if (post.json_metadata.moderator) {
+    // Enable backwards compatibility for the front end
     const mod = post.json_metadata.moderator;
-    post.moderator = mod.account;
-    post.pending = mod.pending;
-    post.reviewed = mod.reviewed;
-    post.flagged = mod.flagged;
+    post.moderator = mod.account || undefined;
+    post.pending = mod.pending || false;
+    post.reviewed = mod.reviewed || false;
+    post.flagged = mod.flagged || false;
   }
   return post;
 }
