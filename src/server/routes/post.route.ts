@@ -20,7 +20,7 @@ router.route('/byid/:postId')
 
 router.route('/:author/:permlink')
   .get(postCtrl.get)
-  .put(requireAuth, requireMod, postCtrl.update)
+  .put(requireAuth, postCtrl.update)
   .delete(requireAuth, requireMod, postCtrl.remove);
 
 export default router;

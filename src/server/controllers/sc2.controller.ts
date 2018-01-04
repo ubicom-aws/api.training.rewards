@@ -1,7 +1,8 @@
+import { handleUpdatedPost } from '../controllers/post.controller/update';
 import Session from '../models/session.model';
 import * as HttpStatus from 'http-status';
 import { getContent } from '../steemAPI';
-import Post from '../models/post.model';
+import Post, { PostSchemaDoc } from '../models/post.model';
 import * as request from 'superagent';
 import * as express from 'express';
 import * as sc2 from '../sc2';
@@ -101,11 +102,19 @@ export async function broadcast(req: express.Request,
         }
       }
 
-      let newPost = new Post({
-        ...post,
-        json_metadata: JSON.parse(post.json_metadata),
+      let dbPost = await Post.findOne({
+        author: post.author,
+        permlink: post.permlink
       });
-      await newPost.save();
+      if (dbPost) {
+        dbPost = handleUpdatedPost(dbPost, post);
+      } else {
+        dbPost = new Post({
+          ...post,
+          json_metadata: JSON.parse(post.json_metadata),
+        });
+      }
+      await (dbPost as PostSchemaDoc).save();
     }
     return res.json(json);
   } catch (e) {
