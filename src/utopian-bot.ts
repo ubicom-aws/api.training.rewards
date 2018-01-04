@@ -423,8 +423,8 @@ conn.once('open', function ()
                               "development": {
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
-                                "min_vote": 15,
-                                "difficulty" : 2.2*DIFFICULTY_MULTIPLIER
+                                "min_vote": 23,
+                                "difficulty" : 2.8*DIFFICULTY_MULTIPLIER
                               },
                               "bug-hunting": {
                                 "total_vote_weight": 0,
@@ -434,9 +434,9 @@ conn.once('open', function ()
                               },
                               "translations": {
                                 "total_vote_weight": 0,
-                                "max_vote": 25,
-                                "min_vote": 6.5,
-                                "difficulty" : 1.7*DIFFICULTY_MULTIPLIER
+                                "max_vote": 12,
+                                "min_vote": 4,
+                                "difficulty" : 1.2*DIFFICULTY_MULTIPLIER
                               },
                               "graphics": {
                                 "total_vote_weight": 0,
