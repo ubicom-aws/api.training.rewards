@@ -247,7 +247,7 @@ function list(req, res, next) {
     query = {
       ...query,
       'json_metadata.moderator.pending': true,
-      moderator,
+      'json_metadata.moderator.account': moderator,
     }
   }
 
