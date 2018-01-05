@@ -394,7 +394,7 @@ conn.once('open', function ()
                     .countAll({query})
                     .then(limit => {
                       Post
-                          .list({skip: 0, limit: limit, query, sort: {created: 1}})
+                          .list({skip: 0, limit: limit, query, sort: {net_votes: -1}})
                           .then(posts => {
                             const scoredPosts: any[] = [];
 
@@ -423,7 +423,7 @@ conn.once('open', function ()
                               "development": {
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
-                                "min_vote": 23,
+                                "min_vote": 30,
                                 "difficulty" : 2.8*DIFFICULTY_MULTIPLIER
                               },
                               "bug-hunting": {
