@@ -14,11 +14,12 @@ conn.once('open', function ()
     const limit = 500;
     // get all the posts in the editable window (7 days + 1)
     const activeSince = new Date((new Date().getTime() - ((7 + 1) * 24 * 60 * 60 * 1000)));
+
     const query = {
       created:
           {
-            $gte: activeSince.toISOString()
-          }
+            $gte: activeSince.toISOString(),
+          },
     };
     const updatePosts = (skip = 0) => {
       Post
@@ -44,7 +45,7 @@ conn.once('open', function ()
                   try {
                     const updatedPost = await getUpdatedPost(post.author, post.permlink);
                     try {
-                      await post.save();
+                      await updatedPost.save();
                       console.log(`POST UPDATED SUCCESSFULLY\n`);
                     } catch (e) {
                       console.log(`ERROR UPDATING POST ${e}\n`);
