@@ -411,8 +411,8 @@ conn.once('open', function ()
                               "ideas": {
                                 "difficulty" : 0.8*DIFFICULTY_MULTIPLIER,
                                 "total_vote_weight": 0,
-                                "max_vote": 5,
-                                "min_vote": 2,
+                                "max_vote": 4,
+                                "min_vote": 1.5,
                               },
                               "sub-projects": {
                                 "total_vote_weight": 0,
@@ -424,7 +424,7 @@ conn.once('open', function ()
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
                                 "min_vote": 30,
-                                "difficulty" : 2.8*DIFFICULTY_MULTIPLIER
+                                "difficulty" : 2.5*DIFFICULTY_MULTIPLIER
                               },
                               "bug-hunting": {
                                 "total_vote_weight": 0,
@@ -435,8 +435,8 @@ conn.once('open', function ()
                               "translations": {
                                 "total_vote_weight": 0,
                                 "max_vote": 12,
-                                "min_vote": 4,
-                                "difficulty" : 1.2*DIFFICULTY_MULTIPLIER
+                                "min_vote": 7,
+                                "difficulty" : 1.4*DIFFICULTY_MULTIPLIER
                               },
                               "graphics": {
                                 "total_vote_weight": 0,
@@ -465,8 +465,8 @@ conn.once('open', function ()
                               "tutorials": {
                                 "total_vote_weight": 0,
                                 "max_vote": 15,
-                                "min_vote": 5.5,
-                                "difficulty" : 1.7*DIFFICULTY_MULTIPLIER
+                                "min_vote": 7,
+                                "difficulty" : 1.9*DIFFICULTY_MULTIPLIER
                               },
                               "video-tutorials": {
                                 "total_vote_weight": 0,
