@@ -1,4 +1,4 @@
-import { getUpdatedPost, handleUpdatedPost } from './update';
+import { getUpdatedPost, updatePost } from './update';
 import Moderator from '../../models/moderator.model';
 import APIError from '../../helpers/APIError';
 import { getContent } from '../../steemAPI';
@@ -203,7 +203,7 @@ async function edit(req, res, next) {
     });
 
     // Update the post in the DB
-    post = handleUpdatedPost(post, updatedPost);
+    post = updatePost(post, updatedPost);
     post.title = params.title;
     post.body = params.body;
     post.json_metadata = params.json_metadata;
