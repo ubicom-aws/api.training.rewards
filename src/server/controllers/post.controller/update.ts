@@ -4,10 +4,10 @@ import Post from '../../models/post.model';
 export async function getUpdatedPost(author: string, permlink: string) {
   const post = await Post.get(author, permlink);
   const updatedPost: any = await getContent(author, permlink);
-  return handleUpdatedPost(post, updatedPost);
+  return updatePost(post, updatedPost);
 }
 
-export function handleUpdatedPost(post: any, updatedPost: any): any {
+export function updatePost(post: any, updatedPost: any): any {
   updatedPost.json_metadata = JSON.parse(updatedPost.json_metadata);
 
   if (!updatedPost.json_metadata.type && post.json_metadata.type) updatedPost.json_metadata.type = post.json_metadata.type;

@@ -1,4 +1,4 @@
-import { handleUpdatedPost } from '../controllers/post.controller/update';
+import { updatePost } from '../controllers/post.controller/update';
 import Session from '../models/session.model';
 import * as HttpStatus from 'http-status';
 import { getContent } from '../steemAPI';
@@ -107,7 +107,7 @@ export async function broadcast(req: express.Request,
         permlink: post.permlink
       });
       if (dbPost) {
-        dbPost = handleUpdatedPost(dbPost, post);
+        dbPost = updatePost(dbPost, post);
       } else {
         dbPost = new Post({
           ...post,

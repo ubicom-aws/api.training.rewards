@@ -54,6 +54,15 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
+UserSchema.post('init', function(this: any) {
+  if (this.banned && this.bannedUntil.getTime() < Date.now()) {
+    this.banned = 0;
+    this.save().catch(e => {
+      console.log('Failed to save removed banned status', e);
+    });
+  }
+});
+
 export interface UserModelListOpts {
   skip?: number;
   limit?: number;
@@ -103,6 +112,12 @@ UserSchema.methods = {
       await this.save();
     }
     return this;
+  },
+  async updateBannedStatus() {
+    if (this.banned && new Date(this.bannedUntil).getTime() < Date.now()) {
+      this.banned = 0;
+      await this.save();
+    }
   }
 }
 
