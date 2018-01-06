@@ -1,12 +1,14 @@
+import { getUpdatedPost, handleUpdatedPost } from './update';
+import Moderator from '../../models/moderator.model';
 import APIError from '../../helpers/APIError';
-import { top } from './top';
+import { getContent } from '../../steemAPI';
 import Post from '../../models/post.model';
 import User from '../../models/user.model';
 import * as HttpStatus from 'http-status';
-import { getUpdatedPost } from './update';
 import * as request from 'superagent';
 import steemAPI from '../../steemAPI';
 import * as sc2 from '../../sc2';
+import { top } from './top';
 
 function postMapper(post) {
   if (post.json_metadata.moderator) {
@@ -158,6 +160,57 @@ function listByIssue (req, res, next) {
   Post.list({ limit: 1, skip: 0, query })
     .then(post => sendPost(res, post))
     .catch(e => next(e));
+}
+
+async function edit(req, res, next) {
+  const params = {
+    parent_author: '',
+    parent_permlink: '',
+    author: req.body.author,
+    permlink: req.body.permlink,
+    title: req.body.title,
+    body: req.body.body,
+    json_metadata: req.body.json_metadata
+  };
+
+  try {
+    // Only grant cross-edit permissions to mods
+    if (res.locals.user.account !== params.author) {
+      const mod = await Moderator.get(res.locals.user.account);
+      if (!(mod && mod.isReviewed())) {
+        return res.sendStatus(HttpStatus.FORBIDDEN);
+      }
+    }
+
+    // Validate post exists to avoid creating posts
+    let post = await Post.get(params.author, params.permlink);
+    const updatedPost: any = await getContent(params.author, params.permlink);
+    if (!(updatedPost && updatedPost.author && updatedPost.permlink)) {
+      throw new Error('Cannot create posts from edit endpoint');
+    }
+
+    // Broadcast the updated post
+    const user = await User.get(params.author);
+    await sc2.send('/broadcast', {
+      user,
+      data: {
+        operations: [['comment', {
+          ...params,
+          parent_permlink: post.parent_permlink,
+          json_metadata: JSON.stringify(params.json_metadata)
+        }]]
+      }
+    });
+
+    // Update the post in the DB
+    post = handleUpdatedPost(post, updatedPost);
+    post.title = params.title;
+    post.body = params.body;
+    post.json_metadata = params.json_metadata;
+    await post.save();
+  } catch (e) {
+    next(e);
+  }
 }
 
 function getPostById (req, res, next) {
@@ -335,6 +388,7 @@ function getBoolean(val?: string|boolean): boolean {
 
 export default {
   get,
+  edit,
   create,
   update,
   list,
