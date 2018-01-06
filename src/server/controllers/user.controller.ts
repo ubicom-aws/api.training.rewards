@@ -87,10 +87,12 @@ function get(req, res) {
     bannedUntil: user.bannedUntil,
     banned: user.banned,
     details: user.details,
+    repos: user.repos ? (user.repos) : undefined,
     github: user.github ? {
       login: user.github.login,
       account: user.github.account,
       scopeVersion: user.github.scopeVersion,
+      lastSynced: (user.github.lastSynced) ? (user.github.lastSynced) : undefined,
       avatar_url: user.github.avatar_url,
     } : undefined
   });
@@ -98,54 +100,63 @@ function get(req, res) {
 
 function getGithubRepos(user, callback) {
   var result = new Array();
+  console.log("getting github repos:", user);
   if (!user || !user.github || !user.github.token) {
     return callback(result);
   }
 
-    request.get('https://api.github.com/user/repos')
-        .query({ access_token: user.github.token, per_page: 100 })
-        .then(function (response) {
-            if (response && response.body.length) {
-                const repos = (response.body.filter(repo => repo.owner.login === user.github.account && repo.private === false));
-                for (var k = 0; k < repos.length; k++) {
-                    result.push(repos[k]);
-                }
-                var orgs = new Array();
-                request.get('https://api.github.com/user/orgs')
-                    .query({ access_token: user.github.token, per_page: 100 })
-                    .then(function (resp) {
-                        if (resp && resp.body) {
-                            const organizations = resp.body;
-                            for (var i = 0; i < organizations.length; i++) {
-                                orgs.push(organizations[i].login);
-                            }
-                            if (orgs.length === 0) {
-                                callback(result);
-                                return;
-                            }
-                            for (var j = 0; j < orgs.length; ++j) {
-                                request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
-                                    .query({ access_token: user.github.token, per_page: 100 })
-                                    .then(function (respo) {
-                                        if (respo && respo.body) {
-                                            for (var m = 0; m < respo.body.length; ++m) {
-                                                result.push(respo.body[m]);
-                                            }
-                                            if (j+1 >= orgs.length) {
-                                                callback(result);
-                                                return;
-                                            }
-                                        }
-                                    })
-                            }
-                        } else {
-                            callback(result);
-                        }
-                    })
-            } else {
-                callback(result);
-            }
-        });
+  request.get('https://api.github.com/user/repos')
+      .query({ access_token: user.github.token, per_page: 100 })
+      .then(function (response) {
+          if (response && response.body.length) {
+              const repos = (response.body.filter(repo => repo.owner.login === user.github.account && repo.private === false));
+              for (var k = 0; k < repos.length; k++) {
+                  result.push(repos[k]);
+              }
+              var orgs = new Array();
+              request.get('https://api.github.com/user/orgs')
+                  .query({ access_token: user.github.token, per_page: 100 })
+                  .then(function (resp) {
+                      if (resp && resp.body) {
+                          const organizations = resp.body;
+                          for (var i = 0; i < organizations.length; i++) {
+                              orgs.push(organizations[i].login);
+                          }
+                          if (orgs.length === 0) {
+                              callback(result);
+                              return;
+                          }
+                          for (var j = 0; j < orgs.length; ++j) {
+                              request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
+                                  .query({ access_token: user.github.token, per_page: 100 })
+                                  .then(function (respo) {
+                                      if (respo && respo.body) {
+                                          for (var m = 0; m < respo.body.length; ++m) {
+                                              result.push(respo.body[m]);
+                                          }
+                                          if (j+1 >= orgs.length) {
+                                              callback(result);
+                                              return;
+                                          }
+                                      }
+                                  })
+                          }
+                      } else {
+                          callback(result);
+                      }
+                  })
+          } else {
+              callback(result);
+          }
+      }).catch(e => {
+        if (e.status === 401) {
+          user.github = undefined;
+          user.save();
+        } else {
+          console.error(e);
+        }
+        callback(result);
+      });
 }
 
 function getRepos(req, res, next) {
@@ -199,6 +210,7 @@ function create(req, res, next) {
                                           account: githubUserName,
                                           token: access_token,
                                           scopeVersion: scopeVersion,
+                                          lastSynced: new Date(),
                                           ...githubUser,
                                       };
                                       user.save()
@@ -212,6 +224,7 @@ function create(req, res, next) {
                                               account: githubUserName,
                                               token: access_token,
                                               scopeVersion: scopeVersion,
+                                              lastSynced: new Date(),
                                               ...githubUser,
                                           }
                                       });

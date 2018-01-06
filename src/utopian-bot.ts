@@ -22,11 +22,12 @@ conn.once('open', function ()
   const forced = process.env.FORCED === 'true' || false;
   const now = new Date();
   const MAX_VOTE_EVER = 30;
-  const MAX_USABLE_POOL = 10000;
-  const DIFFICULTY_MULTIPLIER=1;
+  const MAX_USABLE_POOL = 1000;
+  const DIFFICULTY_MULTIPLIER=3;
+  var post_index=0;
 
   const query = {
-    reviewed: true,
+    'json_metadata.moderator.reviewed': true,
     author: { $ne: botAccount },
     'active_votes.voter': { $ne: botAccount },
     created: {
@@ -238,28 +239,41 @@ conn.once('open', function ()
     });
   }
 
+  function calculateFinalVote(post,categories_pool)
+  {
+    const finalScore = post.finalScore;
+    const category = post.category;
+    const assignedWeight = (finalScore / categories_pool[category].total_vote_weight * 100) * categories_pool[category].assigned_pool / 100;
+    const calculatedVote = Math.round(assignedWeight / categories_pool[category].assigned_pool * 100);
+    let finalVote = calculatedVote;
+
+    if (calculatedVote >= categories_pool[category].max_vote) {
+      finalVote = categories_pool[category].max_vote;
+    }
+
+    if (calculatedVote <= categories_pool[category].min_vote) {
+      finalVote = categories_pool[category].min_vote;
+    }
+    return finalVote;
+  }
 
   const proceedVoting = (scoredPosts, categories_pool, stats) => {
     console.log("SCORED POSTS", scoredPosts.length);
 
     stats.bot_is_voting = true;
-
+    var total_vote=0,total_after_correction=0;
+    new Promise( (resolve, reject) => {
+        for(let post of scoredPosts)
+        {
+          total_vote+=calculateFinalVote(post,categories_pool);
+          resolve('Success!');
+        }
+}).then(value=>{
+    console.log(total_vote);
     stats.save().then((savedStats) => {
       scoredPosts.forEach((post, index) => {
         setTimeout(function(){
-          const finalScore = post.finalScore;
-          const category = post.category;
-          const assignedWeight = (finalScore / categories_pool[category].total_vote_weight * 100) * categories_pool[category].assigned_pool / 100;
-          const calculatedVote = Math.round(assignedWeight / categories_pool[category].assigned_pool * 100);
-          let finalVote = calculatedVote;
-
-          if (calculatedVote >= categories_pool[category].max_vote) {
-            finalVote = categories_pool[category].max_vote;
-          }
-
-          if (calculatedVote <= categories_pool[category].min_vote) {
-            finalVote = categories_pool[category].min_vote;
-          }
+          let finalVote=calculateFinalVote(post,categories_pool);
 
           const achievements = post.achievements;
           const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
@@ -289,10 +303,13 @@ conn.once('open', function ()
           commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
           commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
+          finalVote=finalVote*MAX_USABLE_POOL/(total_vote);
+          finalVote=Math.round(finalVote*100)/100;
+          total_after_correction+=finalVote;
           console.log('--------------------------------------\n');
           console.log('https://utopian.io/utopian-io/@'+post.author+'/'+post.permlink);
-          console.log('VOTE:' + finalVote + '\n');
-          console.log('CATEGORY', category);
+          console.log('VOTE:' + finalVote + '(total:'+Math.round(total_after_correction)+')');
+          console.log('CATEGORY', post.category,'\n');
           console.log(commentBody);
           console.log('--------------------------------------\n');
 
@@ -348,6 +365,7 @@ conn.once('open', function ()
         }, index * 30000);
       })
     });
+  });
   };
 
   Stats.get()
@@ -376,7 +394,7 @@ conn.once('open', function ()
                     .countAll({query})
                     .then(limit => {
                       Post
-                          .list({skip: 0, limit: limit, query, sort: {created: 1}})
+                          .list({skip: 0, limit: limit, query, sort: {net_votes: -1}})
                           .then(posts => {
                             const scoredPosts: any[] = [];
 
@@ -393,8 +411,8 @@ conn.once('open', function ()
                               "ideas": {
                                 "difficulty" : 0.8*DIFFICULTY_MULTIPLIER,
                                 "total_vote_weight": 0,
-                                "max_vote": 5,
-                                "min_vote": 2,
+                                "max_vote": 4,
+                                "min_vote": 1.5,
                               },
                               "sub-projects": {
                                 "total_vote_weight": 0,
@@ -405,8 +423,8 @@ conn.once('open', function ()
                               "development": {
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
-                                "min_vote": 15,
-                                "difficulty" : 2.2*DIFFICULTY_MULTIPLIER
+                                "min_vote": 30,
+                                "difficulty" : 2.5*DIFFICULTY_MULTIPLIER
                               },
                               "bug-hunting": {
                                 "total_vote_weight": 0,
@@ -416,9 +434,9 @@ conn.once('open', function ()
                               },
                               "translations": {
                                 "total_vote_weight": 0,
-                                "max_vote": 25,
-                                "min_vote": 6.5,
-                                "difficulty" : 1.7*DIFFICULTY_MULTIPLIER
+                                "max_vote": 12,
+                                "min_vote": 7,
+                                "difficulty" : 1.4*DIFFICULTY_MULTIPLIER
                               },
                               "graphics": {
                                 "total_vote_weight": 0,
@@ -447,8 +465,8 @@ conn.once('open', function ()
                               "tutorials": {
                                 "total_vote_weight": 0,
                                 "max_vote": 15,
-                                "min_vote": 5.5,
-                                "difficulty" : 1.7*DIFFICULTY_MULTIPLIER
+                                "min_vote": 7,
+                                "difficulty" : 1.9*DIFFICULTY_MULTIPLIER
                               },
                               "video-tutorials": {
                                 "total_vote_weight": 0,
@@ -470,8 +488,8 @@ conn.once('open', function ()
                               },
                               "tasks-requests": {
                                 "total_vote_weight": 0,
-                                "max_vote": 10,
-                                "min_vote": 5,
+                                "max_vote": 6,
+                                "min_vote": 3,
                                 "difficulty" : 1.1*DIFFICULTY_MULTIPLIER
                               },
                             };
@@ -599,9 +617,10 @@ conn.once('open', function ()
 
                                             scoredPosts.push(post);
 
-                                            if (allPostsIndex + 1 === posts.length) {
+                                            if (post_index + 1 === posts.length) {
                                               proceedVoting(scoredPosts, categories_pool, stats);
                                             }
+                                            post_index++;
                                           });
                                     });
                                   }

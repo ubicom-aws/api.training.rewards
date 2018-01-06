@@ -19,3 +19,6 @@ node_modules
 
 # Environment files
 .env
+
+# Private Certs
+*.pem

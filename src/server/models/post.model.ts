@@ -195,6 +195,10 @@ const PostSchema = new mongoose.Schema({
     type: Boolean,
     //required: false,
   },
+  reserved: {
+    type: Boolean,
+    default: false,
+  },
   moderator: {
     type: String,
     //required: false,
@@ -212,7 +216,14 @@ PostSchema.index(
       "title": 5
     }
   }
-)
+);
+
+PostSchema.index({
+  'author': 1,
+  'permlink': 1,
+}, {
+  unique: true,
+});
 
 export interface PostSchemaDoc extends mongoose.Document {
 }

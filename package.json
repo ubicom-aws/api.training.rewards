@@ -17,16 +17,14 @@
   "scripts": {
     "dev-server": "cross-env NODE_ENV=development SERVER_PORT=4040 gulp serve",
     "start": "cross-env NODE_ENV=production SERVER_PORT=443 gulp serve",
+    "utopian-pay": "node ./dist/utopian-pay.js $TEST $WIF",
     "updater-posts": "node ./dist/updater-posts.js",
-    "create-account": "node ./dist/create-account.js",
     "utopian-bot": "node ./dist/utopian-bot.js $REFRESH_TOKEN $CLIENT_SECRET",
     "stats-categories": "node ./dist/stats-categories.js",
     "stats-moderators-shares": "node ./dist/stats-moderators-shares.js",
     "stats-sponsors-shares": "node ./dist/stats-sponsors-shares.js",
     "stats-total-paid": "node ./dist/stats-total-paid.js",
     "stats-total-pending": "node ./dist/stats-total-pending.js",
-    "stats-total-paid-sponsors": "node ./dist/stats-total-paid-sponsors.js",
-    "stats-total-paid-moderators": "node ./dist/stats-total-paid-moderators.js",
     "start:debug": "cross-env DEBUG=api.utopian.io:* yarn start",
     "build": "gulp",
     "test": "cross-env NODE_ENV=test npx mocha --ui bdd --reporter spec --colors --recursive -r ts-node/register tests/index.ts"

@@ -1,23 +1,11 @@
-import * as HttpStatus from 'http-status';
-import {getTokenFromCode} from '../sc2';
-import * as express from 'express';
-import * as crypto from 'crypto';
+import User, { UserSchemaDoc } from '../models/user.model';
+import { genSecureAlphaNumeric } from '../helpers/string';
 import Session from '../models/session.model';
-import User from '../models/user.model';
+import * as HttpStatus from 'http-status';
+import * as express from 'express';
 import steemAPI from '../steemAPI';
-
-const ALPHA_NUMERIC = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-function genSecureAlphaNumeric(size: number): string {
-  const secure = crypto.randomBytes(size);
-  const charLen = ALPHA_NUMERIC.length;
-  let ascii = '';
-  for (const byte of secure) {
-    // Range from ASCII
-    ascii += ALPHA_NUMERIC[byte % charLen];
-  }
-  return ascii;
-}
+import * as crypto from 'crypto';
+import {getToken} from '../sc2';
 
 async function createUser(account: string) {
   var details = {
@@ -62,7 +50,7 @@ export async function steemconnect(req: express.Request,
     return res.status(HttpStatus.OK);
   }
   try {
-    const token = await getTokenFromCode(req.body.code);
+    const token = await getToken(req.body.code);
     if (!token) return res.status(HttpStatus.UNAUTHORIZED);
 
     let user: any = await User.findOne({ account: token.username });
@@ -74,10 +62,7 @@ export async function steemconnect(req: express.Request,
       user: user._id
     });
 
-    user.sc2 = {};
-    user.sc2.token = token.access_token;
-    user.sc2.expiry = session.expiry;
-
+    user.setSC2Token(token);
     await user.save();
     await session.save();
 
