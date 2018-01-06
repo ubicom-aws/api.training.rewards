@@ -27,7 +27,7 @@ conn.once('open', function ()
   var post_index=0;
 
   const query = {
-    reviewed: true,
+    'json_metadata.moderator.reviewed': true,
     author: { $ne: botAccount },
     'active_votes.voter': { $ne: botAccount },
     created: {
@@ -394,7 +394,7 @@ conn.once('open', function ()
                     .countAll({query})
                     .then(limit => {
                       Post
-                          .list({skip: 0, limit: limit, query, sort: {created: 1}})
+                          .list({skip: 0, limit: limit, query, sort: {net_votes: -1}})
                           .then(posts => {
                             const scoredPosts: any[] = [];
 
@@ -411,8 +411,8 @@ conn.once('open', function ()
                               "ideas": {
                                 "difficulty" : 0.8*DIFFICULTY_MULTIPLIER,
                                 "total_vote_weight": 0,
-                                "max_vote": 5,
-                                "min_vote": 2,
+                                "max_vote": 4,
+                                "min_vote": 1.5,
                               },
                               "sub-projects": {
                                 "total_vote_weight": 0,
@@ -423,8 +423,8 @@ conn.once('open', function ()
                               "development": {
                                 "total_vote_weight": 0,
                                 "max_vote": MAX_VOTE_EVER,
-                                "min_vote": 15,
-                                "difficulty" : 2.2*DIFFICULTY_MULTIPLIER
+                                "min_vote": 30,
+                                "difficulty" : 2.5*DIFFICULTY_MULTIPLIER
                               },
                               "bug-hunting": {
                                 "total_vote_weight": 0,
@@ -434,9 +434,9 @@ conn.once('open', function ()
                               },
                               "translations": {
                                 "total_vote_weight": 0,
-                                "max_vote": 25,
-                                "min_vote": 6.5,
-                                "difficulty" : 1.7*DIFFICULTY_MULTIPLIER
+                                "max_vote": 12,
+                                "min_vote": 7,
+                                "difficulty" : 1.4*DIFFICULTY_MULTIPLIER
                               },
                               "graphics": {
                                 "total_vote_weight": 0,
@@ -465,8 +465,8 @@ conn.once('open', function ()
                               "tutorials": {
                                 "total_vote_weight": 0,
                                 "max_vote": 15,
-                                "min_vote": 5.5,
-                                "difficulty" : 1.7*DIFFICULTY_MULTIPLIER
+                                "min_vote": 7,
+                                "difficulty" : 1.9*DIFFICULTY_MULTIPLIER
                               },
                               "video-tutorials": {
                                 "total_vote_weight": 0,
@@ -488,8 +488,8 @@ conn.once('open', function ()
                               },
                               "tasks-requests": {
                                 "total_vote_weight": 0,
-                                "max_vote": 10,
-                                "min_vote": 5,
+                                "max_vote": 6,
+                                "min_vote": 3,
                                 "difficulty" : 1.1*DIFFICULTY_MULTIPLIER
                               },
                             };

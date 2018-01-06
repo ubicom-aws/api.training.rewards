@@ -15,6 +15,7 @@ const SponsorSchema = new mongoose.Schema({
     required: false,
   },
   total_paid_rewards: Number,
+  total_paid_rewards_steem: Number,
   should_receive_rewards: Number,
   percentage_total_vesting_shares: Number,
   vesting_shares: {
