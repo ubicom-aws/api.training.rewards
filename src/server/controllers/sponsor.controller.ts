@@ -33,7 +33,6 @@ function create(req, res, next) {
               vesting_shares: 0,
               percentage_total_vesting_shares: 0,
               total_paid_rewards: 0,
-              total_paid_rewards_steem: 0,
               should_receive_rewards: 0,
               opted_out: false,
               is_witness: false,

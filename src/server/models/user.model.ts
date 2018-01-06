@@ -1,8 +1,7 @@
+import * as Promise from 'bluebird';
 import * as mongoose from 'mongoose';
 import * as httpStatus from 'http-status';
 import APIError from '../helpers/APIError';
-import {AuthResponse, getToken} from '../sc2';
-import Session from './session.model';
 
 /**
  * User Schema
@@ -20,7 +19,6 @@ const UserSchema = new mongoose.Schema({
   refresh_token: String,
   sc2: new mongoose.Schema({
     token: String,
-    refresh_token: String,
     expiry: Date
   }),
   createdAt: {
@@ -31,8 +29,10 @@ const UserSchema = new mongoose.Schema({
     type: Object,
     default: {
       recoveryAccount: 'steem',
+      emailVerified: false,
+      confirmed: false,
       connectedToSteem: false,
-      lastUpdate: Date.now(),
+      lastUpdate: Date.now,
       votingForWiteness: false,
     }
   },
@@ -60,8 +60,6 @@ export interface UserModelListOpts {
 }
 
 export interface UserSchemaDoc extends mongoose.Document {
-  setSC2Token(token: AuthResponse);
-  updateSC2Token();
 }
 
 export interface UserSchemaModel extends mongoose.Model<UserSchemaDoc> {
@@ -70,53 +68,24 @@ export interface UserSchemaModel extends mongoose.Model<UserSchemaDoc> {
   list(opts?: UserModelListOpts): any;
 }
 
-UserSchema.methods = {
-  setSC2Token(token: AuthResponse) {
-    this.sc2 = {};
-    this.sc2.token = token.access_token;
-    this.sc2.refresh_token = token.refresh_token;
-    this.sc2.expiry = new Date(Date.now() + (token.expires_in * 1000));
-  },
-  async updateSC2Token() {
-    if (!this.sc2) {
-      return this;
-    }
-    const expiry = this.sc2.expiry as Date;
-    // Threshold is used to ensure the token doesn't expire while being used
-    // by the server.
-    const threshold = 12 * 60 * 60 * 1000;
-    if (Date.now() > expiry.getTime() - threshold) {
-      if (!this.sc2.refresh_token) {
-        this.sc2 = undefined;
-        await this.save();
-        await Session.remove({ user: this._id });
-        return this;
-      }
-
-      const token: AuthResponse = await getToken(this.sc2.refresh_token, true);
-      if (token.username !== this.account) {
-        // This should never happen
-        throw new Error('Username and token mismatch');
-      }
-
-      this.setSC2Token(token);
-      await this.save();
-    }
-    return this;
-  }
-}
-
+/**
+ * Statics
+ */
 UserSchema.statics = {
+  /**
+   * Get user
+   * @param {ObjectId} id - The objectId of user.
+   * @returns {Promise<User, APIError>}
+   */
   get(account) {
     return this.findOne({account})
       .exec()
-      .then(user => {
-        if (!user) {
-          const err = new APIError('No such user exists!', httpStatus.NOT_FOUND);
-          return Promise.reject(err);
+      .then((user) => {
+        if (user) {
+          return user;
         }
-        user.updateSC2Token();
-        return user;
+        const err = new APIError('No such user exists!', httpStatus.NOT_FOUND);
+        return Promise.reject(err);
       });
   },
   getByGithub(token) {
@@ -133,7 +102,6 @@ UserSchema.statics = {
           return Promise.reject(err);
         }
 
-        githubUser.updateSC2Token();
         return githubUser;
 
       });

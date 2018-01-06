@@ -3,13 +3,4 @@ import config from '../config/config';
 
 steem.api.setOptions({ url: config.steemNode });
 
-export function getContent(author: string, permlink: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    steem.api.getContent(author, permlink, (e, p) => {
-      if (e) return reject(e);
-      resolve(p);
-    });
-  });
-}
-
 export default steem.api;

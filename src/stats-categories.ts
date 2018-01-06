@@ -17,7 +17,7 @@ conn.once('open', function ()
       const lastCheck = stats.stats_categories_last_check;
       const now = new Date().toISOString();
       const query = {
-        'json_metadata.moderator.reviewed': true,
+        reviewed: true,
       };
 
       Post

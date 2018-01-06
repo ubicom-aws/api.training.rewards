@@ -13,49 +13,42 @@ const conn = mongoose.connection;
 conn.once('open', function ()
 {
   Stats.get().then(stats => {
-    const lastPostDate = stats.stats_total_pending_last_post_date;
+    // @TODO should be used to increment the stats based on last check, instead then rechecking from the start
+    const lastCheck = stats.stats_total_pending_last_check;
+    const now = new Date().toISOString();
     const paidRewardsDate = '1969-12-31T23:59:59';
     const query = {
       cashout_time:
         {
           $gt: paidRewardsDate
         },
-      created: {
-        $gt: lastPostDate
-      }
     };
-    const limit = 500;
-    const sort = { created: 1};
 
     Post
-        .list({ skip: 0, limit, query, sort })
-        .then(posts => {
-          if(posts.length > 0) {
-            let total_pending_rewards = stats.total_pending_rewards;
-            let stats_total_pending_last_post_date = null;
+      .countAll({ query })
+      .then(count => {
+        Post
+          .list({ skip: 0, limit: count, query })
+          .then(posts => {
+            if(posts.length > 0) {
+              let total_pending_rewards = 0;
 
-            posts.forEach(post => {
-              const payoutDetails = calculatePayout(post);
-              const potentialPayout = payoutDetails.potentialPayout || 0;
-              total_pending_rewards = total_pending_rewards + potentialPayout;
+              posts.forEach((post, index) => {
+                const payoutDetails = calculatePayout(post);
+                const potentialPayout = payoutDetails.potentialPayout || 0;
+                total_pending_rewards = total_pending_rewards + potentialPayout;
+              });
 
-              stats_total_pending_last_post_date = post.created;
-            });
+              stats.total_pending_rewards = total_pending_rewards;
+              stats.stats_total_pending_last_check = now;
 
-            stats.total_pending_rewards = total_pending_rewards;
-            stats.stats_total_pending_last_check = new Date().toISOString();
-            stats.stats_total_pending_last_post_date = stats_total_pending_last_post_date;
-
-            stats.save().then(savedStats => {
-              conn.close();
-              process.exit(0);
-            });
-          } else {
-            console.log("NO POSTS");
-            conn.close();
-            process.exit(0);
-          }
-        })
+              stats.save().then(savedStats => {
+                conn.close();
+                process.exit(0);
+              });
+            }
+          })
+      })
   }).catch(e => {
     console.log("ERROR STATS", e);
     conn.close();

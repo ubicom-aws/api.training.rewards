@@ -15,7 +15,6 @@ const SponsorSchema = new mongoose.Schema({
     required: false,
   },
   total_paid_rewards: Number,
-  total_paid_rewards_steem: Number,
   should_receive_rewards: Number,
   percentage_total_vesting_shares: Number,
   vesting_shares: {
@@ -58,7 +57,7 @@ SponsorSchema.statics = {
       },
       account: {
         $ne: 'utopian-io'
-      },
+      }
     })
       .sort({ vesting_shares: -1 })
       .exec();
@@ -72,12 +71,6 @@ SponsorSchema.statics = {
       vesting_shares: {
         $gt: 0
       },
-      account: {
-        $ne: 'utopian-io'
-      },
-      opted_out: {
-        $ne: true
-      }
     };
     if (exclude && exclude.length) {
       query = {
@@ -88,7 +81,8 @@ SponsorSchema.statics = {
       }
     }
     return this.find(query)
-      .sort({ vesting_shares: -1 })
+      .sort({ should_receive_rewards: -1 })
+      .limit(6)
       .exec();
   }
 };

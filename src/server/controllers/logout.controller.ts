@@ -1,5 +1,5 @@
 import * as HttpStatus from 'http-status';
-import {getToken} from '../sc2';
+import {getTokenFromCode} from '../sc2';
 import * as express from 'express';
 import * as crypto from 'crypto';
 import Session from '../models/session.model';

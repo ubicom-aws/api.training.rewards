@@ -7,8 +7,6 @@ import Stats from './server/models/stats.model';
 import { calculatePayout } from './server/steemitHelpers';
 import config from './config/config';
 
-// TODO to be removed once the new beneficiary system is in place and no posts are pending payout having the old beneficiary system
-
 (mongoose as any).Promise = Promise;
 mongoose.connect(config.mongo);
 

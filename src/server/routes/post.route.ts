@@ -1,18 +1,14 @@
-import { processQueryParams } from '../controllers/post.controller/top';
-import paramValidation from '../../config/param-validation';
-import { requireAuth, requireMod } from './middleware';
-import postCtrl from '../controllers/post.controller';
-import * as validate from 'express-validation';
 import * as express from 'express';
+import * as validate from 'express-validation';
+import paramValidation from '../../config/param-validation';
+import postCtrl from '../controllers/post.controller';
+import { requireAuth } from './middleware';
 
 const router = express.Router();
 
 router.route('/')
   .get(postCtrl.list)
   .post(requireAuth, validate(paramValidation.createPost), postCtrl.create);
-
-router.route('/top')
-  .get(processQueryParams, postCtrl.top);
 
 router.route('/byid/:postId')
   .get(postCtrl.getPostById)
@@ -21,6 +17,6 @@ router.route('/byid/:postId')
 router.route('/:author/:permlink')
   .get(postCtrl.get)
   .put(requireAuth, postCtrl.update)
-  .delete(requireAuth, requireMod, postCtrl.remove);
+  .delete(requireAuth, postCtrl.remove);
 
 export default router;

@@ -3,6 +3,7 @@ import * as Promise from 'bluebird';
 import * as R from 'ramda';
 import Sponsor from './server/models/sponsor.model';
 import Stats from './server/models/stats.model';
+import Post from './server/models/post.model';
 import config from './config/config';
 import steemApi from './server/steemAPI';
 import { calculatePayout } from './server/steemitHelpers';
@@ -49,7 +50,6 @@ conn.once('open', function ()
 
                                     steemApi.getWitnessByAccount(sponsor.account, function(witnessErr, witnessRes) {
                                         const isWitness = witnessRes && witnessRes.owner ? true : false;
-                                        const percentageTotalShares = (currentVestingShares / total_vesting_shares) * 100;
 
                                         if (currentVestingShares > 0) {
                                             //const delegationDate = isDelegating.min_delegation_time;
@@ -61,21 +61,52 @@ conn.once('open', function ()
                                                 cashout_time:
                                                     {
                                                         $eq: paidRewardsDate
-                                                    }
+                                                    },
                                             };
-                                            sponsor.vesting_shares = currentVestingShares;
-                                            sponsor.percentage_total_vesting_shares = percentageTotalShares;
-                                            sponsor.is_witness = isWitness;
+                                            Post
+                                                .countAll({ query })
+                                                .then(count => {
+                                                    Post
+                                                        .list({skip: 0, limit: count, query})
+                                                        .then(posts => {
+                                                            //const currentVestingShares = isDelegating ? parseInt(isDelegating.vesting_shares) : 0;
+                                                            const percentageTotalShares = (currentVestingShares / total_vesting_shares) * 100;
+                                                            let total_paid_authors = 0;
 
-                                            sponsor.save(savedSponsor => {
-                                                if ((sponsorsIndex + 1) === sponsors.length) {
-                                                    stats.stats_sponsors_shares_last_check = now;
-                                                    stats.save().then(() => {
-                                                        conn.close();
-                                                        process.exit(0);
-                                                    });
-                                                }
-                                            });
+                                                            posts.forEach(post => {
+                                                                const payoutDetails = calculatePayout(post);
+                                                                total_paid_authors = total_paid_authors + (payoutDetails.authorPayouts || 0);
+                                                            });
+
+                                                            const totalDedicatedSponsors = (total_paid_authors * dedicatedPercentageSponsors) / 100;
+                                                            const shouldHaveReceivedRewards = (percentageTotalShares * totalDedicatedSponsors) / 100;
+                                                            const total_paid_rewards = sponsor.total_paid_rewards;
+
+                                                            if (shouldHaveReceivedRewards >= total_paid_rewards) {
+                                                                const mustReceiveRewards = shouldHaveReceivedRewards - total_paid_rewards;
+                                                                sponsor.should_receive_rewards = mustReceiveRewards;
+                                                            }
+
+                                                            if (shouldHaveReceivedRewards <= total_paid_rewards) {
+                                                                const waitForNextRewards = 0;
+                                                                sponsor.should_receive_rewards = waitForNextRewards;
+                                                            }
+
+                                                            sponsor.vesting_shares = currentVestingShares;
+                                                            sponsor.percentage_total_vesting_shares = percentageTotalShares;
+                                                            sponsor.is_witness = isWitness;
+
+                                                            sponsor.save(savedSponsor => {
+                                                                if ((sponsorsIndex + 1) === sponsors.length) {
+                                                                    stats.stats_sponsors_shares_last_check = now;
+                                                                    stats.save().then(() => {
+                                                                        conn.close();
+                                                                        process.exit(0);
+                                                                    });
+                                                                }
+                                                            });
+                                                        });
+                                                });
                                         } else {
                                             sponsor.vesting_shares = 0;
                                             sponsor.percentage_total_vesting_shares = 0;

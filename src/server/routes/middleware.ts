@@ -12,15 +12,7 @@ export function requireAuth(req: express.Request,
   }
   Session.get(session).then(user => {
     if (!user) {
-      res.sendStatus(HttpStatus.UNAUTHORIZED);
-      return undefined;
-    }
-    return user.updateSC2Token();
-  }).then(user => {
-    if (!user) {
-      return;
-    } else if (!user.sc2) {
-      return res.sendStatus(HttpStatus.PROXY_AUTHENTICATION_REQUIRED);
+      return res.sendStatus(HttpStatus.UNAUTHORIZED);
     }
     res.locals.session = session;
     res.locals.user = user;
