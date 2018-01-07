@@ -13,6 +13,7 @@ import * as sc2 from './server/sc2';
 
 const TEST = process.env.TEST === 'false' ? false : true;
 
+(mongoose as any).Promise = Promise;
 mongoose.connect(config.mongo);
 const conn = mongoose.connection;
 
@@ -34,11 +35,13 @@ conn.once('open', async function() {
   };
 
   const find = Post.find(query);
-  const c = find.cursor();
+  const c = find.cursor({ batchSize: 1 });
   console.log(`Found ${await find.count()} posts to check`);
-  for (let post = await c.next(); post != null; post = await c.next()) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    await processPost(post);
+  let index = 0;
+  let post;
+  while ((post = await c.next()) !== null) {
+    await processPost(post, ++index);
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 
   stats.stats_last_updated_posts = new Date().toISOString();
@@ -47,8 +50,8 @@ conn.once('open', async function() {
   conn.close();
 });
 
-async function processPost(post: any): Promise<void> {
-  console.log(`----NOW CHECKING POST ${post.permlink} by ${post.author}----\n`);
+async function processPost(post: any, index: number): Promise<void> {
+  console.log(`----NOW CHECKING POST ${post.permlink} by ${post.author} (post number: ${index})----\n`);
   try {
     const chainPost = await getContent(post.author, post.permlink);
     const chainMeta = chainPost.json_metadata;
@@ -78,7 +81,7 @@ async function processMetadata(post, chainMeta): Promise<void> {
     let b = JSON.parse(chainMeta).moderator;
     if (!a) a = {};
     if (!b) b = {};
-    if ((a.account === b.account
+    if (!a.account || (a.account === b.account
         && a.reviewed === b.reviewed
         && a.pending === b.pending
         && a.flagged === b.flagged)) {
