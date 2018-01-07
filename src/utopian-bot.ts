@@ -385,6 +385,7 @@ conn.once('open', function ()
                 process.exit(0);
                 return;
               }
+              console.log(res.body);
               if (res.body.access_token) {
                 SteemConnect.setAccessToken(res.body.access_token);
               }
