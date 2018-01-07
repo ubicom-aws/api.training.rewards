@@ -9,6 +9,10 @@ import * as sc2 from '../../sc2';
 import { top } from './top';
 
 function postMapper(post) {
+  post.pending = false;
+  post.reviewed = false;
+  post.flagged = false;
+
   if (post.json_metadata.moderator) {
     // Enable backwards compatibility for the front end
     const mod = post.json_metadata.moderator;
