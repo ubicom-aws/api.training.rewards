@@ -7,6 +7,8 @@ import config from './config/config';
 import * as steem from 'steem';
 import * as R from 'ramda';
 
+steem.api.setOptions({ url: config.steemNode });
+
 (mongoose as any).Promise = Promise;
 mongoose.connect(config.mongo);
 

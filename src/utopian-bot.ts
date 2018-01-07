@@ -5,7 +5,10 @@ import * as SteemConnect from 'sc2-sdk';
 import * as steem from 'steem';
 import Stats from './server/models/stats.model';
 import Post from './server/models/post.model';
+
 import config from './config/config';
+
+steem.api.setOptions({ url: config.steemNode });
 
 import { createCommentPermlink } from './server/steemitHelpers';
 
