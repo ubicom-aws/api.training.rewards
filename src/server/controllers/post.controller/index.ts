@@ -1,12 +1,12 @@
+import steemAPI, { getContent } from '../../steemAPI';
+import { getUpdatedPost, updatePost } from './update';
 import APIError from '../../helpers/APIError';
-import { top } from './top';
 import Post from '../../models/post.model';
 import User from '../../models/user.model';
 import * as HttpStatus from 'http-status';
-import { getUpdatedPost } from './update';
 import * as request from 'superagent';
-import steemAPI from '../../steemAPI';
 import * as sc2 from '../../sc2';
+import { top } from './top';
 
 function postMapper(post) {
   if (post.json_metadata.moderator) {
@@ -38,8 +38,16 @@ async function create(req, res, next) {
   try {
     const dbPost = await Post.get(author, permlink);
     if (dbPost) {
-      sendPost(res, dbPost);
+      return sendPost(res, dbPost);
     }
+    if (getBoolean(req.body.force)) {
+      const updatedPost = updatePost({
+        json_metadata: {}
+      }, await getContent(author, permlink));
+      const post = new Post(updatedPost);
+      return sendPost(res, await post.save());
+    }
+    return res.sendStatus(HttpStatus.NOT_FOUND);
   } catch (e) {
     if (!(e instanceof APIError && e.status === HttpStatus.NOT_FOUND)) {
       return next(e);
