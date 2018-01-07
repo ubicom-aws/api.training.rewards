@@ -11,7 +11,7 @@ export function aggregateMatch(startDate: Date|undefined, endDate: Date) {
       'created': {
         $lt: endDate.toISOString()
       },
-      'flagged': false
+      'json_metadata.moderator.flagged': { $ne: true }
     }
   };
   if (startDate) {
@@ -20,18 +20,15 @@ export function aggregateMatch(startDate: Date|undefined, endDate: Date) {
   return matcher;
 }
 
-export function aggregateGroup(addToSet?: any) {
-  if (!addToSet) {
-    addToSet = {};
-  }
-
+export function aggregateGroup() {
   let group: any = {
     _id: '$json_metadata.repository.full_name',
     count: { $sum: 1 },
     posts: {
       $addToSet: {
-        'created': '$created',
-        ...addToSet
+        created: '$created',
+        pending_payout_value: '$pending_payout_value',
+        total_payout_value: '$total_payout_value'
       }
     }
   };

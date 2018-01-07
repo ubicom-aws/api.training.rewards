@@ -74,10 +74,7 @@ export async function top(req, res, next) {
     ];
 
     if (params.retrieve_by === RetrieveBy.PROJECTS) {
-      aggregateQuery.push(...aggregateGroup({
-        pending_payout_value: '$pending_payout_value',
-        total_payout_value: '$total_payout_value'
-      }));
+      aggregateQuery.push(...aggregateGroup());
     }
 
     const data: any[] = await Post.aggregate(aggregateQuery);
