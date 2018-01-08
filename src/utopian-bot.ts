@@ -1,14 +1,11 @@
+import Stats from './server/models/stats.model';
+import Post from './server/models/post.model';
+import steemAPI, { formatter } from './server/steemAPI';
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as request from 'superagent';
 import * as SteemConnect from 'sc2-sdk';
-import * as steem from 'steem';
-import Stats from './server/models/stats.model';
-import Post from './server/models/post.model';
-
 import config from './config/config';
-
-steem.api.setOptions({ url: config.steemNode });
 
 import { createCommentPermlink } from './server/steemitHelpers';
 
@@ -219,7 +216,7 @@ conn.once('open', function ()
 
   const checkStatus = (callback) => {
     const limitPower = 10000;
-    steem.api.getAccounts([botAccount], function(err, accounts) {
+    steemAPI.getAccounts([botAccount], function(err, accounts) {
       if (!err) {
         const botStatus = accounts[0];
 
@@ -516,12 +513,12 @@ conn.once('open', function ()
                             console.log(categories_pool);
 
                             posts.forEach((post, allPostsIndex) => {
-                              steem.api.getAccounts([post.author], (err, accounts) => {
+                              steemAPI.getAccounts([post.author], (err, accounts) => {
                                 if (!err) {
                                   if (accounts && accounts.length === 1) {
                                     const account = accounts[0];
 
-                                    steem.api.getFollowCount(account.name, function (err, followers) {
+                                    steemAPI.getFollowCount(account.name, function (err, followers) {
                                       const contributionsQuery = {
                                         reviewed: true,
                                         id: {$ne: post.id},
@@ -535,7 +532,7 @@ conn.once('open', function ()
                                             const achievements: string[] = [];
                                             const categoryStats = categories[post.json_metadata.type];
                                             const averageRewards = categoryStats.average_paid_authors + categoryStats.average_paid_curators;
-                                            const reputation = steem.formatter.reputation(account.reputation);
+                                            const reputation = formatter.reputation(account.reputation);
                                             const votes = post.active_votes.filter(vote => bots.indexOf(vote.voter) <= 0);
                                             const getUpvotes = activeVotes => activeVotes.filter(vote => vote.percent > 0);
                                             const upVotes = getUpvotes(votes);

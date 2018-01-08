@@ -1,5 +1,5 @@
 import * as base58 from 'bs58';
-import * as steem from 'steem';
+import { getContent } from './steemAPI';
 import * as getSlug from 'speakingurl';
 import * as secureRandom from 'secure-random';
 import * as diff_match_patch from 'diff-match-patch';
@@ -115,23 +115,20 @@ export function createPermlink(title, author, parent_author, parent_permlink) {
       s = base58.encode(secureRandom.randomBuffer(4));
     }
 
-    return steem.api
-      .getContentAsync(author, s)
-      .then(content => {
-        let prefix;
-        if (content.body !== '') {
-          // make sure slug is unique
-          prefix = `${base58.encode(secureRandom.randomBuffer(4))}-`;
-        } else {
-          prefix = '';
-        }
-        permlink = prefix + s;
-        return checkPermLinkLength(permlink);
-      })
-      .catch(err => {
-        console.warn('Error while getting content', err);
-        return permlink;
-      });
+    return getContent(author, s).then(content => {
+      let prefix;
+      if (content.body !== '') {
+        // make sure slug is unique
+        prefix = `${base58.encode(secureRandom.randomBuffer(4))}-`;
+      } else {
+        prefix = '';
+      }
+      permlink = prefix + s;
+      return checkPermLinkLength(permlink);
+    }).catch(err => {
+      console.warn('Error while getting content', err);
+      return permlink;
+    });
   }
   // comments: re-parentauthor-parentpermlink-time
   const timeStr = new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '');
