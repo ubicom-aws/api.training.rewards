@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.route('/')
   .get(postCtrl.list)
-  .post(requireAuth, validate(paramValidation.createPost), postCtrl.create);
+  .post(validate(paramValidation.createPost), postCtrl.create);
 
 router.route('/top')
   .get(processQueryParams, postCtrl.top);

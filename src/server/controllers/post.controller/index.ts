@@ -1,5 +1,5 @@
+import { getUpdatedPost, updatePost, validateNewPost } from './update';
 import steemAPI, { getContent } from '../../steemAPI';
-import { getUpdatedPost, updatePost } from './update';
 import APIError from '../../helpers/APIError';
 import Post from '../../models/post.model';
 import User from '../../models/user.model';
@@ -34,28 +34,30 @@ function get(req, res, next) {
 }
 
 async function create(req, res, next) {
-  if (res.locals.user.banned) {
-    return res.status(HttpStatus.FORBIDDEN);
-  }
   const author = req.body.author;
   const permlink = req.body.permlink;
   try {
-    const dbPost = await Post.get(author, permlink);
-    if (dbPost) {
+    try {
+      const dbPost = await Post.get(author, permlink);
       return sendPost(res, dbPost);
+    } catch (e) {
+      if (!(e instanceof APIError && e.status === HttpStatus.NOT_FOUND)) {
+        return next(e);
+      }
     }
-    if (getBoolean(req.body.force)) {
-      const updatedPost = updatePost({
-        json_metadata: {}
-      }, await getContent(author, permlink));
+
+    const updatedPost = updatePost({
+      json_metadata: {}
+    }, await getContent(author, permlink));
+
+    if (await validateNewPost(updatedPost)) {
       const post = new Post(updatedPost);
       return sendPost(res, await post.save());
     }
-    return res.sendStatus(HttpStatus.NOT_FOUND);
+
+    return res.sendStatus(HttpStatus.BAD_REQUEST);
   } catch (e) {
-    if (!(e instanceof APIError && e.status === HttpStatus.NOT_FOUND)) {
-      return next(e);
-    }
+    next(e);
   }
 }
 
