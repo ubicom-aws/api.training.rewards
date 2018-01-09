@@ -63,6 +63,9 @@ async function processPost(post: any, index: number): Promise<void> {
     }
 
     post = updatePost(post, chainPost);
+    if (post.json_metadata.type !== 'blog') {
+      post.markModified('json_metadata.repository');
+    }
     await processMetadata(post, chainMeta);
     try {
       await post.save();
