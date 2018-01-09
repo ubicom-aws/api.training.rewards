@@ -51,7 +51,8 @@ const UserSchema = new mongoose.Schema({
   banReason: {
     type: String,
     default: "",
-  }
+  },
+  email: String
 });
 
 UserSchema.post('init', function(this: any) {

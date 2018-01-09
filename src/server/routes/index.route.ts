@@ -12,6 +12,7 @@ import projectRoutes from './project.route';
 import loginRoutes from './login.route';
 import logoutRoutes from './logout.route';
 import sc2Routes from './sc2.route';
+import socialLoginRoutes from './social_login.route'
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -42,5 +43,7 @@ router.use('/beneficiaries', beneficiariesRoutes);
 router.use('/sponsors', sponsorRoutes);
 
 router.use('/moderators', moderatorRoutes);
+
+router.use('/auth', socialLoginRoutes)
 
 export default router;

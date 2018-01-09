@@ -84,5 +84,17 @@ export default {
       code: Joi.string().required(),
     },
     params: {}
+  },
+  // SOCIAL LOGIN
+  socialLogin: {
+    body: {
+      code: Joi.string(),
+      state: Joi.string(),
+      redirectUri: Joi.string()
+    },
+    params: {
+      provider: Joi.string().valid('github','facebook','linkedin').required()
+    }
   }
+  
 };
