@@ -146,6 +146,7 @@ async function update(req, res, next) {
         console.log('FAILED TO UPDATE POST DURING REVIEW', e);
       }
 
+      post.markModified('json_metadata.repository');
       post.markModified('json_metadata.moderator');
       const savedPost = await post.save();
       sendPost(res, savedPost);

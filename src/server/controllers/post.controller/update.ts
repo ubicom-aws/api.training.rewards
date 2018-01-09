@@ -47,19 +47,6 @@ export function updatePost(post: any, updatedPost: any): any {
   if (!updatedPost.json_metadata.issue && post.json_metadata.issue) updatedPost.json_metadata.issue = post.json_metadata.issue;
   if (updatedPost.json_metadata.type) updatedPost.json_metadata.type = updatedPost.json_metadata.type.replace("announcement-", "task-");
   updatedPost.json_metadata.moderator = post.json_metadata.moderator;
-  if (updatedPost.json_metadata.repository) {
-    const repo = updatedPost.json_metadata.repository;
-    updatedPost.json_metadata.repository = {
-      id: repo.id,
-      name: repo.name,
-      full_name: repo.full_name,
-      html_url: repo.html_url,
-      fork: repo.fork,
-      owner: repo.owner ? {
-        login: repo.owner.login
-      } : undefined
-    };
-  }
 
   Object.assign(post, updatedPost);
   return post;

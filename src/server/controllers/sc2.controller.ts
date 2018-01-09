@@ -125,6 +125,7 @@ export async function broadcast(req: express.Request,
   }
 }
 
-function getGithubRepo(name: string) {
-  return request.get(`https://api.github.com/repos/${name.toLowerCase()}`);
+async function getGithubRepo(name: string) {
+  name = name.toLowerCase();
+  return (await request.get(`https://api.github.com/repos/${name}`)).body;
 }
