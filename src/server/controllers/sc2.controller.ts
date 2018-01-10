@@ -2,11 +2,11 @@ import {
   validateNewPost,
   updatePost
 } from '../controllers/post.controller/update';
+import Post, { PostSchemaDoc } from '../models/post.model';
+import { getGithubRepo } from '../helpers/github';
 import Session from '../models/session.model';
 import * as HttpStatus from 'http-status';
 import { getContent } from '../steemAPI';
-import Post, { PostSchemaDoc } from '../models/post.model';
-import * as request from 'superagent';
 import * as express from 'express';
 import * as sc2 from '../sc2';
 
@@ -123,9 +123,4 @@ export async function broadcast(req: express.Request,
   } catch (e) {
     next(e);
   }
-}
-
-async function getGithubRepo(name: string) {
-  name = name.toLowerCase();
-  return (await request.get(`https://api.github.com/repos/${name}`)).body;
 }
