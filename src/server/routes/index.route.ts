@@ -5,7 +5,6 @@ import userRoutes from './user.route';
 import postRoutes from './post.route';
 import issueRoutes from './issue.route';
 import sponsorRoutes from './sponsor.route';
-import beneficiariesRoutes from './beneficiaries.route';
 import moderatorRoutes from './moderator.route';
 import statsRoutes from './stats.route';
 import projectRoutes from './project.route';
@@ -37,8 +36,6 @@ router.use('/posts', postRoutes);
 router.use('/issue', issueRoutes);
 
 router.use('/stats', statsRoutes);
-
-router.use('/beneficiaries', beneficiariesRoutes);
 
 router.use('/sponsors', sponsorRoutes);
 
