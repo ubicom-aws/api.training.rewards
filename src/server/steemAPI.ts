@@ -12,4 +12,7 @@ export function getContent(author: string, permlink: string): Promise<any> {
   });
 }
 
+export const formatter = steem.formatter;
+export const broadcast = steem.broadcast;
+
 export default steem.api;

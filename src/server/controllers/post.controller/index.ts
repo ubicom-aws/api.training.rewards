@@ -1,4 +1,4 @@
-import { getUpdatedPost, updatePost } from './update';
+import { getUpdatedPost, updatePost, validateNewPost } from './update';
 import Moderator from '../../models/moderator.model';
 import APIError from '../../helpers/APIError';
 import { getContent } from '../../steemAPI';
@@ -6,11 +6,14 @@ import Post from '../../models/post.model';
 import User from '../../models/user.model';
 import * as HttpStatus from 'http-status';
 import * as request from 'superagent';
-import steemAPI from '../../steemAPI';
 import * as sc2 from '../../sc2';
 import { top } from './top';
 
 function postMapper(post) {
+  post.pending = false;
+  post.reviewed = false;
+  post.flagged = false;
+
   if (post.json_metadata.moderator) {
     // Enable backwards compatibility for the front end
     const mod = post.json_metadata.moderator;
@@ -32,20 +35,30 @@ function get(req, res, next) {
 }
 
 async function create(req, res, next) {
-  if (res.locals.user.banned) {
-    return res.status(HttpStatus.FORBIDDEN);
-  }
   const author = req.body.author;
   const permlink = req.body.permlink;
   try {
-    const dbPost = await Post.get(author, permlink);
-    if (dbPost) {
-      sendPost(res, dbPost);
+    try {
+      const dbPost = await Post.get(author, permlink);
+      return sendPost(res, dbPost);
+    } catch (e) {
+      if (!(e instanceof APIError && e.status === HttpStatus.NOT_FOUND)) {
+        return next(e);
+      }
     }
+
+    const updatedPost = updatePost({
+      json_metadata: {}
+    }, await getContent(author, permlink));
+
+    if (await validateNewPost(updatedPost)) {
+      const post = new Post(updatedPost);
+      return sendPost(res, await post.save());
+    }
+
+    return res.sendStatus(HttpStatus.BAD_REQUEST);
   } catch (e) {
-    if (!(e instanceof APIError && e.status === HttpStatus.NOT_FOUND)) {
-      return next(e);
-    }
+    next(e);
   }
 }
 
@@ -134,6 +147,9 @@ async function update(req, res, next) {
         console.log('FAILED TO UPDATE POST DURING REVIEW', e);
       }
 
+      if (post.json_metadata.type !== 'blog') {
+        post.markModified('json_metadata.repository');
+      }
       post.markModified('json_metadata.moderator');
       const savedPost = await post.save();
       sendPost(res, savedPost);

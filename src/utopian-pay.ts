@@ -1,10 +1,10 @@
+import steemAPI, { formatter, broadcast } from './server/steemAPI';
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import Sponsor from './server/models/sponsor.model';
 import Moderator from './server/models/moderator.model';
 import Stats from './server/models/stats.model';
 import config from './config/config';
-import * as steem from 'steem';
 import * as R from 'ramda';
 
 (mongoose as any).Promise = Promise;
@@ -26,7 +26,7 @@ conn.once('open', function ()
             let totalVests = 0;
 
             const getHistory = (from, callback) => {
-                steem.api.getAccountHistory(payAccount, from, limit, function(err, result) {
+                steemAPI.getAccountHistory(payAccount, from, limit, function(err, result) {
                     if (err) {
                         console.log("FAILED TO RETRIEVE COMMENT BENEFACTOR REWARDS");
                         conn.close();
@@ -73,14 +73,14 @@ conn.once('open', function ()
                         process.exit();
                     }
 
-                    steem.api.getDynamicGlobalProperties(function(err, props) {
+                    steemAPI.getDynamicGlobalProperties(function(err, props) {
                         if (err) {
                             console.log("FAILED TO RETRIEVE STEEM VALUE");
                             conn.close();
                             process.exit();
                         }
 
-                        const totalSteem = steem.formatter.vestToSteem(totalVests, props.total_vesting_shares, props.total_vesting_fund_steem);
+                        const totalSteem = formatter.vestToSteem(totalVests, props.total_vesting_shares, props.total_vesting_fund_steem);
                         let totalPaidSponsors = 0;
                         let totalPaidModerators = 0;
                         let supervisors = Array();
@@ -104,7 +104,7 @@ conn.once('open', function ()
 
                                         if (!TEST) {
                                             setTimeout(function() {
-                                                steem.broadcast.transfer(WIF, payAccount, sponsor.account, finalSponsorPayout, memoSponsor, function(err, result) {
+                                                broadcast.transfer(WIF, payAccount, sponsor.account, finalSponsorPayout, memoSponsor, function(err, result) {
                                                     if (err) {
                                                         console.log("!----------COULD NOT PAY SPONSOR----------!", sponsor.account);
                                                         console.log(err);
@@ -180,7 +180,7 @@ conn.once('open', function ()
 
                                         if (!TEST) {
                                             setTimeout(function() {
-                                                steem.broadcast.transfer(WIF, payAccount, moderator.account, finalModeratorPayout, memoModerator, function(err, result) {
+                                                broadcast.transfer(WIF, payAccount, moderator.account, finalModeratorPayout, memoModerator, function(err, result) {
                                                     if (err) {
                                                         console.log("!----------COULD NOT PAY MODERATOR----------!", moderator.account);
                                                         console.log(err);
@@ -234,7 +234,7 @@ conn.once('open', function ()
 
                                 if (!TEST) {
                                     setTimeout(function() {
-                                        steem.broadcast.transfer(WIF, payAccount, supervisor.account, finalSupervisorPayout, memoSupervisor, function(err, result) {
+                                        broadcast.transfer(WIF, payAccount, supervisor.account, finalSupervisorPayout, memoSupervisor, function(err, result) {
                                             if (err) {
                                                 console.log("!----------COULD NOT PAY SUPERVISOR----------!", supervisor.account);
                                                 console.log(err);

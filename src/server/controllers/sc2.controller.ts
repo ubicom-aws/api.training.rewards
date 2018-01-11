@@ -1,9 +1,12 @@
-import { updatePost } from '../controllers/post.controller/update';
+import {
+  validateNewPost,
+  updatePost
+} from '../controllers/post.controller/update';
+import Post, { PostSchemaDoc } from '../models/post.model';
+import { getGithubRepo } from '../helpers/github';
 import Session from '../models/session.model';
 import * as HttpStatus from 'http-status';
 import { getContent } from '../steemAPI';
-import Post, { PostSchemaDoc } from '../models/post.model';
-import * as request from 'superagent';
 import * as express from 'express';
 import * as sc2 from '../sc2';
 
@@ -55,14 +58,11 @@ export async function broadcast(req: express.Request,
         }
         if (res.locals.user.banned) {
           // User is banned from creating posts on Utopian
-          return res.status(HttpStatus.FORBIDDEN);
+          return res.sendStatus(HttpStatus.FORBIDDEN);
         }
         const meta = JSON.parse(data.json_metadata);
         if (meta.repository && meta.repository.full_name) {
-          let repo = meta.repository;
-          if (!repo.id) {
-            repo = await getGithubRepo(repo.full_name);
-          }
+          let repo = await getGithubRepo(meta.repository.full_name);
           meta.repository = {
             id: repo.id,
             name: repo.name,
@@ -73,6 +73,9 @@ export async function broadcast(req: express.Request,
               login: repo.owner.login
             } : undefined
           };
+        }
+        if (!(await validateNewPost(data, false))) {
+          return res.sendStatus(HttpStatus.BAD_REQUEST);
         }
         data.json_metadata = JSON.stringify(meta);
       }
@@ -120,8 +123,4 @@ export async function broadcast(req: express.Request,
   } catch (e) {
     next(e);
   }
-}
-
-function getGithubRepo(name: string) {
-  return request.get(`https://api.github.com/repos/${name.toLowerCase()}`);
 }
