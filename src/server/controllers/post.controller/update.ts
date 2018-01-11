@@ -41,7 +41,8 @@ export function updatePost(post: any, updatedPost: any): any {
   if (!updatedPost.json_metadata.type && post.json_metadata.type) updatedPost.json_metadata.type = post.json_metadata.type;
   if (updatedPost.json_metadata.app !== 'utopian/1.0.0') updatedPost.json_metadata.app = 'utopian/1.0.0';
   if (updatedPost.json_metadata.community !== 'utopian') updatedPost.json_metadata.community = 'utopian';
-  if (!updatedPost.json_metadata.repository) updatedPost.json_metadata.repository = post.json_metadata.repository;
+  if (!(updatedPost.json_metadata.repository && updatedPost.json_metadata.repository.full_name))
+    updatedPost.json_metadata.repository = post.json_metadata.repository;
   if (!updatedPost.json_metadata.platform) updatedPost.json_metadata.platform = post.json_metadata.platform;
   if (!updatedPost.json_metadata.pullRequests && post.json_metadata.pullRequests) updatedPost.json_metadata.pullRequests = post.json_metadata.pullRequests;
   if (!updatedPost.json_metadata.issue && post.json_metadata.issue) updatedPost.json_metadata.issue = post.json_metadata.issue;
