@@ -189,20 +189,32 @@ async function edit(req, res, next) {
     json_metadata: req.body.json_metadata
   };
 
+  if (typeof(params.json_metadata) === 'string') {
+    throw new APIError('Expected object for json_metadata', HttpStatus.BAD_REQUEST, true);
+  }
+
   try {
-    // Only grant cross-edit permissions to mods
+    // Only grant cross edit permissions to mods
     if (res.locals.user.account !== params.author) {
       const mod = await Moderator.get(res.locals.user.account);
       if (!(mod && mod.isReviewed())) {
-        return res.sendStatus(HttpStatus.FORBIDDEN);
+        throw new APIError('Only moderators can cross edit', HttpStatus.FORBIDDEN, true);
       }
     }
 
-    // Validate post exists to avoid creating posts
+    // Validate post
     let post = await Post.get(params.author, params.permlink);
     const updatedPost: any = await getContent(params.author, params.permlink);
     if (!(updatedPost && updatedPost.author && updatedPost.permlink)) {
       throw new Error('Cannot create posts from edit endpoint');
+    }
+
+    post = updatePost(post, updatedPost);
+    post.title = params.title;
+    post.body = params.body;
+    post.json_metadata = params.json_metadata;
+    if (!(await validateNewPost(post, true, false))) {
+      throw new APIError('Failed to validate post', HttpStatus.BAD_REQUEST, true);
     }
 
     // Broadcast the updated post
@@ -219,10 +231,9 @@ async function edit(req, res, next) {
     });
 
     // Update the post in the DB
-    post = updatePost(post, updatedPost);
-    post.title = params.title;
-    post.body = params.body;
-    post.json_metadata = params.json_metadata;
+    if (post.json_metadata.type !== 'blog') {
+      post.markModified('json_metadata.repository');
+    }
     await post.save();
   } catch (e) {
     next(e);

@@ -54,7 +54,8 @@ export function updatePost(post: any, updatedPost: any): any {
 }
 
 export async function validateNewPost(post: any,
-                                      checkRepo = true): Promise<boolean> {
+                                      checkRepo = true,
+                                      checkModerated = true): Promise<boolean> {
   // make sure post is not a comment and it has the correct first category
   if (post.parent_author !== '') return false;
   if (!(post.parent_permlink === 'utopian-io'
@@ -96,7 +97,7 @@ export async function validateNewPost(post: any,
   }
 
   // New posts aren't moderated yet!
-  if (meta.moderator) return false;
+  if (checkModerated && meta.moderator) return false;
 
   return true;
 }
