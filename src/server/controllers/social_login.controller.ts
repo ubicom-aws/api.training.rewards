@@ -1,6 +1,12 @@
 import * as string_helper from './../helpers/string'
-import * as request from 'superagent';
+import * as request from 'superagent'
+import * as nodemailer from 'nodemailer'
+import * as crypto from 'crypto'
+
+
 import pendingUser from '../models/pending_user.model'
+import realUser from '../models/user.model'
+import emailToken from '../models/email_verif_token.model'
 
 const USER_API_GITHUB = 'https://api.github.com/user'
 const EMAIL_API_GITHUB = 'https://api.github.com/user/emails'
@@ -70,12 +76,12 @@ async function authenticate(req, res, next) {
         if(found_user) {
           if(found_user.has_created_account) { return res.status(500) }
           found_user.social_verified = user.verified
-          found_user.email = user.email
+          found_user.social_email = user.email
           found_user.social_name = user.name
           await found_user.save()
           res.status(200).json({user: found_user, access_token})
         } else {
-          user = await pendingUser.create({ social_name: user.name, social_id: user.id, social_verified: user.verified, email: user.email, social_type: provider })
+          user = await pendingUser.create({ social_name: user.name, social_id: user.id, social_verified: user.verified, social_email: user.email, social_type: provider })
           res.status(200).json({user, access_token})
         }
       })
@@ -100,9 +106,9 @@ function is_user_verified(provider, data) {
   if(provider === 'github') {
     let joined_github_months = joined_since(data.created_at)
 
-    if(data.plan !== 'free') { sum += 2 } // this needs to be more detailed about the available plans - business, developer etc.
+    if(data.plan !== 'free') sum += 2 // this needs to be more detailed about the available plans - business, developer etc.
     sum += joined_github_months * 0.25
-    if(data.two_factor_authentication) { sum += 5 }
+    if(data.two_factor_authentication) sum += 5
     sum += (data.public_repos + data.total_private_repos) * 0.05
     sum += data.followers * 0.02
 
@@ -116,4 +122,60 @@ function is_user_verified(provider, data) {
   return sum >= USER_THRESHOLD_VERIFIED
 }
 
-export default { authenticate }
+
+// EMAIL VERIFICATION
+async function email_request(req, res, next) {
+  try {
+    let found_user:any = await pendingUser.findOne({ _id: req.body.user_id })
+    if(!found_user) return res.status(500).send({message: 'User not found'})
+
+    let duplicate_user:any = await pendingUser.findOne({ email: req.body.email })
+    let email_in_use = false
+    if(duplicate_user) {
+      email_in_use = duplicate_user.social_id !== found_user.social_id
+    }
+    if(await realUser.findOne({ email: req.body.email }) || email_in_use || found_user.email_verified ) return res.status(500).send({ message: 'The email adress is already getting used' })
+    
+    let token:any = new emailToken({ user_id: found_user._id, token: crypto.randomBytes(16).toString('hex') })
+    await token.save()
+
+    found_user.email = req.body.email
+    await found_user.save()
+
+    let transporter = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 465, secure: true, auth: { user: process.env.GOOGLE_MAIL_ACCOUNT, pass: process.env.GOOGLE_MAIL_PASSWORD } })
+    let mailOptions = { from: process.env.UTOPIAN_MAIL, to: req.body.email, subject: 'Utopian Email Confirmation', text: 'Hey there,\n\n' + `Please confirm your email for Utopian.io by clicking on this link: https://signup.utopian.io/email/confirm/${token.token}` + '.\n' }
+    await transporter.sendMail(mailOptions)
+    res.status(200).send('A verification email has been sent to ' + found_user.email + '.')
+  } catch (error) {
+    console.error(error.message)
+    res.status(500).json({ message: filter_error_message(error.message)})
+  }
+}
+
+async function email_confirm(req, res, next) {
+  try {
+    let token:any = await emailToken.findOne({ token: req.body.token })
+    if(!token) return res.status(400).send({ type: 'not-verified', message: 'We were unable to find a valid token. Your token may have expired.' })
+  
+    let found_user:any = await pendingUser.findOne({ _id: token.user_id })
+    if(!found_user) return res.status(400).send({ message: 'We were unable to find a user for this token.' })
+    if(found_user.email_verified) return res.status(400).send({ type: 'already-verified', message: 'This user has already been verified.' })
+
+    found_user.email_verified = true
+    await found_user.save()
+
+    res.status(200).send({ message: "The email has been verified.", user: found_user})
+  } catch (error) {
+    console.error(error.message)
+    res.status(500).json({ message: filter_error_message(error.message)})
+  }
+}
+
+function filter_error_message(message) {
+  if(message === 'No recipients defined') { message = 'You entered an invalid Email'}
+  else if(message === '') {  }
+  else { message = 'We had an internal error. Please try again or contact us on discord!' }
+  return message
+}
+
+export default { authenticate, email_confirm, email_request }
