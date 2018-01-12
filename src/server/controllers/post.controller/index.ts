@@ -151,9 +151,7 @@ async function update(req, res, next) {
         console.log('FAILED TO UPDATE POST DURING REVIEW', e);
       }
 
-      if (post.json_metadata.type !== 'blog') {
-        post.markModified('json_metadata.repository');
-      }
+      post.markModified('json_metadata.repository');
       post.markModified('json_metadata.moderator');
       const savedPost = await post.save();
       sendPost(res, savedPost);
@@ -235,9 +233,7 @@ async function edit(req, res, next) {
     });
 
     // Update the post in the DB
-    if (post.json_metadata.type !== 'blog') {
-      post.markModified('json_metadata.repository');
-    }
+    post.markModified('json_metadata.repository');
     await post.save();
   } catch (e) {
     next(e);
