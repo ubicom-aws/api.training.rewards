@@ -87,7 +87,8 @@ async function processMetadata(post, chainMeta): Promise<void> {
     if (!a.account || (a.account === b.account
         && a.reviewed === b.reviewed
         && a.pending === b.pending
-        && a.flagged === b.flagged)) {
+        && a.flagged === b.flagged
+        && a.time === b.time)) {
       return;
     }
     console.log(`Updating blockchain data

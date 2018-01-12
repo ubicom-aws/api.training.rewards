@@ -79,6 +79,7 @@ async function update(req, res, next) {
 
     if (moderator) post.json_metadata.moderator.account = moderator;
     if (reviewed) {
+      post.json_metadata.moderator.time = new Date().toISOString();
       post.json_metadata.moderator.reviewed = true;
       post.json_metadata.moderator.pending = false;
       post.json_metadata.moderator.flagged = false;
@@ -110,14 +111,17 @@ async function update(req, res, next) {
         }
       }
     } else if (flagged) {
+      post.json_metadata.moderator.time = new Date().toISOString();
       post.json_metadata.moderator.flagged = true;
       post.json_metadata.moderator.reviewed = false;
       post.json_metadata.moderator.pending = false;
     } else if (pending) {
+      post.json_metadata.moderator.time = new Date().toISOString();
       post.json_metadata.moderator.pending = true;
       post.json_metadata.moderator.reviewed = false;
       post.json_metadata.moderator.flagged = false;
     } else if (reserved) {
+      post.json_metadata.moderator.time = new Date().toISOString();
       post.json_metadata.moderator.pending = false;
       post.json_metadata.moderator.reviewed = false;
       post.json_metadata.moderator.flagged = false;
