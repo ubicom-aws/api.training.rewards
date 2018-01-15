@@ -24,7 +24,7 @@ async function load(req, res, next, id) {
     }
 
     if (res.locals.user.account !== user.account) {
-      const mod: any = Moderator.get(res.locals.user.account);
+      const mod: any = await Moderator.get(res.locals.user.account);
       if (!(mod && mod.isReviewed())) {
         // Prohibit regular users from retrieving other accounts
         return res.sendStatus(HttpStatus.FORBIDDEN);
