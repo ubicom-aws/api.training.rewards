@@ -55,8 +55,12 @@ function ban(req, res, next) {
   user.bannedUntil = req.body.bannedUntil;
 
   user.save()
-      .then(savedUser => res.json(savedUser))
-      .catch(e => next(e));
+      .then(savedUser => res.json({
+        banned: savedUser.banned,
+        bannedBy: savedUser.bannedBy,
+        banReason: savedUser.banReason,
+        bannedUntil: savedUser.bannedUntil
+      })).catch(e => next(e));
 }
 
 function getBan(req, res, next) {
