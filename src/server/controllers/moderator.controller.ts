@@ -24,9 +24,7 @@ function create(req,res,next) {
     reviewed: reviewed,
     supermoderator: supermoderator,
     apprentice: apprentice,
-    total_paid_rewards: total_paid_rewards,
     total_paid_rewards_steem: total_paid_rewards_steem,
-    should_receive_rewards: should_receive_rewards,
     total_moderated: total_moderated,
     percentage_total_rewards_moderators: percentage_total_rewards_moderators,
   });

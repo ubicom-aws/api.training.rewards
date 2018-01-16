@@ -25,9 +25,7 @@ const ModeratorSchema = new mongoose.Schema({
     type: Boolean,
     required: false,
   },
-  total_paid_rewards: Number,
   total_paid_rewards_steem: Number,
-  should_receive_rewards: Number,
   total_moderated: Number,
   percentage_total_rewards_moderators: Number,
 });
