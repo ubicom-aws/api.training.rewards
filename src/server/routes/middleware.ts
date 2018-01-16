@@ -33,10 +33,26 @@ export function requireMod(req: express.Request,
                             next: express.NextFunction) {
   const user = res.locals.user;
   if (!user) {
-    return next();
+    return res.sendStatus(HttpStatus.FORBIDDEN);
   }
   Moderator.findOne({ account: user.account }).then((mod: any) => {
     if (!mod || mod.banned) {
+      return res.sendStatus(HttpStatus.FORBIDDEN);
+    }
+    res.locals.moderator = mod;
+    next();
+  }).catch(err => next(err));
+}
+
+export function requireSupervisor(req: express.Request,
+                            res: express.Response,
+                            next: express.NextFunction) {
+  const user = res.locals.user;
+  if (!user) {
+    return res.sendStatus(HttpStatus.FORBIDDEN);
+  }
+  Moderator.findOne({ account: user.account }).then((mod: any) => {
+    if (!mod || mod.banned || !mod.supermoderator) {
       return res.sendStatus(HttpStatus.FORBIDDEN);
     }
     res.locals.moderator = mod;
