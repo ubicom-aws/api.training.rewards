@@ -6,8 +6,9 @@ import Session from './session.model';
 
 const schema = new mongoose.Schema({
   user_id: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'pending_user' },
-  token: { type: String, required: true },
-  createdAt: { type: Date, required: true, default: Date.now, expires: 43200 } // 12 hours
+  code: { type: String, required: true },
+  phone_number: { type: String, required: true },
+  createdAt: { type: Date, required: true, default: Date.now, expires: 300 } // 5 Minutes
 })
 
-export default mongoose.model('Email_Verif_Token', schema)
+export default mongoose.model('Phone_Verif_Code', schema)

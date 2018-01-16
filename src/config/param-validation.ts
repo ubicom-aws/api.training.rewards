@@ -115,6 +115,19 @@ export default {
     body: {
       token: Joi.string().required()
     }
+  },
+  phoneRequest: {
+    body: {
+      user_id: Joi.string().required(),
+      country_code: Joi.string().required(),
+      phone_number: Joi.string().required()
+    }
+  },
+  phoneConfirm: {
+    body: {
+      user_id: Joi.string().required(),
+      code: Joi.string().required()
+    }
   }
   
 };
