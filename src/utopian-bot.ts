@@ -518,7 +518,11 @@ conn.once('open', function ()
                                   if (accounts && accounts.length === 1) {
                                     const account = accounts[0];
 
+                                    console.log(account);
+
                                     steemAPI.getFollowCount(account.name, function (err, followers) {
+                                      console.log(err);
+
                                       const contributionsQuery = {
                                         reviewed: true,
                                         id: {$ne: post.id},
