@@ -89,13 +89,13 @@ async function update(req, res, next) {
           const user = await User.get(post.author);
           if (user.github && user.github.account) {
             const resGithub = await request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
-                .set('Content-Type', 'application/json')
-                .set('Accept', 'application/json')
-                .set('Authorization', `token ${user.github.token}`)
-                .send({
-                  title: post.title,
-                  body: post.body,
-                });
+              .set('Content-Type', 'application/json')
+              .set('Accept', 'application/json')
+              .set('Authorization', `token ${user.github.token}`)
+              .send({
+                title: post.title,
+                body: post.body,
+              });
             const issue = resGithub.body;
             const { html_url, number, id, title } = issue;
 
@@ -271,13 +271,23 @@ function list(req, res, next) {
   let sort: any = { created: -1 };
   let select: any = {}
 
-  let query: any = {
-    'json_metadata.moderator.flagged': {
-      $ne : true,
-    },
-  };
+  let query: any = {};
 
-  if (section !== 'author' && status !== 'flagged') {
+  if (moderator !== 'any' && filterBy !== 'review') {
+    query = {
+      ...query,
+      'json_metadata.moderator.account': moderator,
+    }
+  } else {
+    query = {
+      ...query,
+      'json_metadata.moderator.flagged': {
+        $ne: true
+      },
+    }
+  }
+
+  if (section !== 'author' && status !== 'flagged' && moderator === 'any') {
     query = {
       ...query,
       'json_metadata.moderator.reviewed': true,
@@ -299,8 +309,8 @@ function list(req, res, next) {
       ...query,
       $text: {
         $search: bySimilarity
-        }
-      },
+      }
+    },
       {
         score: {
           $meta: "textScore"
@@ -327,7 +337,6 @@ function list(req, res, next) {
     query = {
       ...query,
       'json_metadata.moderator.pending': true,
-      'json_metadata.moderator.account': moderator,
     }
   }
 
@@ -337,6 +346,14 @@ function list(req, res, next) {
       'json_metadata.moderator.flagged': true,
     }
   }
+
+  if (status === 'reviewed') {
+    query = {
+      ...query,
+      'json_metadata.moderator.reviewed': true,
+    }
+  }
+
 
   if (filterBy === 'active') {
     query = {
