@@ -18,6 +18,7 @@ const pendingUserSchema = new mongoose.Schema({
   social_type: String,
   social_email: String,
   email: String,
+  phone_number: String,
   has_created_acc: {
     type: Boolean,
     default: false
@@ -25,6 +26,10 @@ const pendingUserSchema = new mongoose.Schema({
   sms_verified: {
     type: Boolean,
     default: false
+  },
+  sms_verif_tries: { 
+    type: Number,
+    default: 0
   },
   email_verified: {
     type: Boolean,

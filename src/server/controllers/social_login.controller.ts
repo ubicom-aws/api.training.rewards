@@ -3,10 +3,10 @@ import * as request from 'superagent'
 import * as nodemailer from 'nodemailer'
 import * as crypto from 'crypto'
 
-
 import pendingUser from '../models/pending_user.model'
 import realUser from '../models/user.model'
 import emailToken from '../models/email_verif_token.model'
+import phoneCode from '../models/phone_verif_code.model'
 
 const USER_API_GITHUB = 'https://api.github.com/user'
 const EMAIL_API_GITHUB = 'https://api.github.com/user/emails'
@@ -131,9 +131,7 @@ async function email_request(req, res, next) {
 
     let duplicate_user:any = await pendingUser.findOne({ email: req.body.email })
     let email_in_use = false
-    if(duplicate_user) {
-      email_in_use = duplicate_user.social_id !== found_user.social_id
-    }
+    if(duplicate_user) email_in_use = duplicate_user.social_id !== found_user.social_id
     if(await realUser.findOne({ email: req.body.email }) || email_in_use || found_user.email_verified ) return res.status(500).send({ message: 'The email adress is already getting used' })
     
     let token:any = new emailToken({ user_id: found_user._id, token: crypto.randomBytes(16).toString('hex') })
@@ -171,11 +169,74 @@ async function email_confirm(req, res, next) {
   }
 }
 
+// Phone Verification
+async function phone_request(req, res, next) {
+  try {
+    let found_user:any = await pendingUser.findOne({ _id: req.body.user_id })
+    if(!found_user) return res.status(500).send({message: 'User not found'})
+
+    let phone_number = req.body.country_code + req.body.phone_number.replace(/\D/g,'')
+    
+    let duplicate_user:any = await pendingUser.findOne({ phone_number })
+    let number_in_use = false
+    if(duplicate_user) number_in_use = duplicate_user.social_id !== found_user.social_id
+    if(await realUser.findOne({ phone_number }) || number_in_use || found_user.sms_verified ) return res.status(500).send({ message: 'The phone number is already getting used' })
+
+    if(await phoneCode.findOne({ user_id: found_user._id })) return res.status(500).send({message: 'You have already a pending sms-confirmation!'})
+    if(found_user.sms_verif_tries >= 3) res.status(500).send({message: 'Your requests for sms-verification went over the limit - please contact us on discord!'})
+
+    let random_code = crypto.randomBytes(2).toString('hex')
+
+    
+    let response = await request.post('https://rest.nexmo.com/sms/json')
+    .query({ to: phone_number, from: 'UTOPIAN.IO', text: `Your Code: ${random_code}` , api_key: process.env.NEXMO_API_KEY, api_secret: process.env.NEXMO_API_SECRET })
+    console.log(response.body)
+    if(response.body.status !== '0') {
+      let phone_code:any = new phoneCode({ user_id: found_user._id, code: random_code, phone_number })
+      await phone_code.save()
+      console.log(phone_code.code)
+      found_user.sms_verif_tries += 1
+      await found_user.save()
+      res.status(200).send('Code has been send via SMS')
+    } else {
+      res.status(500).json({ message: filter_error_message(response.body.status)})
+    }
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: filter_error_message(error.message)})
+  }
+}
+
+async function phone_confirm(req, res, next) {
+  try {
+    let code:any = await phoneCode.findOne({ user_id: req.body.user_id,  code: req.body.code })
+    if(!code) return res.status(400).send({ type: 'not-verified', message: 'Invalid SMS-Code' })
+  
+    let found_user:any = await pendingUser.findOne({ _id: code.user_id })
+    if(!found_user) return res.status(400).send({ message: 'We were unable to find a user for this code.' })
+    if(found_user.sms_verified) return res.status(400).send({ type: 'already-verified', message: 'This user has already been verified.' })
+
+    found_user.sms_verified = true
+    found_user.phone_number = code.phone_number
+    await found_user.save()
+
+    res.status(200).send({ message: "The sms has been verified.", user: found_user})
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: filter_error_message(error.message)})
+  }
+}
+
 function filter_error_message(message) {
   if(message === 'No recipients defined') { message = 'You entered an invalid Email'}
-  else if(message === '') {  }
+  else if(message === '1') { message = 'Unknown Error while trying to send SMS' }
+  else if(message === '2'  || message === '7'  || message === '8') { message = 'Temporary Error - please try again!' }
+  else if(message === '3' || message === '4' ) { message = 'Invalid Number' }
+  else if(message === '5') { message = 'Your number has been declined due to Spam-Rejection' }
+  else if(message === '9') { message = 'Illegal Number' }
+  else if(message === '15') { message = 'Please contact us on discord with the error code: NM' }
   else { message = 'We had an internal error. Please try again or contact us on discord!' }
   return message
 }
 
-export default { authenticate, email_confirm, email_request }
+export default { authenticate, email_confirm, email_request, phone_request, phone_confirm }
