@@ -628,6 +628,8 @@ conn.once('open', function ()
                                               }
                                               post_index++;
                                             });
+                                      } else {
+                                        post_index++;
                                       }
                                     });
                                   }
