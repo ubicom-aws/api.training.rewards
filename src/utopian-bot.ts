@@ -511,9 +511,11 @@ conn.once('open', function ()
                             }
 
                             console.log(categories_pool);
-
+                            console.log("LENGTH", posts.length)
                             posts.forEach((post, allPostsIndex) => {
+
                               steemAPI.getAccounts([post.author], (err, accounts) => {
+                                console.log("INDEX", post_index);
                                 if (!err) {
                                   if (accounts && accounts.length === 1) {
                                     const account = accounts[0];
@@ -526,7 +528,7 @@ conn.once('open', function ()
                                         console.log("FOLLOWERS", followers);
 
                                         const contributionsQuery = {
-                                          reviewed: true,
+                                          'json_metadata.moderator.reviewed': true,
                                           id: {$ne: post.id},
                                           author: post.author,
                                         };
