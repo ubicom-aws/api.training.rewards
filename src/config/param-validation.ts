@@ -104,6 +104,17 @@ export default {
     params: {
       provider: Joi.string().valid('github','facebook','linkedin').required()
     }
+  },
+  emailRequest: {
+    body: {
+      user_id: Joi.string().required(),
+      email: Joi.string().required()
+    }
+  },
+  emailConfirm: {
+    body: {
+      token: Joi.string().required()
+    }
   }
   
 };

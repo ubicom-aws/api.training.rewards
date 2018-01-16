@@ -61,6 +61,7 @@
     "joi": "^13.0.2",
     "method-override": "^2.3.5",
     "mongoose": "^4.13.4",
+    "nodemailer": "^4.4.1",
     "querystring": "^0.2.0",
     "ramda": "^0.25.0",
     "sc2-sdk": "^0.0.5",

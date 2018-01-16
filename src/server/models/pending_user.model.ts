@@ -16,6 +16,7 @@ const pendingUserSchema = new mongoose.Schema({
     default: false
   },
   social_type: String,
+  social_email: String,
   email: String,
   has_created_acc: {
     type: Boolean,
