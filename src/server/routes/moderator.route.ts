@@ -9,13 +9,10 @@ const router = express.Router();
 router.route('/')
   .get(moderatorCtrl.list)
   .post(requireAuth, requireSupervisor,
-        validate(paramValidation.createMod), moderatorCtrl.create)
+        validate(paramValidation.createMod), moderatorCtrl.create);
 
 router.route('/rm')
   .post(requireAuth, requireSupervisor,
-        validate(paramValidation.removeMod), moderatorCtrl.remove)
-
-router.route('/beneficiaries')
-  .get(moderatorCtrl.listBeneficiaries)
+        validate(paramValidation.removeMod), moderatorCtrl.remove);
 
 export default router;
