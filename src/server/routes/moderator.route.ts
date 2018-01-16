@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as validate from 'express-validation';
 import paramValidation from '../../config/param-validation';
 import moderatorCtrl from '../controllers/moderator.controller';
-import {requireAuth, requireMod, requireSupervisor} from './middleware';
+import {requireAuth, requireSupervisor} from './middleware';
 
 const router = express.Router();
 
