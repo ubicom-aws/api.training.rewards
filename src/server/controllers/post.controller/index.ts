@@ -403,24 +403,16 @@ function list(req, res, next) {
     .catch(e => next(e));
 }
 
-function remove(req, res, next) {
-  const post = req.post;
-  post.remove()
-    .then(deletedPost => sendPost(res, deletedPost))
-    .catch(e => next(e));
-}
-
 function getBoolean(val?: string|boolean): boolean {
   return val === true || val === 'true';
 }
 
 export default {
+  getPostById,
   get,
   edit,
   create,
   update,
   list,
-  top,
-  getPostById,
-  remove
+  top
 };
