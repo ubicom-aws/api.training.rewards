@@ -32,7 +32,6 @@ export function processQueryParams(req, res, next): void {
     end_date = new Date(),
     sort_by = TopSortBy.CONTRIBUTIONS,
     retrieve_by = RetrieveBy.PROJECTS,
-    include_rewards = false,
     only_new = false
   } = req.query;
 
@@ -40,7 +39,6 @@ export function processQueryParams(req, res, next): void {
     if (typeof(start_date) === 'string') start_date = new Date(start_date);
     if (typeof(end_date) === 'string') end_date = new Date(end_date);
     limit = Number(limit);
-    include_rewards = getBoolean(include_rewards);
     only_new = getBoolean(only_new);
 
     if (isNaN(limit)) {

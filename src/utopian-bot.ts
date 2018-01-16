@@ -263,79 +263,67 @@ conn.once('open', function ()
     stats.bot_is_voting = true;
     var total_vote=0,total_after_correction=0;
     new Promise( (resolve, reject) => {
-        for(let post of scoredPosts)
-        {
-          total_vote+=calculateFinalVote(post,categories_pool);
-          resolve('Success!');
-        }
-}).then(value=>{
-    console.log(total_vote);
-    stats.save().then((savedStats) => {
-      scoredPosts.forEach((post, index) => {
-        setTimeout(function(){
-          let finalVote=calculateFinalVote(post,categories_pool);
+      for(let post of scoredPosts)
+      {
+        total_vote+=calculateFinalVote(post,categories_pool);
+        resolve('Success!');
+      }
+    }).then(value=>{
+      console.log(total_vote);
+      stats.save().then((savedStats) => {
+        scoredPosts.forEach((post, index) => {
+          setTimeout(function(){
+            let finalVote=calculateFinalVote(post,categories_pool);
 
-          const achievements = post.achievements;
-          const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
-          let commentBody = '';
+            const achievements = post.achievements;
+            const jsonMetadata = { tags: ['utopian-io'], community: 'utopian', app: `utopian/1.0.0` };
+            let commentBody = '';
 
-          commentBody = `### Hey @${post.author} I am @${botAccount}. I have just upvoted you!\n`;
+            commentBody = `### Hey @${post.author} I am @${botAccount}. I have just upvoted you!\n`;
 
-          if (achievements.length > 0) {
-            commentBody += '#### Achievements\n';
-            achievements.forEach(achievement => commentBody += `- ${achievement}\n`);
-          }
+            if (achievements.length > 0) {
+              commentBody += '#### Achievements\n';
+              achievements.forEach(achievement => commentBody += `- ${achievement}\n`);
+            }
 
-          if (finalVote <= 7) {
-            commentBody += '#### Suggestions\n';
-            commentBody += `- Contribute more often to get higher and higher rewards. I wish to see you often!\n`
-            commentBody += `- Work on your followers to increase the votes/rewards. I follow what humans do and my vote is mainly based on that. Good luck!\n`
-            commentBody += '#### Get Noticed!\n';
-            commentBody += `- Did you know project owners can manually vote with their own voting power or by voting power delegated to their projects? Ask the project owner to review your contributions!\n`
-          }
+            if (finalVote <= 7) {
+              commentBody += '#### Suggestions\n';
+              commentBody += `- Contribute more often to get higher and higher rewards. I wish to see you often!\n`
+              commentBody += `- Work on your followers to increase the votes/rewards. I follow what humans do and my vote is mainly based on that. Good luck!\n`
+              commentBody += '#### Get Noticed!\n';
+              commentBody += `- Did you know project owners can manually vote with their own voting power or by voting power delegated to their projects? Ask the project owner to review your contributions!\n`
+            }
 
-          commentBody += '#### Community-Driven Witness!\n';
+            commentBody += '#### Community-Driven Witness!\n';
 
-          commentBody += `I am the first and only Steem Community-Driven Witness. <a href="https://discord.gg/zTrEMqB">Participate on Discord</a>. Lets GROW TOGETHER!\n`
-          commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for my Witness With SteemConnect</a>\n`
-          commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-proxy?proxy=utopian-io&approve=1">Proxy vote to Utopian Witness with SteemConnect</a>\n`
-          commentBody += `- Or vote/proxy on <a href="https://steemit.com/~witnesses">Steemit Witnesses</a>\n`
-          commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
-          commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
+            commentBody += `I am the first and only Steem Community-Driven Witness. <a href="https://discord.gg/zTrEMqB">Participate on Discord</a>. Lets GROW TOGETHER!\n`
+            commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for my Witness With SteemConnect</a>\n`
+            commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-proxy?proxy=utopian-io&approve=1">Proxy vote to Utopian Witness with SteemConnect</a>\n`
+            commentBody += `- Or vote/proxy on <a href="https://steemit.com/~witnesses">Steemit Witnesses</a>\n`
+            commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
+            commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
-          finalVote=finalVote*MAX_USABLE_POOL/(total_vote);
-          finalVote=Math.round(finalVote*100)/100;
-          total_after_correction+=finalVote;
-          console.log('--------------------------------------\n');
-          console.log('https://utopian.io/utopian-io/@'+post.author+'/'+post.permlink);
-          console.log('VOTE:' + finalVote + '(total:'+Math.round(total_after_correction)+')');
-          console.log('CATEGORY', post.category,'\n');
-          console.log(commentBody);
-          console.log('--------------------------------------\n');
+            finalVote=finalVote*MAX_USABLE_POOL/(total_vote);
+            finalVote=Math.round(finalVote*100)/100;
+            total_after_correction+=finalVote;
+            console.log('--------------------------------------\n');
+            console.log('https://utopian.io/utopian-io/@'+post.author+'/'+post.permlink);
+            console.log('VOTE:' + finalVote + '(total:'+Math.round(total_after_correction)+')');
+            console.log('CATEGORY', post.category,'\n');
+            console.log(commentBody);
+            console.log('--------------------------------------\n');
 
-          let i = 0;
-          const comment = () => {
-            SteemConnect.comment(
-                post.author,
-                post.permlink,
-                botAccount,
-                createCommentPermlink(post.author, post.permlink),
-                '',
-                commentBody,
-                jsonMetadata,
-            ).then(() => {
-              if (index + 1 === scoredPosts.length) {
-
-                savedStats.bot_is_voting = false;
-
-                savedStats.save().then(() => {
-                  conn.close();
-                  process.exit();
-                });
-              }
-            }).catch(e => {
-              if (e.error_description == undefined) {
-                console.log("COMMENT SUBMITTED");
+            let i = 0;
+            const comment = () => {
+              SteemConnect.comment(
+                  post.author,
+                  post.permlink,
+                  botAccount,
+                  createCommentPermlink(post.author, post.permlink),
+                  '',
+                  commentBody,
+                  jsonMetadata,
+              ).then(() => {
                 if (index + 1 === scoredPosts.length) {
 
                   savedStats.bot_is_voting = false;
@@ -345,27 +333,39 @@ conn.once('open', function ()
                     process.exit();
                   });
                 }
-              } else {
-                console.log("COMMENT ERROR", e);
+              }).catch(e => {
+                if (e.error_description == undefined) {
+                  console.log("COMMENT SUBMITTED");
+                  if (index + 1 === scoredPosts.length) {
+
+                    savedStats.bot_is_voting = false;
+
+                    savedStats.save().then(() => {
+                      conn.close();
+                      process.exit();
+                    });
+                  }
+                } else {
+                  console.log("COMMENT ERROR", e);
+                }
+              });
+            };
+
+            SteemConnect.vote(botAccount, post.author, post.permlink, finalVote * 100)
+                .then(() => {
+                  comment();
+                }).catch(e => {
+              // I think there is a problem with sdk. Always gets in the catch
+              if (e.error_description == undefined) {
+                console.log("VOTED");
+                comment();
               }
             });
-          };
 
-          SteemConnect.vote(botAccount, post.author, post.permlink, finalVote * 100)
-              .then(() => {
-                comment();
-              }).catch(e => {
-            // I think there is a problem with sdk. Always gets in the catch
-            if (e.error_description == undefined) {
-              console.log("VOTED");
-              comment();
-            }
-          });
-
-        }, index * 30000);
-      })
+          }, index * 30000);
+        })
+      });
     });
-  });
   };
 
   Stats.get()
@@ -511,124 +511,135 @@ conn.once('open', function ()
                             }
 
                             console.log(categories_pool);
-
+                            console.log("LENGTH", posts.length)
                             posts.forEach((post, allPostsIndex) => {
+
                               steemAPI.getAccounts([post.author], (err, accounts) => {
+                                console.log("INDEX", post_index);
                                 if (!err) {
                                   if (accounts && accounts.length === 1) {
                                     const account = accounts[0];
 
+                                    console.log("ACCOUNT", account);
+
                                     steemAPI.getFollowCount(account.name, function (err, followers) {
-                                      const contributionsQuery = {
-                                        reviewed: true,
-                                        id: {$ne: post.id},
-                                        author: post.author,
-                                      };
+                                      if(!err) {
+                                        console.log("ERR", err);
+                                        console.log("FOLLOWERS", followers);
 
-                                      Post
-                                          .countAll({query: contributionsQuery})
-                                          .then(contributionsCount => {
+                                        const contributionsQuery = {
+                                          'json_metadata.moderator.reviewed': true,
+                                          id: {$ne: post.id},
+                                          author: post.author,
+                                        };
 
-                                            const achievements: string[] = [];
-                                            const categoryStats = categories[post.json_metadata.type];
-                                            const averageRewards = categoryStats.average_paid_authors + categoryStats.average_paid_curators;
-                                            const reputation = formatter.reputation(account.reputation);
-                                            const votes = post.active_votes.filter(vote => bots.indexOf(vote.voter) <= 0);
-                                            const getUpvotes = activeVotes => activeVotes.filter(vote => vote.percent > 0);
-                                            const upVotes = getUpvotes(votes);
-                                            let totalGenerated = 0;
-                                            let totalWeightPercentage = 0;
+                                        Post
+                                            .countAll({query: contributionsQuery})
+                                            .then(contributionsCount => {
 
-                                            upVotes.forEach((upVote, upVoteIndex) => {
-                                              const totalPayout = parseFloat(post.pending_payout_value)
-                                                  + parseFloat(post.total_payout_value)
-                                                  + parseFloat(post.curator_payout_value);
+                                              const achievements: string[] = [];
+                                              const categoryStats = categories[post.json_metadata.type];
+                                              const averageRewards = categoryStats.average_paid_authors + categoryStats.average_paid_curators;
+                                              const reputation = formatter.reputation(account.reputation);
+                                              const votes = post.active_votes.filter(vote => bots.indexOf(vote.voter) <= 0);
+                                              const getUpvotes = activeVotes => activeVotes.filter(vote => vote.percent > 0);
+                                              const upVotes = getUpvotes(votes);
+                                              let totalGenerated = 0;
+                                              let totalWeightPercentage = 0;
 
-                                              const voteRshares = votes.reduce((a, b) => a + parseFloat(b.rshares), 0);
-                                              const ratio = totalPayout / voteRshares;
-                                              const voteValue = upVote.rshares * ratio;
-                                              const upvotePercentageOnTotal = (voteValue / totalPayout) * 100;
+                                              upVotes.forEach((upVote, upVoteIndex) => {
+                                                const totalPayout = parseFloat(post.pending_payout_value)
+                                                    + parseFloat(post.total_payout_value)
+                                                    + parseFloat(post.curator_payout_value);
 
-                                              totalGenerated = totalGenerated + voteValue;
-                                              // fallback mechanism for big accounts never voting at their 100%. Using instead the impact on their vote on the amount of rewards
-                                              totalWeightPercentage = totalWeightPercentage + (upvotePercentageOnTotal > upVote.percent ? upvotePercentageOnTotal : upVote.percent);
+                                                const voteRshares = votes.reduce((a, b) => a + parseFloat(b.rshares), 0);
+                                                const ratio = totalPayout / voteRshares;
+                                                const voteValue = upVote.rshares * ratio;
+                                                const upvotePercentageOnTotal = (voteValue / totalPayout) * 100;
+
+                                                totalGenerated = totalGenerated + voteValue;
+                                                // fallback mechanism for big accounts never voting at their 100%. Using instead the impact on their vote on the amount of rewards
+                                                totalWeightPercentage = totalWeightPercentage + (upvotePercentageOnTotal > upVote.percent ? upvotePercentageOnTotal : upVote.percent);
+                                              });
+                                              const upVotesLength = upVotes.length == 0 ? 1 : upVotes.length;
+                                              const averageWeightPercentage = totalWeightPercentage / upVotesLength / 100;
+                                              const rankConsensus = averageWeightPercentage * upVotes.length / 100;
+                                              let finalScore = rankConsensus;
+
+                                              if (finalScore > 55) {
+                                                achievements.push('WOW WOW WOW People loved what you did here. GREAT JOB!');
+                                              }
+
+                                              // help the user grow the followers
+                                              if (followers.follower_count < 500) {
+                                                finalScore = finalScore + 20;
+                                                achievements.push('You have less than 500 followers. Just gave you a gift to help you succeed!');
+                                              }
+                                              if (totalGenerated > averageRewards) {
+                                                finalScore = finalScore + 20;
+                                                achievements.push('You are generating more rewards than average for this category. Super!;)');
+                                              }
+                                              if (contributionsCount === 0) {
+                                                // this is the first contribution of the user accepted in the Utopian feed
+                                                // give the user a little gift
+                                                finalScore = finalScore + 15;
+                                                achievements.push('This is your first accepted contribution here in Utopian. Welcome!');
+                                              }
+                                              // number of contributions in total
+                                              if (contributionsCount > 0) {
+                                                finalScore = finalScore + 5;
+
+                                                if (contributionsCount >= 15) {
+                                                  // git for being productive
+                                                  finalScore = finalScore + 5;
+                                                }
+                                                if (contributionsCount >= 40) {
+                                                  // git for being productive
+                                                  finalScore = finalScore + 5;
+                                                }
+                                                if (contributionsCount >= 60) {
+                                                  // git for being productive
+                                                  finalScore = finalScore + 5;
+                                                }
+                                                if (contributionsCount >= 120) {
+                                                  // git for being productive
+                                                  finalScore = finalScore + 5;
+                                                }
+                                                achievements.push('Seems like you contribute quite often. AMAZING!');
+                                              }
+
+                                              if (reputation >= 25) finalScore = finalScore + 2.5;
+                                              if (reputation >= 50) finalScore = finalScore + 2.5;
+                                              if (reputation >= 65) finalScore = finalScore + 2.5;
+                                              if (reputation >= 70) finalScore = finalScore + 2.5;
+
+                                              post.finalScore = finalScore >= 100 ? 100 : Math.round(finalScore);
+                                              post.achievements = achievements;
+                                              post.category = post.json_metadata.type.indexOf('task-') > -1 ? 'tasks-requests' : post.json_metadata.type;
+
+                                              if (post.json_metadata.type.indexOf('task-') > -1) {
+                                                categories_pool['tasks-requests'].total_vote_weight = categories_pool['tasks-requests'].total_vote_weight + finalScore;
+                                              } else {
+                                                categories_pool[post.json_metadata.type].total_vote_weight = categories_pool[post.json_metadata.type].total_vote_weight + finalScore;
+                                              }
+
+                                              scoredPosts.push(post);
+
+                                              if (post_index + 1 === posts.length) {
+                                                proceedVoting(scoredPosts, categories_pool, stats);
+                                              }
+                                              post_index++;
                                             });
-                                            const upVotesLength=upVotes.length==0?1:upVotes.length;
-                                            const averageWeightPercentage = totalWeightPercentage / upVotesLength / 100;
-                                            const rankConsensus = averageWeightPercentage * upVotes.length / 100;
-                                            let finalScore = rankConsensus;
-
-                                            if (finalScore > 55) {
-                                              achievements.push('WOW WOW WOW People loved what you did here. GREAT JOB!');
-                                            }
-
-                                            // help the user grow the followers
-                                            if(followers.follower_count < 500) {
-                                              finalScore = finalScore + 20;
-                                              achievements.push('You have less than 500 followers. Just gave you a gift to help you succeed!');
-                                            }
-                                            if(totalGenerated > averageRewards) {
-                                              finalScore = finalScore + 20;
-                                              achievements.push('You are generating more rewards than average for this category. Super!;)');
-                                            }
-                                            if (contributionsCount === 0) {
-                                              // this is the first contribution of the user accepted in the Utopian feed
-                                              // give the user a little gift
-                                              finalScore = finalScore + 15;
-                                              achievements.push('This is your first accepted contribution here in Utopian. Welcome!');
-                                            }
-                                            // number of contributions in total
-                                            if (contributionsCount > 0) {
-                                              finalScore = finalScore + 5;
-
-                                              if (contributionsCount >= 15) {
-                                                // git for being productive
-                                                finalScore = finalScore + 5;
-                                              }
-                                              if (contributionsCount >= 40) {
-                                                // git for being productive
-                                                finalScore = finalScore + 5;
-                                              }
-                                              if (contributionsCount >= 60) {
-                                                // git for being productive
-                                                finalScore = finalScore + 5;
-                                              }
-                                              if (contributionsCount >= 120) {
-                                                // git for being productive
-                                                finalScore = finalScore + 5;
-                                              }
-                                              achievements.push('Seems like you contribute quite often. AMAZING!');
-                                            }
-
-                                            if(reputation >= 25) finalScore = finalScore + 2.5;
-                                            if(reputation >= 50) finalScore = finalScore + 2.5;
-                                            if(reputation >= 65) finalScore = finalScore + 2.5;
-                                            if(reputation >= 70) finalScore = finalScore + 2.5;
-
-                                            post.finalScore = finalScore >= 100 ? 100 : Math.round(finalScore);
-                                            post.achievements = achievements;
-                                            post.category = post.json_metadata.type.indexOf('task-') > - 1 ? 'tasks-requests' : post.json_metadata.type;
-
-                                            if (post.json_metadata.type.indexOf('task-') > - 1) {
-                                              categories_pool['tasks-requests'].total_vote_weight = categories_pool['tasks-requests'].total_vote_weight + finalScore;
-                                            }else{
-                                              categories_pool[post.json_metadata.type].total_vote_weight = categories_pool[post.json_metadata.type].total_vote_weight + finalScore;
-                                            }
-
-                                            scoredPosts.push(post);
-
-                                            if (post_index + 1 === posts.length) {
-                                              proceedVoting(scoredPosts, categories_pool, stats);
-                                            }
-                                            post_index++;
-                                          });
+                                      } else {
+                                        post_index++;
+                                      }
                                     });
                                   }
                                 }
                               });
                             });
                           });
-                   });
+                    });
               });
             });
       });
