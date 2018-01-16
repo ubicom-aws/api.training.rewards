@@ -123,12 +123,12 @@ async function getRepo(name: string): Promise<any> {
       return undefined;
     }
     name = name.toLowerCase();
-    return await request.get(`https://api.github.com/repos/${name}`, {
+    return (await request.get(`https://api.github.com/repos/${name}`, {
       deadline: 5000
     }).query({
       client_id: config.credentials.githubClientId,
       client_secret: config.credentials.githubSecret
-    }).body;
+    })).body;
   } catch (e) {
     if (e.response.status === 404) {
       return undefined;
