@@ -164,22 +164,6 @@ async function update(req, res, next) {
   }
 }
 
-function listByIssue (req, res, next) {
-  const { id } = req.query;
-
-  const query = {
-    reviewed: true,
-    flagged: {
-      $ne : true,
-    },
-    'json_metadata.issue.id': id
-  };
-
-  Post.list({ limit: 1, skip: 0, query })
-    .then(post => sendPost(res, post))
-    .catch(e => next(e));
-}
-
 async function edit(req, res, next) {
   const params = {
     parent_author: '',
@@ -438,6 +422,5 @@ export default {
   list,
   top,
   getPostById,
-  listByIssue,
   remove
 };

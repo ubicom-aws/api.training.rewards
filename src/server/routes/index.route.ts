@@ -3,7 +3,6 @@ import { requireAuth } from './middleware';
 
 import userRoutes from './user.route';
 import postRoutes from './post.route';
-import issueRoutes from './issue.route';
 import sponsorRoutes from './sponsor.route';
 import moderatorRoutes from './moderator.route';
 import statsRoutes from './stats.route';
@@ -32,8 +31,6 @@ router.use('/sc2', requireAuth, sc2Routes);
 router.use('/projects', requireAuth, projectRoutes);
 
 router.use('/posts', postRoutes);
-
-router.use('/issue', issueRoutes);
 
 router.use('/stats', statsRoutes);
 
