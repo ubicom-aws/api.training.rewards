@@ -17,7 +17,7 @@ const envVarsSchema = Joi.object({
         then: Joi.boolean().default(true),
         otherwise: Joi.boolean().default(false)
       }),
-  STEEM_NODE: Joi.string().default('https://api.steemit.com'),
+  STEEM_NODE: Joi.string().default('wss://steemd.privex.io'),
   STEEMCONNECT_HOST: Joi.string().default('https://v2.steemconnect.com'),
   MONGO_HOST: Joi.string().required()
       .description('Mongo DB host url'),
