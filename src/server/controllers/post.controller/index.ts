@@ -77,7 +77,13 @@ async function update(req, res, next) {
       post.json_metadata.moderator = {};
     }
 
-    if (moderator) post.json_metadata.moderator.account = moderator;
+    if (moderator) {
+      if (moderator === author) {
+        res.status(HttpStatus.UNAUTHORIZED)
+        return res.json({"message":"Unauthorized"})
+      }
+      post.json_metadata.moderator.account = moderator
+    }
     if (reviewed) {
       post.json_metadata.moderator.time = new Date().toISOString();
       post.json_metadata.moderator.reviewed = true;
