@@ -28,6 +28,21 @@ export function requireAuth(req: express.Request,
   }).catch(err => next(err));
 }
 
+export function loadMod(req: express.Request,
+                        res: express.Response,
+                        next: express.NextFunction) {
+  const user = res.locals.user;
+  if (!user) {
+    return next();
+  }
+  Moderator.findOne({ account: user.account }).then((mod: any) => {
+    if (mod && !mod.banned) {
+      res.locals.moderator = mod;
+    }
+    next();
+  }).catch(err => next(err));
+}
+
 export function requireMod(req: express.Request,
                             res: express.Response,
                             next: express.NextFunction) {
@@ -38,8 +53,8 @@ export function requireMod(req: express.Request,
   }
   Moderator.findOne({ account: user.account }).then((mod: any) => {
     if (!mod || mod.banned) {
-      res.status(HttpStatus.UNAUTHORIZED)
-      return res.json({"message":"Unauthorized"})
+      res.status(HttpStatus.UNAUTHORIZED);
+      return res.json({"message":"Unauthorized"});
     }
     res.locals.moderator = mod;
     next();
@@ -56,8 +71,8 @@ export function requireSupervisor(req: express.Request,
   }
   Moderator.findOne({ account: user.account }).then((mod: any) => {
     if (!mod || mod.banned || !mod.supermoderator) {
-      res.status(HttpStatus.UNAUTHORIZED)
-      return res.json({"message":"Unauthorized"})
+      res.status(HttpStatus.UNAUTHORIZED);
+      return res.json({"message":"Unauthorized"});
     }
     res.locals.moderator = mod;
     next();

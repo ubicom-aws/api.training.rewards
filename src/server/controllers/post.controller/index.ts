@@ -73,67 +73,67 @@ async function update(req, res, next) {
 
   try {
     const post = await getUpdatedPost(author, permlink);
-    if (!post.json_metadata.moderator) {
-      post.json_metadata.moderator = {};
-    }
-
     if (moderator) {
-      if (moderator === author) {
-        res.status(HttpStatus.UNAUTHORIZED)
-        return res.json({"message":"Unauthorized"})
+      if (!post.json_metadata.moderator) {
+        post.json_metadata.moderator = {};
       }
-      post.json_metadata.moderator.account = moderator
-    }
-    if (reviewed) {
-      post.json_metadata.moderator.time = new Date().toISOString();
-      post.json_metadata.moderator.reviewed = true;
-      post.json_metadata.moderator.pending = false;
-      post.json_metadata.moderator.flagged = false;
+      if (!res.locals.moderator
+          || (res.locals.moderator.account !== moderator)
+          || (res.locals.moderator.account === author)) {
+        res.status(HttpStatus.UNAUTHORIZED);
+        return res.json({"message":"Unauthorized"});
+      }
+      post.json_metadata.moderator.account = moderator;
 
-      if (post.json_metadata.type === 'bug-hunting') {
-        try {
-          const user = await User.get(post.author);
-          if (user.github && user.github.account) {
-            const resGithub = await request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
-              .set('Content-Type', 'application/json')
-              .set('Accept', 'application/json')
-              .set('Authorization', `token ${user.github.token}`)
-              .send({
-                title: post.title,
-                body: post.body,
-              });
-            const issue = resGithub.body;
-            const { html_url, number, id, title } = issue;
+      if (reviewed) {
+        post.json_metadata.moderator.time = new Date().toISOString();
+        post.json_metadata.moderator.reviewed = true;
+        post.json_metadata.moderator.pending = false;
+        post.json_metadata.moderator.flagged = false;
 
-            post.json_metadata.issue = {
-              url: html_url,
-              number,
-              id,
-              title,
-            };
+        if (post.json_metadata.type === 'bug-hunting') {
+          try {
+            const user = await User.get(post.author);
+            if (user.github && user.github.account) {
+              const resGithub = await request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
+                .set('Content-Type', 'application/json')
+                .set('Accept', 'application/json')
+                .set('Authorization', `token ${user.github.token}`)
+                .send({
+                  title: post.title,
+                  body: post.body,
+                });
+              const issue = resGithub.body;
+              const { html_url, number, id, title } = issue;
+
+              post.json_metadata.issue = {
+                url: html_url,
+                number,
+                id,
+                title,
+              };
+            }
+          } catch (e) {
+            console.log("ERROR REVIEWING GITHUB", e);
           }
-        } catch (e) {
-          console.log("ERROR REVIEWING GITHUB", e);
         }
+      } else if (flagged) {
+        post.json_metadata.moderator.time = new Date().toISOString();
+        post.json_metadata.moderator.flagged = true;
+        post.json_metadata.moderator.reviewed = false;
+        post.json_metadata.moderator.pending = false;
+      } else if (pending) {
+        post.json_metadata.moderator.time = new Date().toISOString();
+        post.json_metadata.moderator.pending = true;
+        post.json_metadata.moderator.reviewed = false;
+        post.json_metadata.moderator.flagged = false;
+      } else if (reserved) {
+        post.json_metadata.moderator.time = new Date().toISOString();
+        post.json_metadata.moderator.pending = false;
+        post.json_metadata.moderator.reviewed = false;
+        post.json_metadata.moderator.flagged = false;
       }
-    } else if (flagged) {
-      post.json_metadata.moderator.time = new Date().toISOString();
-      post.json_metadata.moderator.flagged = true;
-      post.json_metadata.moderator.reviewed = false;
-      post.json_metadata.moderator.pending = false;
-    } else if (pending) {
-      post.json_metadata.moderator.time = new Date().toISOString();
-      post.json_metadata.moderator.pending = true;
-      post.json_metadata.moderator.reviewed = false;
-      post.json_metadata.moderator.flagged = false;
-    } else if (reserved) {
-      post.json_metadata.moderator.time = new Date().toISOString();
-      post.json_metadata.moderator.pending = false;
-      post.json_metadata.moderator.reviewed = false;
-      post.json_metadata.moderator.flagged = false;
-    }
 
-    try {
       try {
         const user = await User.get(post.author);
         await sc2.send('/broadcast', {
@@ -156,7 +156,9 @@ async function update(req, res, next) {
       } catch (e) {
         console.log('FAILED TO UPDATE POST DURING REVIEW', e);
       }
+    }
 
+    try {
       post.markModified('json_metadata.repository');
       post.markModified('json_metadata.moderator');
       const savedPost = await post.save();
