@@ -4,7 +4,6 @@ export default {
   // POST /api/users
   createUser: {
     body: {
-      account: Joi.string().required(),
       code: Joi.string(),
       state: Joi.string(),
     }

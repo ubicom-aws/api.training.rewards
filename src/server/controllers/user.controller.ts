@@ -206,7 +206,7 @@ function getRepos(req, res, next) {
 }
 
 async function create(req, res, next) {
-  const {account, code, state, scopeVersion} = req.body;
+  const {code, state, scopeVersion} = req.body;
   if (!(code && state && (code !== "-") && (state !== "-"))) {
     return res.sendStatus(HttpStatus.BAD_REQUEST);
   }
@@ -235,7 +235,7 @@ async function create(req, res, next) {
       return res.sendStatus(500);
     }
 
-    const user = await User.get(account);
+    const user = res.locals.user;
     user.github = {
       account: githubUserName,
       token: access_token,
