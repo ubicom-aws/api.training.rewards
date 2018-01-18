@@ -1,12 +1,12 @@
 import * as mongoose from 'mongoose';
+import * as https from 'https';
 import * as util from 'util';
+import * as fs from 'fs';
 
 // config should be imported before importing any other file
 import config from '../config/config';
 import app from '../config/express';
-
-const https = require('https');
-const fs = require('fs');
+import { start as startTasks } from './tasks';
 
 const debug = require('debug')('api.utopian.io:index');
 
@@ -47,6 +47,10 @@ if (!module.parent) {
     app.listen(config.server.port, () => {
       console.info(`server started on port ${port} (${config.env})`);
     });
+  }
+
+  if (process.env.NODE_ENV !== 'test') {
+    startTasks();
   }
 }
 
