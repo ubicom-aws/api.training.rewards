@@ -55,6 +55,12 @@ const UserSchema = new mongoose.Schema({
   email: String
 });
 
+UserSchema.index({
+  'account': 1
+}, {
+  unique: true
+});
+
 UserSchema.post('init', function(this: any) {
   if (this.banned && this.bannedUntil.getTime() < Date.now()) {
     this.banned = 0;
