@@ -205,12 +205,14 @@ function getRepos(req, res, next) {
   });
 }
 
-function create(req, res, next) {
-
+async function create(req, res, next) {
   const {account, code, state, scopeVersion} = req.body;
+  if (!(code && state && (code !== "-") && (state !== "-"))) {
+    return res.sendStatus(HttpStatus.BAD_REQUEST);
+  }
 
-  if (code && state && (code !== "-") && (state !== "-")) {
-    request.post('https://github.com/login/oauth/access_token')
+  try {
+    const tokenRes = await (request.post('https://github.com/login/oauth/access_token')
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json')
       .send({
@@ -219,69 +221,34 @@ function create(req, res, next) {
         client_id: process.env.UTOPIAN_GITHUB_CLIENT_ID,
         client_secret: process.env.UTOPIAN_GITHUB_SECRET,
         redirect_uri: process.env.UTOPIAN_GITHUB_REDIRECT_URL,
-      })
-      .then(tokenRes => {
-        const response = tokenRes.body;
-        if (response.access_token) {
-          const access_token = response.access_token;
+      }));
+    const access_token = tokenRes.body.access_token;
+    if (!access_token) {
+      return res.sendStatus(500);
+    }
 
-          request.get('https://api.github.com/user')
-            .query({access_token})
-            .end(function (err, githubUserRes) {
-              const githubUser = githubUserRes.body;
+    const githubUserRes = await (request.get('https://api.github.com/user')
+                                          .query({access_token}));
+    const githubUser = githubUserRes.body;
+    const githubUserName = githubUser.login;
+    if (!githubUserName) {
+      return res.sendStatus(500);
+    }
 
-              if (githubUser.login) {
-                const githubUserName = githubUser.login;
-                User.get(account)
-                  .then((user) => {
-                    user.github = {
-                      account: githubUserName,
-                      token: access_token,
-                      scopeVersion: scopeVersion,
-                      lastSynced: new Date(),
-                      ...githubUser,
-                    };
-                    user.save()
-                      .then(savedUser => res.json(savedUser))
-                      .catch(e => next(e));
-                  }).catch(e => {
-                  if (e.status === 404) {
-                    const newUser = new User({
-                      account,
-                      github: {
-                        account: githubUserName,
-                        token: access_token,
-                        scopeVersion: scopeVersion,
-                        lastSynced: new Date(),
-                        ...githubUser,
-                      }
-                    });
-                    newUser.save()
-                      .then(savedUser => res.json(savedUser))
-                      .catch(e => next(e));
-                  } else {
-                    res.status(500);
-                  }
-                });
-              } else {
-                res.status(500);
-              }
-            });
-        } else {
-          res.status(500);
-        }
-      })
-      .catch(e => res.status(500))
-  } else {
-    const newUser = new User({
-      account,
-      github: {
-        scopeVersion: 0
-      }
-    });
-    newUser.save()
-      .then(savedUser => res.json(savedUser))
-      .catch(e => next(e));
+    const user = await User.get(account);
+    user.github = {
+      account: githubUserName,
+      token: access_token,
+      scopeVersion: scopeVersion,
+      lastSynced: new Date(),
+      ...githubUser,
+    };
+
+    req.user = await user.save();
+    get(req, res);
+  } catch (e) {
+    console.log('Error syncing GitHub', e);
+    return res.sendStatus(500);
   }
 }
 
