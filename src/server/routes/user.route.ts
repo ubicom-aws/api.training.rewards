@@ -10,24 +10,29 @@ router.route('/')
   .post(requireAuth, validate(paramValidation.createUser), userCtrl.create);
 
 router.route('/:userId')
-  .get(requireAuth, userCtrl.get)
-  .put(requireAuth, validate(paramValidation.updateUser), userCtrl.update)
-  .delete(requireAuth, userCtrl.remove);
+  .get(userCtrl.get)
+  .put(validate(paramValidation.updateUser), userCtrl.update)
+  .delete(userCtrl.remove);
 
 router.route('/:user/avatar')
   .get(validate(paramValidation.avatarUser), userCtrl.avatar)
 
 router.route('/:userId/repos')
-  .get(requireAuth, userCtrl.getRepos);
+  .get(userCtrl.getRepos);
 
 router.route('/:userId/ban')
-  .get(requireAuth, userCtrl.getBan)
-  .post(requireAuth, requireSupervisor, validate(paramValidation.banUser), userCtrl.ban);
+  .get(userCtrl.getBan)
+  .post(requireSupervisor, validate(paramValidation.banUser), userCtrl.ban);
 
 router.route('/:userId/platforms/:platform')
-  .get(requireAuth, userCtrl.get)
+  .get(userCtrl.get)
 
 
-router.param('userId', userCtrl.load);
+router.param('userId', (req, res, next, id) => {
+  requireAuth(req, res, (e) => {
+    if (e) return next(e);
+    userCtrl.load(req, res, next, id);
+  })
+});
 
 export default router;
