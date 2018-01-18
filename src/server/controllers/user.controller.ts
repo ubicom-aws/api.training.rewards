@@ -4,12 +4,13 @@ import * as request from 'superagent';
 import steemAPI from '../steemAPI';
 import User from '../models/user.model';
 import Moderator from '../models/moderator.model';
+import * as Jimp from 'jimp';
 
 /**
  * Load user and append to req.
  */
 async function load(req, res, next, id) {
-  const { params } = req;
+  const {params} = req;
 
   try {
     let user;
@@ -39,6 +40,37 @@ async function load(req, res, next, id) {
 }
 
 /**
+ * Load a users avatar with img.busy.com and cloudinary
+ */
+function avatar(req, res, next) {
+
+  res.header("Content-Type", "image/png");
+
+  const {user} = req.params;
+  let {size, round} = req.query;
+  let fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl.split('?')[0]
+
+  typeof size === "undefined" ? size = 48 : "";
+
+  if (round) {
+    Jimp.read('https://res.cloudinary.com/hpiynhbhq/image/fetch/s--YxDMOYqR--/c_fill,h_' + size + ',w_' + size + ',r_2000/' + fullUrl + '?size=' + size, function (err, avatar) {
+      console.log(err, avatar)
+      avatar.quality(100).getBuffer(Jimp.MIME_PNG, function (err, buffer) {
+        res.set("Content-Type", Jimp.MIME_PNG);
+        res.send(buffer);
+      });
+    });
+  } else {
+    Jimp.read('https://img.busy.org/@' + user + '?s=' + size, function (err, lenna) {
+      lenna.quality(100).getBuffer(Jimp.MIME_PNG, function (err, buffer) {
+        res.set("Content-Type", Jimp.MIME_PNG);
+        res.send(buffer);
+      });
+    });
+  }
+}
+
+/**
  * Ban user
  * @property {string} req.body.username - The username of user.
  * @property {string} req.body.banned - Banning Status of user
@@ -55,12 +87,12 @@ function ban(req, res, next) {
   user.bannedUntil = req.body.bannedUntil;
 
   user.save()
-      .then(savedUser => res.json({
-        banned: savedUser.banned,
-        bannedBy: savedUser.bannedBy,
-        banReason: savedUser.banReason,
-        bannedUntil: savedUser.bannedUntil
-      })).catch(e => next(e));
+    .then(savedUser => res.json({
+      banned: savedUser.banned,
+      bannedBy: savedUser.bannedBy,
+      banReason: savedUser.banReason,
+      bannedUntil: savedUser.bannedUntil
+    })).catch(e => next(e));
 }
 
 function getBan(req, res, next) {
@@ -110,151 +142,151 @@ function getGithubRepos(user, callback) {
   }
 
   request.get('https://api.github.com/user/repos')
-      .query({ access_token: user.github.token, per_page: 100 })
-      .then(function (response) {
-          if (response && response.body.length) {
-              const repos = (response.body.filter(repo => repo.owner.login === user.github.account && repo.private === false));
-              for (var k = 0; k < repos.length; k++) {
-                  result.push(repos[k]);
-              }
-              var orgs = new Array();
-              request.get('https://api.github.com/user/orgs')
-                  .query({ access_token: user.github.token, per_page: 100 })
-                  .then(function (resp) {
-                      if (resp && resp.body) {
-                          const organizations = resp.body;
-                          for (var i = 0; i < organizations.length; i++) {
-                              orgs.push(organizations[i].login);
-                          }
-                          if (orgs.length === 0) {
-                              callback(result);
-                              return;
-                          }
-                          for (var j = 0; j < orgs.length; ++j) {
-                              request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
-                                  .query({ access_token: user.github.token, per_page: 100 })
-                                  .then(function (respo) {
-                                      if (respo && respo.body) {
-                                          for (var m = 0; m < respo.body.length; ++m) {
-                                              result.push(respo.body[m]);
-                                          }
-                                          if (j+1 >= orgs.length) {
-                                              callback(result);
-                                              return;
-                                          }
-                                      }
-                                  })
-                          }
-                      } else {
-                          callback(result);
-                      }
-                  })
-          } else {
-              callback(result);
-          }
-      }).catch(e => {
-        if (e.status === 401) {
-          user.github = undefined;
-          user.save();
-        } else {
-          console.error(e);
+    .query({access_token: user.github.token, per_page: 100})
+    .then(function (response) {
+      if (response && response.body.length) {
+        const repos = (response.body.filter(repo => repo.owner.login === user.github.account && repo.private === false));
+        for (var k = 0; k < repos.length; k++) {
+          result.push(repos[k]);
         }
+        var orgs = new Array();
+        request.get('https://api.github.com/user/orgs')
+          .query({access_token: user.github.token, per_page: 100})
+          .then(function (resp) {
+            if (resp && resp.body) {
+              const organizations = resp.body;
+              for (var i = 0; i < organizations.length; i++) {
+                orgs.push(organizations[i].login);
+              }
+              if (orgs.length === 0) {
+                callback(result);
+                return;
+              }
+              for (var j = 0; j < orgs.length; ++j) {
+                request.get(`https://api.github.com/orgs/${orgs[j]}/repos`)
+                  .query({access_token: user.github.token, per_page: 100})
+                  .then(function (respo) {
+                    if (respo && respo.body) {
+                      for (var m = 0; m < respo.body.length; ++m) {
+                        result.push(respo.body[m]);
+                      }
+                      if (j + 1 >= orgs.length) {
+                        callback(result);
+                        return;
+                      }
+                    }
+                  })
+              }
+            } else {
+              callback(result);
+            }
+          })
+      } else {
         callback(result);
-      });
+      }
+    }).catch(e => {
+    if (e.status === 401) {
+      user.github = undefined;
+      user.save();
+    } else {
+      console.error(e);
+    }
+    callback(result);
+  });
 }
 
 function getRepos(req, res, next) {
   const user = req.user;
 
   if (!user) {
-      res.json([]);
+    res.json([]);
   }
 
   getGithubRepos(user, (result) => {
-      if (result.length) {
-          res.json(result);
-      } else {
-          res.status(404).json({
-              message: 'No repos found on Github'
-          })
-      }
+    if (result.length) {
+      res.json(result);
+    } else {
+      res.status(404).json({
+        message: 'No repos found on Github'
+      })
+    }
   });
 }
 
 function create(req, res, next) {
 
-  const { account, code, state, scopeVersion } = req.body;
+  const {account, code, state, scopeVersion} = req.body;
 
   if (code && state && (code !== "-") && (state !== "-")) {
-      request.post('https://github.com/login/oauth/access_token')
-          .set('Content-Type', 'application/json')
-          .set('Accept', 'application/json')
-          .send({
-              code,
-              state,
-              client_id: process.env.UTOPIAN_GITHUB_CLIENT_ID,
-              client_secret: process.env.UTOPIAN_GITHUB_SECRET,
-              redirect_uri: process.env.UTOPIAN_GITHUB_REDIRECT_URL,
-          })
-          .then(tokenRes => {
-              const response = tokenRes.body;
-              if(response.access_token) {
-                  const access_token = response.access_token;
+    request.post('https://github.com/login/oauth/access_token')
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json')
+      .send({
+        code,
+        state,
+        client_id: process.env.UTOPIAN_GITHUB_CLIENT_ID,
+        client_secret: process.env.UTOPIAN_GITHUB_SECRET,
+        redirect_uri: process.env.UTOPIAN_GITHUB_REDIRECT_URL,
+      })
+      .then(tokenRes => {
+        const response = tokenRes.body;
+        if (response.access_token) {
+          const access_token = response.access_token;
 
-                  request.get('https://api.github.com/user')
-                      .query({access_token})
-                      .end(function(err, githubUserRes){
-                          const githubUser = githubUserRes.body;
+          request.get('https://api.github.com/user')
+            .query({access_token})
+            .end(function (err, githubUserRes) {
+              const githubUser = githubUserRes.body;
 
-                          if (githubUser.login) {
-                              const githubUserName = githubUser.login;
-                              User.get(account)
-                                  .then((user) => {
-                                      user.github = {
-                                          account: githubUserName,
-                                          token: access_token,
-                                          scopeVersion: scopeVersion,
-                                          lastSynced: new Date(),
-                                          ...githubUser,
-                                      };
-                                      user.save()
-                                          .then(savedUser => res.json(savedUser))
-                                          .catch(e => next(e));
-                                  }).catch(e => {
-                                  if (e.status === 404) {
-                                      const newUser = new User({
-                                          account,
-                                          github: {
-                                              account: githubUserName,
-                                              token: access_token,
-                                              scopeVersion: scopeVersion,
-                                              lastSynced: new Date(),
-                                              ...githubUser,
-                                          }
-                                      });
-                                      newUser.save()
-                                          .then(savedUser => res.json(savedUser))
-                                          .catch(e => next(e));
-                                  } else {
-                                      res.status(500);
-                                  }
-                              });
-                          }else {
-                              res.status(500);
-                          }
-                      });
+              if (githubUser.login) {
+                const githubUserName = githubUser.login;
+                User.get(account)
+                  .then((user) => {
+                    user.github = {
+                      account: githubUserName,
+                      token: access_token,
+                      scopeVersion: scopeVersion,
+                      lastSynced: new Date(),
+                      ...githubUser,
+                    };
+                    user.save()
+                      .then(savedUser => res.json(savedUser))
+                      .catch(e => next(e));
+                  }).catch(e => {
+                  if (e.status === 404) {
+                    const newUser = new User({
+                      account,
+                      github: {
+                        account: githubUserName,
+                        token: access_token,
+                        scopeVersion: scopeVersion,
+                        lastSynced: new Date(),
+                        ...githubUser,
+                      }
+                    });
+                    newUser.save()
+                      .then(savedUser => res.json(savedUser))
+                      .catch(e => next(e));
+                  } else {
+                    res.status(500);
+                  }
+                });
               } else {
-                  res.status(500);
+                res.status(500);
               }
-          })
-          .catch(e => res.status(500))
+            });
+        } else {
+          res.status(500);
+        }
+      })
+      .catch(e => res.status(500))
   } else {
     const newUser = new User({
       account,
       github: {
-          scopeVersion: 0
+        scopeVersion: 0
       }
-  });
+    });
     newUser.save()
       .then(savedUser => res.json(savedUser))
       .catch(e => next(e));
@@ -267,8 +299,8 @@ function update(req, res, next) {
   user.mobileNumber = req.body.mobileNumber;
 
   user.save()
-      .then(savedUser => res.json(savedUser))
-      .catch(e => next(e));
+    .then(savedUser => res.json(savedUser))
+    .catch(e => next(e));
 }
 
 /**
@@ -278,8 +310,8 @@ function update(req, res, next) {
 function remove(req, res, next) {
   const user = req.user;
   user.remove()
-      .then(deletedUser => res.json(deletedUser))
-      .catch(e => next(e));
+    .then(deletedUser => res.json(deletedUser))
+    .catch(e => next(e));
 }
 
-export default { load, ban, getBan, get, getRepos, getGithubRepos, create, update, remove };
+export default {load, avatar, ban, getBan, get, getRepos, getGithubRepos, create, update, remove};

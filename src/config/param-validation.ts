@@ -128,6 +128,16 @@ export default {
       user_id: Joi.string().required(),
       code: Joi.string().required()
     }
+  },
+  tables: {
+    query: {
+      limit: Joi.number().min(1)
+    }
+  },
+  avatarUser: {
+    query: {
+      size: Joi.number().min(48).max(512),
+      round: Joi.boolean()
+    }
   }
-  
 };
