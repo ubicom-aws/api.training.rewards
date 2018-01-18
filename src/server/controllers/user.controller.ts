@@ -24,14 +24,6 @@ async function load(req, res, next, id) {
       return res.sendStatus(HttpStatus.NOT_FOUND);
     }
 
-    if (res.locals.user.account !== user.account) {
-      const mod: any = await Moderator.get(res.locals.user.account);
-      if (!(mod && mod.isReviewed())) {
-        // Prohibit regular users from retrieving other accounts
-        return res.sendStatus(HttpStatus.FORBIDDEN);
-      }
-    }
-
     req.user = user;
     next();
   } catch (e) {
@@ -293,25 +285,4 @@ function create(req, res, next) {
   }
 }
 
-function update(req, res, next) {
-  const user = req.user;
-  user.username = req.body.username;
-  user.mobileNumber = req.body.mobileNumber;
-
-  user.save()
-    .then(savedUser => res.json(savedUser))
-    .catch(e => next(e));
-}
-
-/**
- * Delete user.
- * @returns {User}
- */
-function remove(req, res, next) {
-  const user = req.user;
-  user.remove()
-    .then(deletedUser => res.json(deletedUser))
-    .catch(e => next(e));
-}
-
-export default {load, avatar, ban, getBan, get, getRepos, getGithubRepos, create, update, remove};
+export default {load, avatar, ban, getBan, get, getRepos, getGithubRepos, create};

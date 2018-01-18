@@ -10,12 +10,10 @@ router.route('/')
   .post(requireAuth, validate(paramValidation.createUser), userCtrl.create);
 
 router.route('/:userId')
-  .get(userCtrl.get)
-  .put(validate(paramValidation.updateUser), userCtrl.update)
-  .delete(userCtrl.remove);
+  .get(userCtrl.get);
 
 router.route('/:user/avatar')
-  .get(validate(paramValidation.avatarUser), userCtrl.avatar)
+  .get(validate(paramValidation.avatarUser), userCtrl.avatar);
 
 router.route('/:userId/repos')
   .get(userCtrl.getRepos);
