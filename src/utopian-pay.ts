@@ -3,6 +3,7 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import Sponsor from './server/models/sponsor.model';
 import Moderator from './server/models/moderator.model';
+import Post from './server/models/post.model';
 import Stats from './server/models/stats.model';
 import config from './config/config';
 import * as R from 'ramda';
@@ -22,6 +23,28 @@ conn.once('open', function ()
             const percentModerators = 20;
             const fromStats = stats.last_limit_comment_benefactor;
             const limit = 100;
+            const categoriesPoints = {
+                ideas: 1.5,
+                development: 3,
+                'bug-hunting': 2,
+                translations: 3.5,
+                graphics: 2,
+                documentation: 2,
+                copywriting: 2,
+                'video-tutorials': 3,
+                tutorials: 3,
+                analysis: 2,
+                social: 1,
+                'task-ideas': 1,
+                'task-development': 1,
+                'task-bug-hunting': 1,
+                'task-translations': 1,
+                'task-graphics': 1,
+                'task-documentation': 1,
+                'task-analysis': 1,
+                'task-social': 1,
+                blog: 2,
+            };
 
             let totalVests = 0;
 
@@ -115,14 +138,14 @@ conn.once('open', function ()
 
                                                     sponsor.total_paid_rewards_steem = (sponsor.total_paid_rewards_steem || 0) + sponsorPayout;
                                                     sponsor.save().then(() => {
-                                                            if (sponsorIndex + 1 === sponsors.length) {
-                                                                console.log("-------------------------------------");
-                                                                console.log("SPONSORS PAID SUCCESSFULLY: ", totalPaidSponsors);
-                                                                console.log("-------------------------------------");
+                                                        if (sponsorIndex + 1 === sponsors.length) {
+                                                            console.log("-------------------------------------");
+                                                            console.log("SPONSORS PAID SUCCESSFULLY: ", totalPaidSponsors);
+                                                            console.log("-------------------------------------");
 
-                                                                done();
-                                                            }
-                                                        });
+                                                            done();
+                                                        }
+                                                    });
                                                 });
                                             }, 30000 * sponsorIndex);
                                         }
@@ -142,55 +165,55 @@ conn.once('open', function ()
                             });
                         };
                         const payModerators = (done) => {
-                            Moderator.listBeneficiaries()
-                                .then(moderators => {
-                                    moderators.forEach((moderator, moderatorIndex) => {
-                                        const moderatorShares = moderator.percentage_total_rewards_moderators;
-                                        const moderatorPercent = moderatorShares * percentModerators / 100;
-                                        const moderatorPayout = (moderatorPercent * totalSteem / 100) >= 0.001 ? (moderatorPercent * totalSteem / 100) : 0.001;
+                            const proceedPayMods = (moderators, totalPoints) => {
+                                moderators.forEach((moderator, moderatorIndex) => {
+                                    const moderatorShares = (moderator.points / totalPoints) * 100;
+                                    const moderatorPercent = moderatorShares * percentModerators / 100;
+                                    const moderatorPayout = (moderatorPercent * totalSteem / 100) >= 0.001 ? (moderatorPercent * totalSteem / 100) : 0.001;
 
-                                        const finalModeratorPayout = `${moderatorPayout.toFixed(3)} STEEM`;
-                                        const memoModerator = `Hello ${moderator.account}, here is your weekly payout as a Moderator.`;
+                                    const finalModeratorPayout = `${moderatorPayout.toFixed(3)} STEEM`;
+                                    const memoModerator = `Hello ${moderator.account}, here is your weekly payout as a Moderator.`;
 
-                                        totalPaidModerators = totalPaidModerators + moderatorPayout;
+                                    totalPaidModerators = totalPaidModerators + moderatorPayout;
 
-                                        console.log(`> $$ PAYOUT MODERATOR ${moderator.account}: ${finalModeratorPayout}`);
+                                    console.log(`> $$ PAYOUT MODERATOR ${moderator.account}: ${finalModeratorPayout}`);
 
-                                        // every moderator has a supervisor
-                                        // supervisors get 20% of the shares of their own moderators
-                                        // these shares are not removed by the moderator but paid by the system
-                                        if (moderator.referrer) {
-                                            const sup = R.find(R.propEq('account', moderator.referrer))(supervisors);
+                                    // every moderator has a supervisor
+                                    // supervisors get 20% of the shares of their own moderators
+                                    // these shares are not removed by the moderator but paid by the system
+                                    if (moderator.referrer) {
+                                        const sup = R.find(R.propEq('account', moderator.referrer))(supervisors);
 
-                                            if (sup) {
-                                                supervisors = [
-                                                    ...supervisors.filter(supervisor => supervisor.account !== sup.account),
-                                                    {
-                                                        account: sup.account,
-                                                        supervisor_moderators_shares: sup.supervisor_moderators_shares + moderatorShares
-                                                    }
-                                                ]
-                                            } else {
-                                                supervisors.push({
-                                                    account: moderator.referrer,
-                                                    supervisor_moderators_shares: moderatorShares,
-                                                })
-                                            }
+                                        if (sup) {
+                                            supervisors = [
+                                                ...supervisors.filter(supervisor => supervisor.account !== sup.account),
+                                                {
+                                                    account: sup.account,
+                                                    supervisor_moderators_shares: sup.supervisor_moderators_shares + moderatorShares
+                                                }
+                                            ]
+                                        } else {
+                                            supervisors.push({
+                                                account: moderator.referrer,
+                                                supervisor_moderators_shares: moderatorShares,
+                                            })
                                         }
+                                    }
 
-                                        if (!TEST) {
-                                            setTimeout(function() {
-                                                broadcast.transfer(WIF, payAccount, moderator.account, finalModeratorPayout, memoModerator, function(err, result) {
-                                                    if (err) {
-                                                        console.log("!----------COULD NOT PAY MODERATOR----------!", moderator.account);
-                                                        console.log(err);
-                                                        return;
-                                                    }
+                                    if (!TEST) {
+                                        setTimeout(function() {
+                                            broadcast.transfer(WIF, payAccount, moderator.account, finalModeratorPayout, memoModerator, function(err, result) {
+                                                if (err) {
+                                                    console.log("!----------COULD NOT PAY MODERATOR----------!", moderator.account);
+                                                    console.log(err);
+                                                    return;
+                                                }
 
-                                                    console.log(`>-- $$ PAID MODERATOR ${moderator.account}: ${finalModeratorPayout}`);
+                                                console.log(`>-- $$ PAID MODERATOR ${moderator.account}: ${finalModeratorPayout}`);
 
-                                                    moderator.total_paid_rewards_steem = (moderator.total_paid_rewards_steem || 0) + moderatorPayout;
-                                                    moderator.save().then(() => {
+                                                Moderator.get(moderator.account).then(mod => {
+                                                    mod.total_paid_rewards_steem = (mod.total_paid_rewards_steem || 0) + moderatorPayout;
+                                                    mod.save().then(() => {
                                                         if (moderatorIndex + 1 === moderators.length) {
                                                             console.log("-------------------------------------");
                                                             console.log("MODERATORS PAID SUCCESSFULLY: ", totalPaidModerators);
@@ -200,16 +223,74 @@ conn.once('open', function ()
                                                         }
                                                     });
                                                 });
-                                            }, 30000 * moderatorIndex);
-                                        }
+                                            });
+                                        }, 30000 * moderatorIndex);
+                                    }
 
-                                        if (TEST && moderatorIndex + 1 === moderators.length) {
-                                            console.log("-------------------------------------");
-                                            console.log("MODERATORS PAID SUCCESSFULLY: ", totalPaidModerators);
-                                            console.log("-------------------------------------");
+                                    if (TEST && moderatorIndex + 1 === moderators.length) {
+                                        console.log("-------------------------------------");
+                                        console.log("MODERATORS PAID SUCCESSFULLY: ", totalPaidModerators);
+                                        console.log("-------------------------------------");
 
-                                            done();
-                                        }
+                                        done();
+                                    }
+                                });
+                            };
+
+                            Moderator.listBeneficiaries()
+                                .then(moderators => {
+                                    const moderatedSince = new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000)));
+                                    const moderatorsPoints = Array();
+                                    let totalPoints = 0;
+                                    let modsIndex = 0;
+
+                                    console.log(moderatedSince.toISOString())
+
+                                    moderators.forEach(moderator => {
+                                        let totalModPoints = 0;
+                                        const query = {
+                                            'json_metadata.moderator.account': moderator.account,
+                                            'json_metadata.moderator.time': {
+                                                $gte: moderatedSince.toISOString()
+                                            },
+                                        };
+                                        Post
+                                            .count(query)
+                                            .then(postsCount => {
+                                                if (postsCount === 0) {
+
+                                                    if (modsIndex + 1 === moderators.length) {
+                                                        proceedPayMods(moderatorsPoints, totalPoints);
+                                                        return;
+                                                    }
+                                                    modsIndex++;
+
+                                                }
+
+                                                Post.list({ skip: 0, limit: postsCount, query})
+                                                    .then(moderatedPosts => {
+                                                        moderatedPosts.forEach((moderatedPost, indexModPost) => {
+                                                            const points = categoriesPoints[moderatedPost.json_metadata.type] || 0;
+                                                            totalModPoints = totalModPoints + points;
+
+                                                            if (indexModPost + 1 === postsCount) {
+                                                                totalPoints = totalPoints + totalModPoints;
+
+                                                                moderatorsPoints.push({
+                                                                    account: moderator.account,
+                                                                    referrer: moderator.referrer,
+                                                                    points : totalModPoints,
+                                                                });
+                                                            }
+                                                        });
+
+                                                        if (modsIndex + 1 === moderators.length) {
+                                                            proceedPayMods(moderatorsPoints, totalPoints);
+                                                        }
+                                                        modsIndex++;
+
+                                                    });
+                                            });
                                     });
                                 }).catch(e => {
                                 console.log("FAILED TO RETRIEVE MODERATORS", e);
