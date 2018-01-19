@@ -7,31 +7,6 @@ import Moderator from '../models/moderator.model';
 import * as Jimp from 'jimp';
 
 /**
- * Load user and append to req.
- */
-async function load(req, res, next, id) {
-  const {params} = req;
-
-  try {
-    let user;
-    if (params.platform && params.platform === 'github') {
-      user = await User.getByGithub(id);
-    } else {
-      user = await User.get(id);
-    }
-
-    if (!user) {
-      return res.sendStatus(HttpStatus.NOT_FOUND);
-    }
-
-    req.user = user;
-    next();
-  } catch (e) {
-    next(e);
-  }
-}
-
-/**
  * Load a users avatar with img.busy.com and cloudinary
  */
 function avatar(req, res, next) {
@@ -167,11 +142,15 @@ function getGithubRepos(user, callback) {
                         return;
                       }
                     }
+                  }).catch(() => {
+                    callback(result);
                   })
               }
             } else {
               callback(result);
             }
+          }).catch(() => {
+            callback(result);
           })
       } else {
         callback(result);
@@ -252,4 +231,4 @@ async function create(req, res, next) {
   }
 }
 
-export default {load, avatar, ban, getBan, get, getRepos, getGithubRepos, create};
+export default {avatar, ban, getBan, get, getRepos, getGithubRepos, create};
