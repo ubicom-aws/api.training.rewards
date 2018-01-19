@@ -1,12 +1,12 @@
-import Sponsor from '../models/sponsor.model';
 import Moderator from "../models/moderator.model";
+import Sponsor from '../models/sponsor.model';
+import APIError from '../helpers/APIError';
+import * as HttpStatus from 'http-status';
 
 function list(req, res, next) {
   const {type} = req.params;
-  let {limit} = req.query;
+  let {limit = 6} = req.query;
   let host = req.protocol + '://' + req.get('host');
-
-  typeof limit === "undefined" ? limit = 6 :"";
 
   if (type === 'moderators') {
     Moderator.top().then(moderators => {
@@ -17,11 +17,10 @@ function list(req, res, next) {
     Sponsor.list().then(sponsors => {
       res.header("Content-Type","text/plain");
       return res.send(buildTable("sponsors",sponsors.slice(0,limit), host))
-    });
+    }).catch(e => next(e));
   } else {
-    next();
+    throw new APIError('Unknown type', HttpStatus.BAD_REQUEST, true);
   }
-
 }
 
 function getModeratorRow (moderator, host) {

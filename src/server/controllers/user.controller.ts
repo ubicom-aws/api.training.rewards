@@ -14,10 +14,8 @@ function avatar(req, res, next) {
   res.header("Content-Type", "image/png");
 
   const {user} = req.params;
-  let {size, round} = req.query;
+  let {size = 48, round = false} = req.query;
   let fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl.split('?')[0]
-
-  typeof size === "undefined" ? size = 48 : "";
 
   if (round) {
     Jimp.read('https://res.cloudinary.com/hpiynhbhq/image/fetch/s--YxDMOYqR--/c_fill,h_' + size + ',w_' + size + ',r_2000/' + fullUrl + '?size=' + size, function (err, avatar) {
