@@ -8,6 +8,7 @@ import * as HttpStatus from 'http-status';
 import * as request from 'superagent';
 import * as sc2 from '../../sc2';
 import { top } from './top';
+import {moderator} from './moderator';
 
 function postMapper(post) {
   post.pending = false;
@@ -422,5 +423,6 @@ export default {
   create,
   update,
   list,
-  top
+  top,
+  moderator
 };

@@ -4,6 +4,7 @@ import postCtrl from '../controllers/post.controller';
 import * as validate from 'express-validation';
 import { requireAuth, loadMod } from './middleware';
 import * as express from 'express';
+import {processModeratorQueryParams} from '../controllers/post.controller/moderator';
 
 const router = express.Router();
 
@@ -13,6 +14,9 @@ router.route('/')
 
 router.route('/top')
   .get(processQueryParams, postCtrl.top);
+
+router.route('/moderator')
+    .get(processModeratorQueryParams,postCtrl.moderator);
 
 router.route('/byid/:postId')
   .get(postCtrl.getPostById);
