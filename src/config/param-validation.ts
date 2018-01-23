@@ -91,7 +91,7 @@ export default {
       redirectUri: Joi.string()
     },
     params: {
-      provider: Joi.string().valid('github','facebook','linkedin').required()
+      provider: Joi.string().valid('github', 'facebook', 'linkedin').required()
     }
   },
   emailRequest: {
@@ -127,6 +127,20 @@ export default {
     query: {
       size: Joi.number().min(48).max(512),
       round: Joi.boolean()
+    }
+  },
+  createFaq: {
+    body: {
+      title: Joi.string().required(),
+      html: Joi.string().required(),
+      category: Joi.string().required(),
+      parent_category: Joi.string()
+    }
+  },
+  listFaq: {
+    query: {
+      category: Joi.string(),
+      parent_category: Joi.string()
     }
   }
 };
