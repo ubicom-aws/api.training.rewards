@@ -69,7 +69,7 @@ export async function steemconnect(req: express.Request,
     return res.json({
       session: session.session,
       expiry: session.expiry.getTime(),
-      user: session.user
+      user: user.account
     });
   } catch (e) {
     return next(e);

@@ -24,9 +24,7 @@ function create(req,res,next) {
     reviewed: reviewed,
     supermoderator: supermoderator,
     apprentice: apprentice,
-    total_paid_rewards: total_paid_rewards,
     total_paid_rewards_steem: total_paid_rewards_steem,
-    should_receive_rewards: should_receive_rewards,
     total_moderated: total_moderated,
     percentage_total_rewards_moderators: percentage_total_rewards_moderators,
   });
@@ -83,13 +81,4 @@ function list(req, res, next) {
     .catch(e => next(e));
 }
 
-function listBeneficiaries(req, res, next) {
-  Moderator.listBeneficiaries()
-    .then(moderators => res.json({
-      total: moderators.length,
-      results: moderators
-    }))
-    .catch(e => next(e));
-}
-
-export default { create, remove, list, listBeneficiaries };
+export default { create, remove, list };

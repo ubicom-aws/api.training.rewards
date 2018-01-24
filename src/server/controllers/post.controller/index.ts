@@ -8,6 +8,7 @@ import * as HttpStatus from 'http-status';
 import * as request from 'superagent';
 import * as sc2 from '../../sc2';
 import { top } from './top';
+import {moderator} from './moderator';
 
 function postMapper(post) {
   post.pending = false;
@@ -73,22 +74,29 @@ async function update(req, res, next) {
 
   try {
     const post = await getUpdatedPost(author, permlink);
-    if (!post.json_metadata.moderator) {
-      post.json_metadata.moderator = {};
-    }
+    if (moderator) {
+      if (!post.json_metadata.moderator) {
+        post.json_metadata.moderator = {};
+      }
+      if (!res.locals.moderator
+          || (res.locals.moderator.account !== moderator)
+          || (res.locals.moderator.account === author)) {
+        res.status(HttpStatus.UNAUTHORIZED);
+        return res.json({"message":"Unauthorized"});
+      }
+      post.json_metadata.moderator.account = moderator;
 
-    if (moderator) post.json_metadata.moderator.account = moderator;
-    if (reviewed) {
-      post.json_metadata.moderator.time = new Date().toISOString();
-      post.json_metadata.moderator.reviewed = true;
-      post.json_metadata.moderator.pending = false;
-      post.json_metadata.moderator.flagged = false;
+      if (reviewed) {
+        post.json_metadata.moderator.time = new Date().toISOString();
+        post.json_metadata.moderator.reviewed = true;
+        post.json_metadata.moderator.pending = false;
+        post.json_metadata.moderator.flagged = false;
 
-      if (post.json_metadata.type === 'bug-hunting') {
-        try {
-          const user = await User.get(post.author);
-          if (user.github && user.github.account) {
-            const resGithub = await request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
+        if (post.json_metadata.type === 'bug-hunting') {
+          try {
+            const user = await User.get(post.author);
+            if (user.github && user.github.account) {
+              const resGithub = await request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
                 .set('Content-Type', 'application/json')
                 .set('Accept', 'application/json')
                 .set('Authorization', `token ${user.github.token}`)
@@ -96,38 +104,37 @@ async function update(req, res, next) {
                   title: post.title,
                   body: post.body,
                 });
-            const issue = resGithub.body;
-            const { html_url, number, id, title } = issue;
+              const issue = resGithub.body;
+              const { html_url, number, id, title } = issue;
 
-            post.json_metadata.issue = {
-              url: html_url,
-              number,
-              id,
-              title,
-            };
+              post.json_metadata.issue = {
+                url: html_url,
+                number,
+                id,
+                title,
+              };
+            }
+          } catch (e) {
+            console.log("ERROR REVIEWING GITHUB", e);
           }
-        } catch (e) {
-          console.log("ERROR REVIEWING GITHUB", e);
         }
+      } else if (flagged) {
+        post.json_metadata.moderator.time = new Date().toISOString();
+        post.json_metadata.moderator.flagged = true;
+        post.json_metadata.moderator.reviewed = false;
+        post.json_metadata.moderator.pending = false;
+      } else if (pending) {
+        post.json_metadata.moderator.time = new Date().toISOString();
+        post.json_metadata.moderator.pending = true;
+        post.json_metadata.moderator.reviewed = false;
+        post.json_metadata.moderator.flagged = false;
+      } else if (reserved) {
+        post.json_metadata.moderator.time = new Date().toISOString();
+        post.json_metadata.moderator.pending = false;
+        post.json_metadata.moderator.reviewed = false;
+        post.json_metadata.moderator.flagged = false;
       }
-    } else if (flagged) {
-      post.json_metadata.moderator.time = new Date().toISOString();
-      post.json_metadata.moderator.flagged = true;
-      post.json_metadata.moderator.reviewed = false;
-      post.json_metadata.moderator.pending = false;
-    } else if (pending) {
-      post.json_metadata.moderator.time = new Date().toISOString();
-      post.json_metadata.moderator.pending = true;
-      post.json_metadata.moderator.reviewed = false;
-      post.json_metadata.moderator.flagged = false;
-    } else if (reserved) {
-      post.json_metadata.moderator.time = new Date().toISOString();
-      post.json_metadata.moderator.pending = false;
-      post.json_metadata.moderator.reviewed = false;
-      post.json_metadata.moderator.flagged = false;
-    }
 
-    try {
       try {
         const user = await User.get(post.author);
         await sc2.send('/broadcast', {
@@ -150,7 +157,9 @@ async function update(req, res, next) {
       } catch (e) {
         console.log('FAILED TO UPDATE POST DURING REVIEW', e);
       }
+    }
 
+    try {
       post.markModified('json_metadata.repository');
       post.markModified('json_metadata.moderator');
       const savedPost = await post.save();
@@ -162,22 +171,6 @@ async function update(req, res, next) {
   } catch (e) {
     next(e);
   }
-}
-
-function listByIssue (req, res, next) {
-  const { id } = req.query;
-
-  const query = {
-    reviewed: true,
-    flagged: {
-      $ne : true,
-    },
-    'json_metadata.issue.id': id
-  };
-
-  Post.list({ limit: 1, skip: 0, query })
-    .then(post => sendPost(res, post))
-    .catch(e => next(e));
 }
 
 async function edit(req, res, next) {
@@ -271,13 +264,23 @@ function list(req, res, next) {
   let sort: any = { created: -1 };
   let select: any = {}
 
-  let query: any = {
-    'json_metadata.moderator.flagged': {
-      $ne : true,
-    },
-  };
+  let query: any = {};
 
-  if (section !== 'author' && status !== 'flagged') {
+  if (moderator !== 'any' && filterBy !== 'review') {
+    query = {
+      ...query,
+      'json_metadata.moderator.account': moderator,
+    }
+  } else {
+    query = {
+      ...query,
+      'json_metadata.moderator.flagged': {
+        $ne: true
+      },
+    }
+  }
+
+  if (section !== 'author' && status !== 'flagged' && moderator === 'any') {
     query = {
       ...query,
       'json_metadata.moderator.reviewed': true,
@@ -299,8 +302,8 @@ function list(req, res, next) {
       ...query,
       $text: {
         $search: bySimilarity
-        }
-      },
+      }
+    },
       {
         score: {
           $meta: "textScore"
@@ -327,7 +330,6 @@ function list(req, res, next) {
     query = {
       ...query,
       'json_metadata.moderator.pending': true,
-      'json_metadata.moderator.account': moderator,
     }
   }
 
@@ -337,6 +339,14 @@ function list(req, res, next) {
       'json_metadata.moderator.flagged': true,
     }
   }
+
+  if (status === 'reviewed') {
+    query = {
+      ...query,
+      'json_metadata.moderator.reviewed': true,
+    }
+  }
+
 
   if (filterBy === 'active') {
     query = {
@@ -402,25 +412,17 @@ function list(req, res, next) {
     .catch(e => next(e));
 }
 
-function remove(req, res, next) {
-  const post = req.post;
-  post.remove()
-    .then(deletedPost => sendPost(res, deletedPost))
-    .catch(e => next(e));
-}
-
 function getBoolean(val?: string|boolean): boolean {
   return val === true || val === 'true';
 }
 
 export default {
+  getPostById,
   get,
   edit,
   create,
   update,
   list,
   top,
-  getPostById,
-  listByIssue,
-  remove
+  moderator
 };

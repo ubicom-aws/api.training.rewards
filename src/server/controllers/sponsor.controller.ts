@@ -10,15 +10,6 @@ function list(req, res, next) {
     .catch(e => next(e));
 }
 
-function listBeneficiaries(req, res, next) {
-  Sponsor.listBeneficiaries()
-    .then(sponsors => res.json({
-      total: sponsors.length,
-      results: sponsors
-    }))
-    .catch(e => next(e));
-}
-
 function create(req, res, next) {
   const sponsor = req.body.sponsor.replace('@', '');
 
@@ -65,4 +56,4 @@ function create(req, res, next) {
   });
 }
 
-export default { create, list, listBeneficiaries };
+export default { create, list };

@@ -65,6 +65,12 @@ const UserSchema = new mongoose.Schema({
   last_passwords: [] // last 4 digits of the last passwords for recovery reasons
 });
 
+UserSchema.index({
+  'account': 1
+}, {
+  unique: true
+});
+
 UserSchema.post('init', function(this: any) {
   if (this.banned && this.bannedUntil.getTime() < Date.now()) {
     this.banned = 0;
@@ -86,7 +92,6 @@ export interface UserSchemaDoc extends mongoose.Document {
 
 export interface UserSchemaModel extends mongoose.Model<UserSchemaDoc> {
   get(account: any): any;
-  getByGithub(token: any): any;
   list(opts?: UserModelListOpts): any;
 }
 
@@ -143,25 +148,6 @@ UserSchema.statics = {
         }
         user.updateSC2Token();
         return user;
-      });
-  },
-  getByGithub(token) {
-    return this.findOne({'github.token': token})
-      .exec()
-      .then((githubUser) => {
-        if (!githubUser) {
-          const err = new APIError('No such github user exists!', httpStatus.NOT_FOUND);
-          return Promise.reject(err);
-        }
-
-        if (!githubUser.refresh_token) {
-          const err = new APIError('Must authorize', httpStatus.UNAUTHORIZED);
-          return Promise.reject(err);
-        }
-
-        githubUser.updateSC2Token();
-        return githubUser;
-
       });
   },
 

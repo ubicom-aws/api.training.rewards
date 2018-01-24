@@ -12,8 +12,8 @@ export function requireAuth(req: express.Request,
   }
   Session.get(session).then(user => {
     if (!user) {
-      res.sendStatus(HttpStatus.UNAUTHORIZED);
-      return undefined;
+      res.status(HttpStatus.UNAUTHORIZED)
+      return res.json({"message":"Unauthorized"})
     }
     return user.updateSC2Token();
   }).then(user => {
@@ -28,16 +28,33 @@ export function requireAuth(req: express.Request,
   }).catch(err => next(err));
 }
 
+export function loadMod(req: express.Request,
+                        res: express.Response,
+                        next: express.NextFunction) {
+  const user = res.locals.user;
+  if (!user) {
+    return next();
+  }
+  Moderator.findOne({ account: user.account }).then((mod: any) => {
+    if (mod && !mod.banned) {
+      res.locals.moderator = mod;
+    }
+    next();
+  }).catch(err => next(err));
+}
+
 export function requireMod(req: express.Request,
                             res: express.Response,
                             next: express.NextFunction) {
   const user = res.locals.user;
   if (!user) {
-    return res.sendStatus(HttpStatus.FORBIDDEN);
+    res.status(HttpStatus.UNAUTHORIZED)
+    return res.json({"message":"Unauthorized"})
   }
   Moderator.findOne({ account: user.account }).then((mod: any) => {
     if (!mod || mod.banned) {
-      return res.sendStatus(HttpStatus.FORBIDDEN);
+      res.status(HttpStatus.UNAUTHORIZED);
+      return res.json({"message":"Unauthorized"});
     }
     res.locals.moderator = mod;
     next();
@@ -49,11 +66,13 @@ export function requireSupervisor(req: express.Request,
                             next: express.NextFunction) {
   const user = res.locals.user;
   if (!user) {
-    return res.sendStatus(HttpStatus.FORBIDDEN);
+    res.status(HttpStatus.UNAUTHORIZED)
+    return res.json({"message":"Unauthorized"})
   }
   Moderator.findOne({ account: user.account }).then((mod: any) => {
     if (!mod || mod.banned || !mod.supermoderator) {
-      return res.sendStatus(HttpStatus.FORBIDDEN);
+      res.status(HttpStatus.UNAUTHORIZED);
+      return res.json({"message":"Unauthorized"});
     }
     res.locals.moderator = mod;
     next();

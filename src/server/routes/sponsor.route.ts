@@ -12,7 +12,4 @@ router.route('/')
         validate(paramValidation.createSponsor),
         sponsorCtrl.create);
 
-router.route('/beneficiaries')
-  .get(sponsorCtrl.listBeneficiaries)
-
 export default router;

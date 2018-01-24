@@ -3,7 +3,6 @@ import { requireAuth } from './middleware';
 
 import userRoutes from './user.route';
 import postRoutes from './post.route';
-import issueRoutes from './issue.route';
 import sponsorRoutes from './sponsor.route';
 import moderatorRoutes from './moderator.route';
 import statsRoutes from './stats.route';
@@ -12,6 +11,8 @@ import loginRoutes from './login.route';
 import logoutRoutes from './logout.route';
 import sc2Routes from './sc2.route';
 import socialLoginRoutes from './social_login.route'
+import tableRoutes from './tables.route'
+import faqRoutes from './faq.route'
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -21,7 +22,7 @@ router.get('/health-check', (req, res) =>
 );
 
 // mount user routes at /users
-router.use('/users', requireAuth, userRoutes);
+router.use('/users', userRoutes);
 
 router.use('/login', loginRoutes);
 
@@ -33,14 +34,16 @@ router.use('/projects', requireAuth, projectRoutes);
 
 router.use('/posts', postRoutes);
 
-router.use('/issue', issueRoutes);
-
 router.use('/stats', statsRoutes);
 
 router.use('/sponsors', sponsorRoutes);
 
 router.use('/moderators', moderatorRoutes);
 
-router.use('/auth', socialLoginRoutes)
+router.use('/tables', tableRoutes);
+
+router.use('/auth', socialLoginRoutes);
+
+router.use('/faq', faqRoutes);
 
 export default router;

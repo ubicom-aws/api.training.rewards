@@ -25,9 +25,7 @@ const ModeratorSchema = new mongoose.Schema({
     type: Boolean,
     required: false,
   },
-  total_paid_rewards: Number,
   total_paid_rewards_steem: Number,
-  should_receive_rewards: Number,
   total_moderated: Number,
   percentage_total_rewards_moderators: Number,
 });
@@ -40,6 +38,7 @@ export interface ModeratorSchemaDoc extends mongoose.Document {
 export interface ModeratorSchemaModel extends mongoose.Model<ModeratorSchemaDoc> {
   get(account: any): any;
   list(): any;
+  top(): any;
   listAll(): any;
   listBeneficiaries(exclude?: any[]): any;
 }
@@ -74,6 +73,19 @@ ModeratorSchema.statics = {
       },
     })
       .sort({ total_moderated: -1 })
+      .exec();
+  },
+  top() {
+
+    return this.find({
+      banned: {
+        '$ne': true,
+      },
+      reviewed: {
+        '$eq': true,
+      },
+    })
+      .sort({ "total_paid_rewards_steem": -1 })
       .exec();
   },
   listAll() {
