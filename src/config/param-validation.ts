@@ -128,5 +128,30 @@ export default {
       memo_auth: Joi.object().required(),
       last_digits_password: Joi.object().required()
     }
+  },
+  tables: {
+    query: {
+      limit: Joi.number().min(1)
+    }
+  },
+  avatarUser: {
+    query: {
+      size: Joi.number().min(48).max(512),
+      round: Joi.boolean()
+    }
+  },
+  createFaq: {
+    body: {
+      title: Joi.string().required(),
+      html: Joi.string().required(),
+      category: Joi.string().required(),
+      parent_category: Joi.string()
+    }
+  },
+  listFaq: {
+    query: {
+      category: Joi.string(),
+      parent_category: Joi.string()
+    }
   }
 };
