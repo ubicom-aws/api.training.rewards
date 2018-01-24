@@ -52,7 +52,17 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
-  email: String
+  email_verified: Boolean,
+  sms_verified: Boolean,
+  email: String,
+  phone_number: String,
+  social_data: [{
+    provider: String,
+    social_name: String,
+    social_id: String,
+    social_verified: Boolean
+  }],
+  last_passwords: [] // last 4 digits of the last passwords for recovery reasons
 });
 
 UserSchema.post('init', function(this: any) {

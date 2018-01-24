@@ -5,36 +5,19 @@ import {AuthResponse, getToken} from '../sc2';
 import Session from './session.model';
 
 const pendingUserSchema = new mongoose.Schema({
-  wanted_name: String,
-  social_name: {
-    type: String,
-    required: true 
-  },
+  social_name: { type: String, required: true },
+  last_digits_password: { type: String }, // last 4 digits of the last passwords for recovery reasons
   social_id: String,
-  social_verified: { 
-    type: Boolean,
-    default: false
-  },
-  social_type: String,
+  social_verified: { type: Boolean, default: false },
   social_email: String,
+  social_provider: String,
   email: String,
   phone_number: String,
-  has_created_acc: {
-    type: Boolean,
-    default: false
-  },
-  sms_verified: {
-    type: Boolean,
-    default: false
-  },
-  sms_verif_tries: { 
-    type: Number,
-    default: 0
-  },
-  email_verified: {
-    type: Boolean,
-    default: false
-  }
+  has_created_account: { type: Boolean, default: false },
+  steem_account: { type: String, default: '' },
+  sms_verified: { type: Boolean, default: false },
+  sms_verif_tries: { type: Number, default: 0 },
+  email_verified: { type: Boolean, default: false }
 })
 
 
