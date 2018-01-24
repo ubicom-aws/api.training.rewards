@@ -16,7 +16,8 @@ import routes from '../server/routes/index.route';
 import APIError from '../server/helpers/APIError';
 import config from './config';
 
-export const client = process.env.NODE_ENV !== 'production' ? dsteem.Client.testnet() : new dsteem.Client('https://api.steemit.com')
+//export const client = process.env.NODE_ENV !== 'production' ? dsteem.Client.testnet() : new dsteem.Client('https://api.steemit.com')
+export const client = dsteem.Client.testnet() // For now the testnet
 
 const app = express();
 
