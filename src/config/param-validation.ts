@@ -126,7 +126,7 @@ export default {
       active_auth: Joi.object().required(),
       posting_auth: Joi.object().required(),
       memo_auth: Joi.object().required(),
-      last_digits_password: Joi.object().required()
+      last_digits_password: Joi.string().required()
     }
   },
   tables: {
