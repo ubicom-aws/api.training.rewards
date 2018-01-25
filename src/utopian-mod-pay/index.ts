@@ -345,31 +345,39 @@ of the total amount of posts were accepted by moderators.
         ];
         console.log('BROADCASTING MODERATOR COMMENT\n' + operations);
         if (!TEST) {
-          const user = await User.get(modKey);
-          await sc2.send('/broadcast', {
-            user,
-            data: {
-              operations
-            }
-          });
+          try {
+            const user = await User.get(modKey);
+            await sc2.send('/broadcast', {
+              user,
+              data: {
+                operations
+              }
+            });
+          } catch (e) {
+            console.log('FAILED TO BROADCAST', e);
+          }
         }
 
         const weight = account.estimateWeight(rawPoints[modKey]);
         console.log('BROADCASTING UPVOTE FOR $' + rawPoints[modKey] + ' SBD (weight: ' + weight + ')');
         if (!TEST && DO_UPVOTE) {
-          await sc2.send('/broadcast', {
-            token: UTOPIAN_TOKEN,
-            data: {
-              operations: [[
-                'vote',
-                {
-                  author: modKey,
-                  permlink,
-                  weight
-                }
-              ]]
-            }
-          });
+          try {
+            await sc2.send('/broadcast', {
+              token: UTOPIAN_TOKEN,
+              data: {
+                operations: [[
+                  'vote',
+                  {
+                    author: modKey,
+                    permlink,
+                    weight
+                  }
+                ]]
+              }
+            });
+          } catch (e) {
+            console.log('FAILED TO BROADCAST', e);
+          }
         }
 
       }
