@@ -245,7 +245,10 @@ of the total amount of posts were accepted by moderators.
     }
 
     { // It's show time!
-      const account = await Account.get('utopian-io');
+      const account = await Account.get((await sc2.send('/me', {
+        token: UTOPIAN_TOKEN
+      })).name);
+
       {
         const payout = await account.estimatePayout(10000);
         console.log('Estimated current 100% vote is worth $' + payout + ' SBD');
