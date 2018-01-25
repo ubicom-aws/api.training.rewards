@@ -1,5 +1,4 @@
 import Faq from '../models/faq.model';
-import * as httpstatus from 'http-status';
 
 
 function list(req, res, next) {
@@ -15,7 +14,7 @@ function list(req, res, next) {
 }
 
 function update(req, res) {
-  let {id, title, html, category, parent_category} = req.body;
+  let {id, title, html, category_name, category, parent_category} = req.body;
 
   if (parent_category === null) parent_category = undefined;
 
@@ -23,25 +22,27 @@ function update(req, res) {
     title: title,
     hash: title.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,''),
     html: html,
+    category_name: category_name,
     category: category
   };
 
   if(parent_category) {
     newFaq['parent_category'] = parent_category
   }
-  console.log(newFaq)
+
   Faq.findOneAndUpdate({"_id":id},newFaq,(err, faq) => {
     res.json(faq)
   })
 }
 
 function create(req, res) {
-  const {title, html, category, parent_category} = req.body;
+  const {title, html, category, category_name, parent_category} = req.body;
 
   const faq = new Faq({
     title: title,
     hash: title.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,''),
     html: html,
+    category_name: category_name,
     category: category,
     parent_category: parent_category
   });
@@ -50,6 +51,7 @@ function create(req, res) {
       title: title,
       hash: title.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,''),
       html: html,
+      category_name: category_name,
       category: category,
       parent_category: parent_category
     });
