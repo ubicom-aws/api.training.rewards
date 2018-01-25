@@ -49,7 +49,7 @@ export class Account {
     return new Account(acc);
   }
 
-  private getRecoveredPower(): number {
+  public getRecoveredPower(): number {
     let power = this.accData.voting_power;
     {
       const lastVote = new Date(this.accData.last_vote_time + 'Z').getTime() / 1000;
@@ -59,7 +59,7 @@ export class Account {
     return Math.min(power, 10000);
   }
 
-  private getEffectiveShares(): number {
+  public getEffectiveShares(): number {
     const shares = parseFloat(this.accData.vesting_shares.split(' ')[0]);
     const delegated = parseFloat(this.accData.delegated_vesting_shares.split(' ')[0]);
     const received = parseFloat(this.accData.received_vesting_shares.split(' ')[0]);

@@ -9,9 +9,10 @@ import { Account } from './account';
 import * as assert from 'assert';
 
 const TEST = process.env.TEST === 'false' ? false : true;
-const DO_UPVOTE = !TEST && process.env.DO_UPVOTE === 'false' ? false : true;
+const DO_UPVOTE = process.env.DO_UPVOTE === 'false' ? false : true;
 let POSTER_TOKEN = process.env.POSTER_TOKEN;
 let UTOPIAN_TOKEN = process.env.UTOPIAN_TOKEN;
+let UTOPIAN_ACCOUNT: string;
 
 // Point value is in relation to 1 SBD
 const POST_MODERATION_THRESHOLD = 1;
@@ -125,6 +126,18 @@ conn.once('open', async () => {
   try {
     POSTER_TOKEN = (await sc2.getToken(POSTER_TOKEN as any, true)).access_token;
     UTOPIAN_TOKEN = (await sc2.getToken(UTOPIAN_TOKEN as any, true)).access_token;
+
+    const utopian = await sc2.send('/me', {
+      token: UTOPIAN_TOKEN
+    });
+    UTOPIAN_ACCOUNT = utopian.name;
+    if (!TEST && DO_UPVOTE) {
+      const acc = new Account(utopian);
+      const power = acc.getRecoveredPower();
+      if (power < 9900) {
+        throw new Error('Not enough power, currently at ' + power);
+      }
+    }
 
     // Run the payment script
     await run();
@@ -245,9 +258,7 @@ of the total amount of posts were accepted by moderators.
     }
 
     { // It's show time!
-      const account = await Account.get((await sc2.send('/me', {
-        token: UTOPIAN_TOKEN
-      })).name);
+      const account = await Account.get(UTOPIAN_ACCOUNT);
 
       {
         const payout = await account.estimatePayout(10000);
