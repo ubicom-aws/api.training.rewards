@@ -15,7 +15,6 @@ let UTOPIAN_TOKEN = process.env.UTOPIAN_TOKEN;
 // Point value is in relation to 1 SBD
 const POST_MODERATION_THRESHOLD = 1;
 const POINT_VALUE = 0.5;
-const MIN_POINTS = 20;
 const MAX_POINTS = 130;
 
 // Earnings multiplier
@@ -241,10 +240,7 @@ of the total amount of posts were accepted by moderators.
 
     // Normalize the rewards
     for (const modReward in rawPoints) {
-      let points = rawPoints[modReward];
-      points = Math.max(points, MIN_POINTS);
-      points = Math.min(points, MAX_POINTS);
-      rawPoints[modReward] = points;
+      rawPoints[modReward] = Math.min(rawPoints[modReward], MAX_POINTS);
     }
 
     { // It's show time!
