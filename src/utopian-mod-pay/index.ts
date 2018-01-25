@@ -1,9 +1,3 @@
-import {
-  getDynamicGlobalProperties,
-  getRewardFund,
-  getAccounts,
-  broadcast
-} from '../server/steemAPI';
 import Moderator from '../server/models/moderator.model';
 import User from '../server/models/user.model';
 import Post from '../server/models/post.model';
@@ -391,7 +385,7 @@ async function processMod(mod: any, date: Date): Promise<ModeratorStats|undefine
   let comment =
 `
 In total for this week, I have moderated ${total} post${total === 1 ? '' : 's'} \
-on Utopian.
+on Utopian. Overall, I moderated a total of ${mod.total_moderated} posts.
 `;
 
   for (const key of Object.keys(cats)) {
