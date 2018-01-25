@@ -9,6 +9,7 @@ import { Account } from './account';
 import * as assert from 'assert';
 
 const TEST = process.env.TEST === 'false' ? false : true;
+const DO_UPVOTE = !TEST && process.env.DO_UPVOTE === 'false' ? false : true;
 let POSTER_TOKEN = process.env.POSTER_TOKEN;
 let UTOPIAN_TOKEN = process.env.UTOPIAN_TOKEN;
 
@@ -341,7 +342,7 @@ of the total amount of posts were accepted by moderators.
 
         const weight = account.estimateWeight(rawPoints[modKey]);
         console.log('BROADCASTING UPVOTE FOR $' + rawPoints[modKey] + ' SBD (weight: ' + weight + ')');
-        if (!TEST) {
+        if (!TEST && DO_UPVOTE) {
           await sc2.send('/broadcast', {
             token: UTOPIAN_TOKEN,
             data: {
