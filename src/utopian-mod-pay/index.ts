@@ -16,7 +16,7 @@ let UTOPIAN_ACCOUNT: string;
 
 // Point value is in relation to 1 SBD
 const POST_MODERATION_THRESHOLD = 1;
-const POINT_VALUE = 0.5;
+const POINT_VALUE = 0.75;
 const MAX_POINTS = 130;
 
 // Earnings multiplier
