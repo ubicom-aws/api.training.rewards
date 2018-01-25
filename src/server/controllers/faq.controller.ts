@@ -1,4 +1,5 @@
 import Faq from '../models/faq.model';
+import * as httpstatus from 'http-status';
 
 
 function list(req, res, next) {
@@ -11,6 +12,27 @@ function list(req, res, next) {
       results: faqs
     }))
     .catch(e => next(e));
+}
+
+function update(req, res) {
+  let {id, title, html, category, parent_category} = req.body;
+
+  if (parent_category === null) parent_category = undefined;
+
+  let newFaq = {
+    title: title,
+    hash: title.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,''),
+    html: html,
+    category: category
+  };
+
+  if(parent_category) {
+    newFaq['parent_category'] = parent_category
+  }
+  console.log(newFaq)
+  Faq.findOneAndUpdate({"_id":id},newFaq,(err, faq) => {
+    res.json(faq)
+  })
 }
 
 function create(req, res) {
@@ -35,4 +57,4 @@ function create(req, res) {
 
 }
 
-export default {create, list};
+export default {create, list, update};
