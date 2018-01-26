@@ -122,7 +122,7 @@ conn.once('open', async () => {
     });
     UTOPIAN_ACCOUNT = utopian.name;
     if (!TEST && DO_UPVOTE) {
-      const acc = new Account(utopian);
+      const acc = new Account(utopian.account);
       const power = acc.getRecoveredPower().toNumber();
       if (power < 9900) {
         throw new Error('Not enough power, currently at ' + power);
