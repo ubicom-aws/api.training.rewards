@@ -182,8 +182,8 @@ async function run() {
 `\
 ![utopian-post-banner.png](https://res.cloudinary.com/hpiynhbhq/image/upload/v1516449865/t0gmipslwoa6htmribn7.png)\
 
-This is an automated weekly payment post for moderators from @utopian-io. Each \
-comment is generated for the moderator and receives an upvote as payment for \
+This is an automated weekly reward post for moderators from @utopian-io. Each \
+comment is generated for the moderator and receives an upvote as reward for \
 contributions to Utopian.\
 
 In total for this week, there were ${totalReviewed} posts reviewed and \
@@ -280,7 +280,7 @@ of the total amount of posts were accepted by moderators.
         ['comment',
           {
             parent_author: '',
-            parent_permlink: 'utopian-io',
+            parent_permlink: TEST ? 'testcategory' : 'utopian-mods',
             author,
             permlink,
             title,
@@ -293,7 +293,10 @@ of the total amount of posts were accepted by moderators.
           {
             author,
             permlink,
-            max_accepted_payout: '0.000 SBD'
+            allow_curation_rewards: false,
+            allow_votes: true,
+            max_accepted_payout: '0.000 SBD',
+            percent_steem_dollars : 10000,
           }
         ]
       ];
@@ -329,9 +332,12 @@ of the total amount of posts were accepted by moderators.
           [
             'comment_options',
             {
-              author,
+              author: modKey,
               permlink,
               allow_curation_rewards: false,
+              allow_votes: true,
+              percent_steem_dollars: 10000,
+              max_accepted_payout: '1000000.000 SBD',
               extensions: [[0, {
                 beneficiaries: [
                   {
