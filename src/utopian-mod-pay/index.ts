@@ -256,7 +256,7 @@ of the total amount of posts were accepted by moderators.
         ['comment',
           {
             parent_author: '',
-            parent_permlink: TEST ? 'testcategory' : 'utopian-mods',
+            parent_permlink: TEST ? 'testcategory' : 'utopian-io',
             author,
             permlink,
             title,
