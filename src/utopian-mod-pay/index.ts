@@ -302,8 +302,11 @@ of the total amount of posts were accepted by moderators.
             title
           });
         } catch (e) {
-          // TODO: parse the error and try again if possible
-          console.log('BROADCAST FAILED', e);
+          if (e.broadcast === BroadcastType.COMMENT && e.status === 401) {
+            console.log('BROADCAST AUTH ERROR');
+          } else {
+            console.log('BROADCAST FAILED', e);
+          }
         }
       }
     }
@@ -317,30 +320,45 @@ async function broadcast(mod: ModeratorStats,
   const operations = mod.getCommentOps(opts, !(content.author && content.permlink));
   console.log('BROADCASTING MODERATOR COMMENT\n' + util.inspect(operations));
   if (!TEST) {
-    const user = await User.get(mod.moderator.account);
-    await sc2.send('/broadcast', {
-      user,
-      data: {
-        operations
-      }
-    });
+    try {
+      const user = await User.get(mod.moderator.account);
+      await sc2.send('/broadcast', {
+        user,
+        data: {
+          operations
+        }
+      });
+    } catch (e) {
+      e.broadcast = BroadcastType.COMMENT;
+      throw e;
+    }
   }
 
   const weight = await account.estimateWeight(mod.rewards);
   console.log('BROADCASTING UPVOTE FOR $' + mod.rewards + ' SBD (weight: ' + weight + ')');
   if (!TEST && DO_UPVOTE) {
-    await sc2.send('/broadcast', {
-      token: UTOPIAN_TOKEN,
-      data: {
-        operations: [[
-          'vote',
-          {
-            author: mod.moderator.account,
-            permlink: opts.permlink,
-            weight
-          }
-        ]]
-      }
-    });
+    try {
+      await sc2.send('/broadcast', {
+        token: UTOPIAN_TOKEN,
+        data: {
+          operations: [[
+            'vote',
+            {
+              author: mod.moderator.account,
+              permlink: opts.permlink,
+              weight
+            }
+          ]]
+        }
+      });
+    } catch (e) {
+      e.broadcast = BroadcastType.UPVOTE;
+      throw e;
+    }
   }
+}
+
+enum BroadcastType {
+  COMMENT,
+  UPVOTE
 }
