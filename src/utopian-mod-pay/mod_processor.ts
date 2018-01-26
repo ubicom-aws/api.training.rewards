@@ -74,11 +74,13 @@ export class ModeratorStats {
       return;
     }
 
+    let supervisor = mod.supermoderator ? 'I\'m a supervisor for Utopian.' : '';
     let comment =
-  `
-  In total for this week, I have moderated ${total} post${total === 1 ? '' : 's'} \
-  on Utopian. Overall, I moderated a total of ${mod.total_moderated} posts.
-  `;
+`
+${supervisor} In total for this week, I have moderated ${total} \
+post${total === 1 ? '' : 's'} on Utopian. Overall, I moderated a total of \
+${mod.total_moderated} posts.
+`;
 
     const cats = processModCategories(posts);
     for (const key of Object.keys(cats)) {
