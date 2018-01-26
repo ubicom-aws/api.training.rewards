@@ -19,90 +19,90 @@ let UTOPIAN_ACCOUNT: string;
 
 // Point value is in relation to 1 SBD
 const POST_MODERATION_THRESHOLD = 1;
-const POINT_VALUE = 0.75;
+const POINT_VALUE = 1;
 const MAX_POINTS = 130;
 
 // Earnings multiplier
 const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
   ideas: {
-    reviewed: 1.5,
-    flagged: 1.5
+    reviewed: 0.25,
+    flagged: 0.25
   },
   development: {
-    reviewed: 3,
-    flagged: 3
+    reviewed: 1,
+    flagged: 1
   },
   translations: {
-    reviewed: 3.5,
-    flagged: 3.5
+    reviewed: 1.25,
+    flagged: 1.25
   },
   graphics: {
-    reviewed: 2,
-    flagged: 2
+    reviewed: 0.75,
+    flagged: 0.75
   },
   documentation: {
-    reviewed: 2,
-    flagged: 2
+    reviewed: 0.5,
+    flagged: 0.5
   },
   copywriting: {
-    reviewed: 2,
-    flagged: 2
+    reviewed: 0.5,
+    flagged: 0.5
   },
   tutorials: {
-    reviewed: 3,
-    flagged: 3
+    reviewed: 0.75,
+    flagged: 0.75
   },
   analysis: {
-    reviewed: 2,
-    flagged: 2
+    reviewed: 0.75,
+    flagged: 0.75
   },
   social: {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 0.25,
+    flagged: 0.25
   },
   blog: {
-    reviewed: 2,
-    flagged: 2
+    reviewed: 0.5,
+    flagged: 0.5
   },
   'video-tutorials': {
-    reviewed: 3,
-    flagged: 3
+    reviewed: 1,
+    flagged: 1
   },
   'bug-hunting': {
-    reviewed: 2,
-    flagged: 2
+    reviewed: 0.5,
+    flagged: 0.5
   },
   'task-ideas': {
-    reviewed: 1,
-    flagged: 2
+    reviewed: 0.25,
+    flagged: 0.25
   },
   'task-development': {
-    reviewed: 1,
-    flagged: 2
+    reviewed: 0.25,
+    flagged: 0.25
   },
   'task-bug-hunting': {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 0.25,
+    flagged: 0.25
   },
   'task-translations': {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 0.25,
+    flagged: 0.25
   },
   'task-graphics': {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 0.25,
+    flagged: 0.25
   },
   'task-documentation': {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 0.25,
+    flagged: 0.25
   },
   'task-analysis': {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 0.25,
+    flagged: 0.25
   },
   'task-social': {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 0.25,
+    flagged: 0.25
   }
 };
 
