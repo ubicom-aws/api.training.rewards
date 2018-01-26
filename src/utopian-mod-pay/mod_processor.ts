@@ -91,7 +91,8 @@ I earned a total of %s points for this week. %s
 
 ## Position
 
-${mod.referrer && !mod.supermoderator ? 'I am a Utopian moderator supervised by @' + mod.referrer : ''}.\
+${!mod.referrer && !mod.supermoderator ? 'I am a Utopian moderator.': ''}\
+${mod.referrer && !mod.supermoderator ? 'I am a Utopian moderator supervised by @' + mod.referrer + '.' : ''}\
 ${mod.supermoderator ? 'I am a Utopian supervisor.' : ''}\
 
 ## Activity
