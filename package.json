@@ -18,7 +18,7 @@
     "dev-server": "cross-env NODE_ENV=development SERVER_PORT=4040 gulp serve",
     "start": "cross-env NODE_ENV=production SERVER_PORT=443 gulp serve",
     "utopian-pay": "node ./dist/utopian-pay.js $TEST $WIF",
-    "utopian-mods-pay": "node ./dist/utopian-mod-pay/index.js $TEST $DO_UPVOTE",
+    "utopian-mods-pay": "node ./dist/utopian-mod-pay/index.js $TEST $DO_UPVOTE $POSTER_TOKEN $UTOPIAN_TOKEN",
     "updater-posts": "node ./dist/updater-posts.js",
     "utopian-bot": "node ./dist/utopian-bot.js $REFRESH_TOKEN $CLIENT_SECRET",
     "stats-categories": "node ./dist/stats-categories.js",
