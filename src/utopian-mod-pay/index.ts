@@ -300,7 +300,7 @@ of the total amount of posts were accepted by moderators.
           await broadcast(mod, account, {
             parentAuthor: author,
             parentPermlink: permlink,
-            permlink: permlink + '-' + mod.moderator.account,
+            permlink: permlink,
             title
           });
         } catch (e) {
