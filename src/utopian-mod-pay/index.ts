@@ -25,8 +25,8 @@ const MAX_POINTS = 130;
 // Earnings multiplier
 const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
   ideas: {
-    reviewed: 0.25,
-    flagged: 0.25
+    reviewed: 0.50,
+    flagged: 0.50
   },
   development: {
     reviewed: 1,
@@ -42,11 +42,11 @@ const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
   },
   documentation: {
     reviewed: 0.5,
-    flagged: 0.5
+    flagged: 0.50
   },
   copywriting: {
-    reviewed: 0.5,
-    flagged: 0.5
+    reviewed: 0.50,
+    flagged: 0.50
   },
   tutorials: {
     reviewed: 0.75,
@@ -57,52 +57,52 @@ const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
     flagged: 0.75
   },
   social: {
-    reviewed: 0.25,
-    flagged: 0.25
+    reviewed: 0.50,
+    flagged: 0.50
   },
   blog: {
-    reviewed: 0.5,
-    flagged: 0.5
+    reviewed: 0.50,
+    flagged: 0.50
   },
   'video-tutorials': {
     reviewed: 1,
     flagged: 1
   },
   'bug-hunting': {
-    reviewed: 0.5,
-    flagged: 0.5
+    reviewed: 0.75,
+    flagged: 0.75
   },
   'task-ideas': {
-    reviewed: 0.25,
-    flagged: 0.25
+    reviewed: 0.50,
+    flagged: 0.50
   },
   'task-development': {
-    reviewed: 0.25,
-    flagged: 0.25
+    reviewed: 0.50,
+    flagged: 0.50
   },
   'task-bug-hunting': {
-    reviewed: 0.25,
-    flagged: 0.25
+    reviewed: 0.50,
+    flagged: 0.50
   },
   'task-translations': {
-    reviewed: 0.25,
-    flagged: 0.25
+    reviewed: 0.50,
+    flagged: 0.50
   },
   'task-graphics': {
-    reviewed: 0.25,
-    flagged: 0.25
+    reviewed: 0.50,
+    flagged: 0.50
   },
   'task-documentation': {
-    reviewed: 0.25,
-    flagged: 0.25
+    reviewed: 0.50,
+    flagged: 0.50
   },
   'task-analysis': {
-    reviewed: 0.25,
-    flagged: 0.25
+    reviewed: 0.50,
+    flagged: 0.50
   },
   'task-social': {
-    reviewed: 0.25,
-    flagged: 0.25
+    reviewed: 0.50,
+    flagged: 0.50
   }
 };
 
