@@ -364,7 +364,7 @@ of the total amount of posts were accepted by moderators.
           }
         }
 
-        const weight = account.estimateWeight(rawPoints[modKey]);
+        const weight = await account.estimateWeight(rawPoints[modKey]);
         console.log('BROADCASTING UPVOTE FOR $' + rawPoints[modKey] + ' SBD (weight: ' + weight + ')');
         if (!TEST && DO_UPVOTE) {
           try {
