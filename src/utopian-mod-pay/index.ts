@@ -296,10 +296,11 @@ of the total amount of posts were accepted by moderators.
           continue;
         }
         try {
+          await new Promise(resolve => setTimeout(resolve, 5000));
           await broadcast(mod, account, {
             parentAuthor: author,
             parentPermlink: permlink,
-            permlink: permlink,
+            permlink: permlink + '-' + mod.moderator.account,
             title
           });
         } catch (e) {
@@ -309,7 +310,6 @@ of the total amount of posts were accepted by moderators.
             console.log('BROADCAST FAILED', e);
           }
         }
-        await new Promise(resolve => setTimeout(resolve, 5000));
       }
     }
   }

@@ -30,7 +30,7 @@ export class ModeratorStats {
           parent_author: opts.parentAuthor,
           parent_permlink: opts.parentPermlink,
           author: this.moderator.account,
-          permlink: opts.parentPermlink,
+          permlink: opts.permlink,
           title: opts.title,
           body: this.getComment(),
           json_metadata: JSON.stringify({}),
@@ -42,7 +42,7 @@ export class ModeratorStats {
         'comment_options',
         {
           author: this.moderator.account,
-          permlink: opts.parentPermlink,
+          permlink: opts.permlink,
           allow_curation_rewards: false,
           allow_votes: true,
           percent_steem_dollars: 10000,
