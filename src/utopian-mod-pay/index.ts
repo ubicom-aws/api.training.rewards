@@ -1,9 +1,9 @@
+import { ModeratorStats, CommentOpts } from './mod_processor';
+import steemAPI, { getContent } from '../server/steemAPI';
 import Moderator from '../server/models/moderator.model';
 import { CategoryValue, formatCat } from './util';
-import { ModeratorStats, CommentOpts } from './mod_processor';
 import User from '../server/models/user.model';
 import Post from '../server/models/post.model';
-import steemAPI from '../server/steemAPI';
 import config from '../config/config';
 import * as mongoose from 'mongoose';
 import * as sc2 from '../server/sc2';
@@ -250,7 +250,7 @@ of the total amount of posts were accepted by moderators.
       const title = 'Utopian Moderator Payout - ' + dateString;
       const permlink = 'utopian-pay-' + dateString.replace(/\//g, '-');
 
-      const operations = [
+      const operations: any[] = [
         ['comment',
           {
             parent_author: '',
@@ -261,8 +261,12 @@ of the total amount of posts were accepted by moderators.
             body: mainPost,
             json_metadata : JSON.stringify({})
           }
-        ],
-        [
+        ]
+      ];
+
+      let existingContent = await getContent(author, permlink);
+      if (!(existingContent.author && existingContent.permlink)) {
+        operations.push([
           'comment_options',
           {
             author,
@@ -272,8 +276,8 @@ of the total amount of posts were accepted by moderators.
             max_accepted_payout: '0.000 SBD',
             percent_steem_dollars : 10000,
           }
-        ]
-      ];
+        ]);
+      }
 
       console.log('BROADCASTING MAIN POST:', util.inspect(operations));
       if (!TEST) {
