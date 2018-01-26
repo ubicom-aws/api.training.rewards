@@ -228,6 +228,7 @@ of the total amount of posts were accepted by moderators.
         // Supervisors receive a 20% bonus
         mod.rewards *= 1.20;
       }
+      if (mod.rewards > MAX_POINTS) mod.maxRewardsReached = true;
       mod.rewards = Math.min(mod.rewards, MAX_POINTS);
     }
 

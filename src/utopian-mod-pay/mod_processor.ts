@@ -12,7 +12,8 @@ export interface CommentOpts {
 
 export class ModeratorStats {
 
-  rewards: number = 0;
+  rewards = 0;
+  maxRewardsReached = false;
 
   constructor(readonly moderator: any, /* moderator model */
               readonly categories: { [key: string]: CategoryValue },
@@ -61,7 +62,10 @@ export class ModeratorStats {
   }
 
   getComment() {
-    return util.format(this.comment, Math.round(this.rewards));
+    const rewards = this.rewards.toFixed(2);
+    const exceeded = this.maxRewardsReached ?
+'With my hard work, I have reached the maximum 130 point limit for this week!' : '';
+    return util.format(this.comment, rewards, exceeded);
   }
 
   static async get(mod: any): Promise<ModeratorStats|undefined> {
@@ -79,12 +83,22 @@ export class ModeratorStats {
       return;
     }
 
-    let supervisor = mod.supermoderator ? 'I\'m a supervisor for Utopian.' : '';
     let comment =
 `
-${supervisor} In total for this week, I have moderated ${total} \
+## Points
+
+I earned a total of %s points for this week. %s
+
+## Position
+
+${mod.referrer && !mod.supermoderator ? 'I am a Utopian moderator supervised by @' + mod.referrer : ''}.\
+${mod.supermoderator ? 'I am a Utopian supervisor.' : ''}\
+
+## Activity
+
+In total for this week, I have moderated ${total} \
 post${total === 1 ? '' : 's'} on Utopian. Overall, I moderated a total of \
-${mod.total_moderated} posts. I earned a total of %d points.
+${mod.total_moderated} posts.
 `;
 
     const cats = processModCategories(posts);
