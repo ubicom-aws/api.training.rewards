@@ -308,6 +308,7 @@ of the total amount of posts were accepted by moderators.
             console.log('BROADCAST FAILED', e);
           }
         }
+        await new Promise(resolve => setTimeout(resolve, 5000));
       }
     }
   }
