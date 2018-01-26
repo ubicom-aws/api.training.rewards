@@ -123,7 +123,7 @@ conn.once('open', async () => {
     UTOPIAN_ACCOUNT = utopian.name;
     if (!TEST && DO_UPVOTE) {
       const acc = new Account(utopian);
-      const power = acc.getRecoveredPower();
+      const power = acc.getRecoveredPower().toNumber();
       if (power < 9900) {
         throw new Error('Not enough power, currently at ' + power);
       }
@@ -228,18 +228,19 @@ of the total amount of posts were accepted by moderators.
         // Supervisors receive a 20% bonus
         mod.rewards *= 1.20;
       }
-      mod.rewards = Math.min(mod.rewards, MAX_POINTS)
+      mod.rewards = Math.min(mod.rewards, MAX_POINTS);
     }
 
     { // It's show time!
       const account = await Account.get(UTOPIAN_ACCOUNT);
 
       {
-        const payout = await account.estimatePayout(10000);
-        console.log('Estimated current 100% vote is worth $' + payout + ' SBD');
+        let payout = await account.estimatePayout(10000);
+        console.log('Estimated current 100% vote is worth $' + payout + ' SBD (weight: 10000)');
 
+        payout = parseFloat((payout / 100).toFixed(2));
         const est = await account.estimateWeight(payout);
-        console.log('Estimated weight value for $' + payout + ' SBD is ' + est);
+        console.log('Estimated weight value for $' + (payout) + ' SBD is ' + est);
       }
 
       const author = (await sc2.send('/me', {
