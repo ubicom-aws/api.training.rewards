@@ -1,4 +1,6 @@
 import Moderator from '../server/models/moderator.model';
+import { CategoryValue, formatCat } from './util';
+import { ModeratorStats, CommentOpts } from './mod_processor';
 import User from '../server/models/user.model';
 import Post from '../server/models/post.model';
 import steemAPI from '../server/steemAPI';
@@ -7,6 +9,7 @@ import * as mongoose from 'mongoose';
 import * as sc2 from '../server/sc2';
 import { Account } from './account';
 import * as assert from 'assert';
+import * as util from 'util';
 
 const TEST = process.env.TEST === 'false' ? false : true;
 const DO_UPVOTE = process.env.DO_UPVOTE === 'false' ? false : true;
@@ -103,19 +106,6 @@ const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
   }
 };
 
-interface CategoryValue {
-  reviewed: number;
-  flagged: number;
-}
-
-interface ModeratorStats {
-  categories: { [key: string]: CategoryValue };
-  totalReviewed: number;
-  totalFlagged: number;
-  comment: string;
-  moderator: any; // moderator model
-}
-
 (mongoose as any).Promise = Promise;
 mongoose.connect(config.mongo, {
   useMongoClient: true
@@ -148,34 +138,19 @@ conn.once('open', async () => {
 });
 
 async function run() {
-  const globalData: { [key: string]: ModeratorStats } = {};
-
-  { // Process moderators
-    const moderators: any[] = await Moderator.list();
-    const date = new Date(Date.now() - (1000 * 60 * 60 * 24 * 7));
-    for (const mod of moderators) {
-      try {
-        const data = await processMod(mod, date);
-        if (data) {
-          globalData[mod.account] = data;
-        }
-      } catch (e) {
-        console.log('Error handling moderator', mod.account, e);
-      }
-    }
-  }
+  const moderators = await ModeratorStats.list();
 
   let mainPost;
   { // Generate global post
-    const totalReviewed: number = Object.keys(globalData).reduce((prev, cur) => {
+    const totalReviewed: number = moderators.reduce((prev, cur) => {
       return typeof(prev) === 'number'
-              ? prev + globalData[cur].totalReviewed
-              : globalData[prev].totalReviewed + globalData[cur].totalReviewed as any;
+              ? prev + cur.totalReviewed
+              : prev.totalReviewed + cur.totalReviewed as any;
     }) as any;
-    const totalFlagged: number = Object.keys(globalData).reduce((prev, cur) => {
+    const totalFlagged: number = moderators.reduce((prev, cur) => {
       return typeof(prev) === 'number'
-              ? prev + globalData[cur].totalFlagged
-              : globalData[prev].totalFlagged + globalData[cur].totalFlagged as any;
+              ? prev + cur.totalFlagged
+              : prev.totalFlagged + cur.totalFlagged as any;
     }) as any;
 
     mainPost =
@@ -192,8 +167,7 @@ of the total amount of posts were accepted by moderators.
 `;
 
     const cats: { [key: string]: CategoryValue } = {};
-    for (const key in globalData) {
-      const mod = globalData[key];
+    for (const mod of moderators) {
       for (const catKey in mod.categories) {
         let cat = cats[catKey];
         if (!cats[catKey]) {
@@ -217,44 +191,44 @@ of the total amount of posts were accepted by moderators.
     }
   }
 
-  { // Calculate rewards
+  {
     // Calculate raw rewards without the bound cap applied
-    const rawPoints: { [key: string]: number } = {};
-    for (const modKey in globalData) {
-      const stat = globalData[modKey];
-
-      let referrer: ModeratorStats|undefined = globalData[stat.moderator.referrer];
-      if (referrer && (stat.moderator.supermoderator === true
-                        || referrer.moderator.supermoderator !== true)) {
+    for (const mod of moderators) {
+      let referrer: any|undefined = mod.moderator.referrer;
+      if (referrer && (mod.moderator.supermoderator === true
+                        || referrer.supermoderator !== true)) {
         referrer = undefined;
       }
 
-      let totalPoints = rawPoints[modKey] || 0;
-      for (const catKey in stat.categories) {
+      let totalPoints = mod.rewards;
+      for (const catKey in mod.categories) {
         assert(CATEGORY_VALUE[catKey], 'category ' + catKey + ' is missing from the reward registry');
-        const cat = stat.categories[catKey];
+        const cat = mod.categories[catKey];
         const reviewedPoints = cat.reviewed * CATEGORY_VALUE[catKey].reviewed * POINT_VALUE;
         const flaggedPoints = cat.flagged * CATEGORY_VALUE[catKey].flagged * POINT_VALUE;
         totalPoints += reviewedPoints + flaggedPoints;
         if (referrer) {
-          let reffererPoints = rawPoints[stat.moderator.referrer] || 0;
-          rawPoints[stat.moderator.referrer] = reviewedPoints + flaggedPoints;
+          let ref = moderators.filter(val => {
+            return val.moderator.account === referrer;
+          })[0];
+          if (ref) {
+            ref.rewards += reviewedPoints + flaggedPoints;
+          }
         }
       }
 
-      if (stat.moderator.supermoderator === true) {
-        // Supervisors receive a 20% bonus
-        totalPoints *= 1.20;
-      }
-
-      if (stat.totalReviewed + stat.totalFlagged >= POST_MODERATION_THRESHOLD) {
-        rawPoints[modKey] = totalPoints;
+      if (mod.totalReviewed + mod.totalFlagged >= POST_MODERATION_THRESHOLD) {
+        mod.rewards = totalPoints;
       }
     }
 
     // Normalize the rewards
-    for (const modReward in rawPoints) {
-      rawPoints[modReward] = Math.min(rawPoints[modReward], MAX_POINTS);
+    for (const mod of moderators) {
+      if (mod.moderator.supermoderator === true) {
+        // Supervisors receive a 20% bonus
+        mod.rewards *= 1.20;
+      }
+      mod.rewards = Math.min(mod.rewards, MAX_POINTS)
     }
 
     { // It's show time!
@@ -301,7 +275,7 @@ of the total amount of posts were accepted by moderators.
         ]
       ];
 
-      console.log('BROADCASTING MAIN POST:', operations);
+      console.log('BROADCASTING MAIN POST:', util.inspect(operations));
       if (!TEST) {
         await sc2.send('/broadcast', {
           token: POSTER_TOKEN,
@@ -311,154 +285,56 @@ of the total amount of posts were accepted by moderators.
         });
       }
 
-
-      for (const modKey in globalData) {
-        if (!rawPoints[modKey]) {
+      for (const mod of moderators) {
+        if (!mod.rewards) {
           continue;
         }
-        const operations = [
-          [
-            'comment',
-            {
-              parent_author: author,
-              parent_permlink: permlink,
-              author: modKey,
-              permlink,
-              title,
-              body: globalData[modKey].comment,
-              json_metadata: JSON.stringify({}),
-            }
-          ],
-          [
-            'comment_options',
-            {
-              author: modKey,
-              permlink,
-              allow_curation_rewards: false,
-              allow_votes: true,
-              percent_steem_dollars: 10000,
-              max_accepted_payout: '1000000.000 SBD',
-              extensions: [[0, {
-                beneficiaries: [
-                  {
-                    account: 'utopian.pay',
-                    weight: 2500
-                  }
-                ]
-              }]]
-            }
-          ]
-        ];
-        console.log('BROADCASTING MODERATOR COMMENT\n' + operations);
-        if (!TEST) {
-          try {
-            const user = await User.get(modKey);
-            await sc2.send('/broadcast', {
-              user,
-              data: {
-                operations
-              }
-            });
-          } catch (e) {
-            console.log('FAILED TO BROADCAST', e);
-          }
+        try {
+          await broadcast(mod, account, {
+            parentAuthor: author,
+            parentPermlink: permlink,
+            permlink: permlink,
+            title
+          });
+        } catch (e) {
+          // TODO: parse the error and try again if possible
+          console.log('BROADCAST FAILED', e);
         }
-
-        const weight = await account.estimateWeight(rawPoints[modKey]);
-        console.log('BROADCASTING UPVOTE FOR $' + rawPoints[modKey] + ' SBD (weight: ' + weight + ')');
-        if (!TEST && DO_UPVOTE) {
-          try {
-            await sc2.send('/broadcast', {
-              token: UTOPIAN_TOKEN,
-              data: {
-                operations: [[
-                  'vote',
-                  {
-                    author: modKey,
-                    permlink,
-                    weight
-                  }
-                ]]
-              }
-            });
-          } catch (e) {
-            console.log('FAILED TO BROADCAST', e);
-          }
-        }
-
       }
     }
   }
 }
 
-async function processMod(mod: any, date: Date): Promise<ModeratorStats|undefined> {
-  const posts: any[] = await Post.find({
-    'json_metadata.moderator.account': mod.account,
-    'created': {
-      $gte: date.toISOString()
-    }
-  });
-
-  const cats = processModCategories(posts);
-  const total = posts.length;
-  let totalReviewed = 0;
-  let totalFlagged = 0;
-  if (!total) {
-    return;
+async function broadcast(mod: ModeratorStats,
+                          account: Account,
+                          opts: CommentOpts) {
+  const operations = mod.getCommentOps(opts);
+  console.log('BROADCASTING MODERATOR COMMENT\n' + util.inspect(operations));
+  if (!TEST) {
+    const user = await User.get(mod.moderator.account);
+    await sc2.send('/broadcast', {
+      user,
+      data: {
+        operations
+      }
+    });
   }
 
-  let comment =
-`
-In total for this week, I have moderated ${total} post${total === 1 ? '' : 's'} \
-on Utopian. Overall, I moderated a total of ${mod.total_moderated} posts.
-`;
-
-  for (const key of Object.keys(cats)) {
-    const val = cats[key];
-    const count = val.reviewed + val.flagged;
-
-    totalReviewed += val.reviewed;
-    totalFlagged += val.flagged;
-
-    comment +=
-`
-### ${formatCat(key)} Category
-- ${val.reviewed} post${val.reviewed === 1 ? '' : 's'} reviewed
-- ${val.flagged} post${val.flagged === 1 ? '' : 's'} flagged
-`;
+  const weight = await account.estimateWeight(mod.rewards);
+  console.log('BROADCASTING UPVOTE FOR $' + mod.rewards + ' SBD (weight: ' + weight + ')');
+  if (!TEST && DO_UPVOTE) {
+    await sc2.send('/broadcast', {
+      token: UTOPIAN_TOKEN,
+      data: {
+        operations: [[
+          'vote',
+          {
+            author: mod.moderator.account,
+            permlink: opts.permlink,
+            weight
+          }
+        ]]
+      }
+    });
   }
-
-  return {
-    moderator: mod,
-    categories: cats,
-    totalReviewed,
-    totalFlagged,
-    comment
-  };
-}
-
-function processModCategories(posts: any[]): { [key: string]: CategoryValue } {
-  const cats: { [key: string]: CategoryValue } = {};
-  for (const post of posts) {
-    const type = post.json_metadata.type;
-    if (!cats[type]) {
-      cats[type] = {
-        reviewed: 0,
-        flagged: 0
-      };
-    }
-    const data = post.json_metadata.moderator;
-    if (data.reviewed) {
-      cats[type].reviewed++;
-    } else if (data.flagged) {
-      cats[type].flagged++;
-    }
-  }
-  return cats;
-}
-
-function formatCat(cat: string): string {
-  return cat.replace('-', ' ').replace(/\w\S*/g, (str) => {
-    return str.charAt(0).toUpperCase() + str.substring(1);
-  });
 }
