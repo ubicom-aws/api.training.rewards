@@ -1,6 +1,7 @@
-import { CategoryValue, formatCat } from './util';
 import Moderator from '../server/models/moderator.model';
+import { CategoryValue, formatCat } from './util';
 import Post from '../server/models/post.model';
+import * as util from 'util';
 
 export interface CommentOpts {
   parentAuthor: string;
@@ -30,7 +31,7 @@ export class ModeratorStats {
           author: this.moderator.account,
           permlink: opts.parentPermlink,
           title: opts.title,
-          body: this.comment,
+          body: this.getComment(),
           json_metadata: JSON.stringify({}),
         }
       ]
@@ -59,6 +60,10 @@ export class ModeratorStats {
     return ops;
   }
 
+  getComment() {
+    return util.format(this.comment, Math.round(this.rewards));
+  }
+
   static async get(mod: any): Promise<ModeratorStats|undefined> {
     const posts: any[] = await Post.find({
       'json_metadata.moderator.account': mod.account,
@@ -79,7 +84,7 @@ export class ModeratorStats {
 `
 ${supervisor} In total for this week, I have moderated ${total} \
 post${total === 1 ? '' : 's'} on Utopian. Overall, I moderated a total of \
-${mod.total_moderated} posts.
+${mod.total_moderated} posts. I earned a total of %d points.
 `;
 
     const cats = processModCategories(posts);
