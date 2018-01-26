@@ -20,8 +20,8 @@ export class ModeratorStats {
               readonly comment: string) {
   }
 
-  getCommentOps(opts: CommentOpts): any[] {
-    return [
+  getCommentOps(opts: CommentOpts, includeOpts = true): any[] {
+    const ops: any[] = [
       [
         'comment',
         {
@@ -33,8 +33,10 @@ export class ModeratorStats {
           body: this.comment,
           json_metadata: JSON.stringify({}),
         }
-      ],
-      [
+      ]
+    ];
+    if (includeOpts) {
+      ops.push([
         'comment_options',
         {
           author: this.moderator.account,
@@ -52,8 +54,9 @@ export class ModeratorStats {
             ]
           }]]
         }
-      ]
-    ]
+      ])
+    }
+    return ops;
   }
 
   static async get(mod: any): Promise<ModeratorStats|undefined> {

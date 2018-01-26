@@ -312,7 +312,8 @@ of the total amount of posts were accepted by moderators.
 async function broadcast(mod: ModeratorStats,
                           account: Account,
                           opts: CommentOpts) {
-  const operations = mod.getCommentOps(opts);
+  const content = await getContent(mod.moderator.account, opts.permlink);
+  const operations = mod.getCommentOps(opts, !(content.author && content.permlink));
   console.log('BROADCASTING MODERATOR COMMENT\n' + util.inspect(operations));
   if (!TEST) {
     const user = await User.get(mod.moderator.account);
