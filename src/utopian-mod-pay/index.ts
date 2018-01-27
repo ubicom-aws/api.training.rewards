@@ -295,7 +295,7 @@ of the total amount of posts were accepted by moderators.
       }
 
       for (const mod of moderators) {
-        if (!mod.rewards || mod.moderator.opt_out_rewards === true) {
+        if (!mod.rewards || mod.moderator.opted_out === true) {
           continue;
         }
         try {
