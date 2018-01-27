@@ -13,6 +13,7 @@ import * as util from 'util';
 
 const TEST = process.env.TEST === 'false' ? false : true;
 const DO_UPVOTE = process.env.DO_UPVOTE === 'false' ? false : true;
+const FORCE = process.env.FORCE === 'true';
 let POSTER_TOKEN = process.env.POSTER_TOKEN;
 let UTOPIAN_TOKEN = process.env.UTOPIAN_TOKEN;
 let UTOPIAN_ACCOUNT: string;
@@ -121,7 +122,7 @@ conn.once('open', async () => {
       token: UTOPIAN_TOKEN
     });
     UTOPIAN_ACCOUNT = utopian.name;
-    if (!TEST && DO_UPVOTE) {
+    if (FORCE || (!TEST && DO_UPVOTE)) {
       const acc = new Account(utopian.account);
       const power = acc.getRecoveredPower().toNumber();
       if (power < 9900) {
