@@ -350,6 +350,7 @@ async function broadcast(mod: ModeratorStats,
           operations: [[
             'vote',
             {
+              voter: UTOPIAN_ACCOUNT,
               author: mod.moderator.account,
               permlink: opts.permlink,
               weight
