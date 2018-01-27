@@ -198,9 +198,8 @@ of the total amount of posts were accepted by moderators.
   {
     // Calculate raw rewards without the bound cap applied
     for (const mod of moderators) {
-      let referrer: any|undefined = mod.moderator.referrer;
-      if (referrer && (mod.moderator.supermoderator === true
-                        || referrer.supermoderator !== true)) {
+      let referrer: string|undefined = mod.moderator.referrer;
+      if (referrer && mod.moderator.supermoderator === true) {
         referrer = undefined;
       }
 
@@ -215,7 +214,7 @@ of the total amount of posts were accepted by moderators.
           let ref = moderators.filter(val => {
             return val.moderator.account === referrer;
           })[0];
-          if (ref) {
+          if (ref && ref.moderator.supermoderator === true) {
             ref.rewards += reviewedPoints + flaggedPoints;
           }
         }
