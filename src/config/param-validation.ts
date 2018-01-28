@@ -144,8 +144,19 @@ export default {
     body: {
       title: Joi.string().required(),
       html: Joi.string().required(),
+      category_name: Joi.string().required(),
       category: Joi.string().required(),
       parent_category: Joi.string()
+    }
+  },
+  updateFaq: {
+    body: {
+      id: Joi.string().required(),
+      title: Joi.string().required(),
+      html: Joi.string().required(),
+      category_name: Joi.string().required(),
+      category: Joi.string().required(),
+      parent_category: Joi.string().allow(null)
     }
   },
   listFaq: {

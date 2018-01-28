@@ -18,6 +18,10 @@ const FaqSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  category_name: {
+    type: String,
+    required: true
+  },
   category: {
     type: String,
     required: true,

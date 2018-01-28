@@ -356,11 +356,7 @@ conn.once('open', function ()
 
                         };
 
-                        paySponsors(() => {
-                            payModerators(() => {
-                                paySupervisors();
-                            });
-                        });
+                        paySponsors(() => console.log("SPONSORS PAID"));
                     });
                 }).catch(e => {
                     console.log("FAILED TO SAVE LAST PARSED OPERATION", e);
