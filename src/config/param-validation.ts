@@ -118,6 +118,17 @@ export default {
       code: Joi.string().required()
     }
   },
+  accountCreate: {
+    body: {
+      user_id: Joi.string().required(),
+      account_name: Joi.string().required(),
+      owner_auth: Joi.object().required(),
+      active_auth: Joi.object().required(),
+      posting_auth: Joi.object().required(),
+      memo_auth: Joi.object().required(),
+      last_digits_password: Joi.string().required()
+    }
+  },
   tables: {
     query: {
       limit: Joi.number().min(1)

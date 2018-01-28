@@ -9,11 +9,15 @@ import * as expressWinston from 'express-winston';
 import * as expressValidation from 'express-validation';
 import * as helmet from 'helmet';
 import * as util from 'util';
+import * as dsteem from 'dsteem'
 
 import winstonInstance from './winston';
 import routes from '../server/routes/index.route';
 import APIError from '../server/helpers/APIError';
 import config from './config';
+
+//export const client = process.env.NODE_ENV !== 'production' ? dsteem.Client.testnet() : new dsteem.Client('https://api.steemit.com')
+export const client = dsteem.Client.testnet() // For now the testnet
 
 const app = express();
 

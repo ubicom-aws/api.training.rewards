@@ -8,7 +8,7 @@ const supported_providers = ['github', 'facebook', 'linkedin']
 
 // Will be un-commented as soon as the whole registration process is finished
 // to prevent possible errors from happening due to unfinished design
-/*router.route('/:provider')
+router.route('/:provider')
   .post(validate(paramValidation.socialLogin), socialLoginCtrl.authenticate)
 
 router.route('/email/request')
@@ -22,6 +22,9 @@ router.route('/phone/request')
 
 router.route('/phone/confirm')
   .post(validate(paramValidation.phoneConfirm), socialLoginCtrl.phone_confirm)
-*/
+
+router.route('/account/create')
+  .post(validate(paramValidation.accountCreate), socialLoginCtrl.account_create)
+
 
 export default router

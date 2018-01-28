@@ -2,6 +2,10 @@ import * as string_helper from './../helpers/string'
 import * as request from 'superagent'
 import * as nodemailer from 'nodemailer'
 import * as crypto from 'crypto'
+import steemAPI from '../steemAPI'
+import * as steem from 'steem'
+import * as dsteem from 'dsteem'
+import { client } from '../../config/express'
 
 import pendingUser from '../models/pending_user.model'
 import realUser from '../models/user.model'
@@ -74,14 +78,13 @@ async function authenticate(req, res, next) {
         }
         let found_user = await pendingUser.get(user.id)
         if(found_user) {
-          if(found_user.has_created_account) { return res.status(500) }
           found_user.social_verified = user.verified
           found_user.social_email = user.email
           found_user.social_name = user.name
           await found_user.save()
           res.status(200).json({user: found_user, access_token})
         } else {
-          user = await pendingUser.create({ social_name: user.name, social_id: user.id, social_verified: user.verified, social_email: user.email, social_type: provider })
+          user = await pendingUser.create({ social_name: user.name, social_id: user.id, social_verified: user.verified, social_email: user.email, social_provider: provider })
           res.status(200).json({user, access_token})
         }
       })
@@ -107,7 +110,7 @@ function is_user_verified(provider, data) {
     let joined_github_months = joined_since(data.created_at)
 
     if(data.plan !== 'free') sum += 2 // this needs to be more detailed about the available plans - business, developer etc.
-    sum += joined_github_months * 0.25
+    sum += joined_github_months * 0.83
     if(data.two_factor_authentication) sum += 5
     sum += (data.public_repos + data.total_private_repos) * 0.05
     sum += data.followers * 0.02
@@ -174,8 +177,9 @@ async function phone_request(req, res, next) {
   try {
     let found_user:any = await pendingUser.findOne({ _id: req.body.user_id })
     if(!found_user) return res.status(500).send({message: 'User not found'})
-
-    let phone_number = req.body.country_code + req.body.phone_number.replace(/\D/g,'')
+    let main_number:string = req.body.phone_number.replace(/\D/g,'')
+    if(main_number.substring(0,1) === '0') main_number = main_number.substring(1, main_number.length)
+    let phone_number = req.body.country_code + main_number
     
     let duplicate_user:any = await pendingUser.findOne({ phone_number })
     let number_in_use = false
@@ -183,7 +187,7 @@ async function phone_request(req, res, next) {
     if(await realUser.findOne({ phone_number }) || number_in_use || found_user.sms_verified ) return res.status(500).send({ message: 'The phone number is already getting used' })
 
     if(await phoneCode.findOne({ user_id: found_user._id })) return res.status(500).send({message: 'You have already a pending sms-confirmation!'})
-    if(found_user.sms_verif_tries >= 3) res.status(500).send({message: 'Your requests for sms-verification went over the limit - please contact us on discord!'})
+    if(found_user.sms_verif_tries >= 3) return res.status(500).send({message: 'Your requests for sms-verification went over the limit - please contact us on discord!'})
 
     let random_code = crypto.randomBytes(2).toString('hex')
 
@@ -228,6 +232,7 @@ async function phone_confirm(req, res, next) {
 }
 
 function filter_error_message(message) {
+  console.log(message)
   if(message === 'No recipients defined') { message = 'You entered an invalid Email'}
   else if(message === '1') { message = 'Unknown Error while trying to send SMS' }
   else if(message === '2'  || message === '7'  || message === '8') { message = 'Temporary Error - please try again!' }
@@ -235,8 +240,91 @@ function filter_error_message(message) {
   else if(message === '5') { message = 'Your number has been declined due to Spam-Rejection' }
   else if(message === '9') { message = 'Illegal Number' }
   else if(message === '15') { message = 'Please contact us on discord with the error code: NM' }
+  else if(message.includes('could not insert object, most likely a uniqueness constraint was violated:')) { message = 'Account Name is already getting used. Please go back and choose another one.' }
   else { message = 'We had an internal error. Please try again or contact us on discord!' }
   return message
 }
 
-export default { authenticate, email_confirm, email_request, phone_request, phone_confirm }
+// Account Creation
+async function account_create(req, res, next) {
+  try {
+    let { account_name, user_id, owner_auth, active_auth, posting_auth, memo_auth, last_digits_password } = req.body
+
+    let found_user:any = await pendingUser.findOne({ _id: user_id })
+    if(!found_user) return res.status(500).send({message: 'User not found'})
+
+    let constants = await client.database.getConfig()
+    let chainProps = await client.database.getChainProperties()
+    const props = await client.database.getDynamicGlobalProperties()
+
+    const creation_fee = dsteem.Asset.from(chainProps.account_creation_fee)
+    const share_price = dsteem.Price.from({ base: props.total_vesting_shares, quote: props.total_vesting_fund_steem })
+
+    const ratio:any = constants['STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO']
+    const modifier:any = constants['STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER']
+
+    console.log({ creation_fee, share_price, ratio, modifier })
+    
+    const target_delegation = share_price.convert(creation_fee.multiply(modifier * ratio))
+    const delegation = target_delegation.subtract(share_price.convert(creation_fee.multiply(ratio - 1)))
+    console.log({ target_delegation, delegation })
+
+    // CHANGE PREFIX FOR TESTNET
+    if(process.env.NODE_ENV !== 'production') {
+      owner_auth.key_auths[0][0] = owner_auth.key_auths[0][0].replace('STM','STX')
+      active_auth.key_auths[0][0] = active_auth.key_auths[0][0].replace('STM','STX')
+      posting_auth.key_auths[0][0] = posting_auth.key_auths[0][0].replace('STM','STX')
+      memo_auth.key_auths[0][0] = memo_auth.key_auths[0][0].replace('STM','STX')
+    }
+
+    let op:any = ['account_create_with_delegation', {
+      fee: creation_fee, delegation, creator: process.env.ACCOUNT_CREATOR,
+      new_account_name: account_name, owner: owner_auth, active: active_auth,
+      posting: posting_auth, memo_key: memo_auth.key_auths[0][0], json_metadata: '', extensions:[]
+    }]
+
+    const creator_key:any = dsteem.PrivateKey.from(String(process.env.ACCOUNT_CREATOR_ACTIVE_KEY))
+    await client.broadcast.sendOperations([op], creator_key)
+
+    found_user.last_digits_password = last_digits_password
+    found_user.steem_account = account_name
+    found_user.has_created_account = true
+
+    await found_user.save()
+
+    let new_user = await create_new_user(found_user)
+    if(new_user) { res.status(200).send({ message: "Account has been created.", user: found_user}) } 
+    else { res.status(500).json({ message: `We couldn't create your account. Please contact us on discord!`}) }
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({ message: filter_error_message(error.message)})
+  }
+}
+  
+export async function create_new_user(pending_user) {
+  try {
+
+    let { steem_account, email, phone_number, social_provider, social_name, social_id, social_verified } = pending_user
+
+    let user:any = new realUser({ account: steem_account, email: email, phone_number: phone_number ? phone_number : '' })
+
+    if(!user.social_data) user.social_data = []
+    user.social_data.push({ provider: social_provider, social_name, social_id, social_verified })
+
+    if(!user.last_passwords) user.last_passwords = []
+    user.last_passwords.push(pending_user.last_digits_password)
+  
+    await user.save()
+    return user
+  } catch (error) {
+    console.error(error)
+    return false
+  }
+}
+
+export async function get_account(name: string) {
+  let acc = await client.database.getAccounts([name])
+  return acc[0]
+}
+
+export default { authenticate, email_confirm, email_request, phone_request, phone_confirm, account_create }
