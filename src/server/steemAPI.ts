@@ -12,6 +12,15 @@ export function getContent(author: string, permlink: string): Promise<any> {
   });
 }
 
+export function getDiscussionsByBlog(query: any): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    steem.api.getDiscussionsByBlog(query, (e, props) => {
+      if (e) return reject(e);
+      resolve(props);
+    })
+  });
+}
+
 export function getDynamicGlobalProperties(): Promise<any> {
   return new Promise((resolve, reject) => {
     steem.api.getDynamicGlobalProperties((e, props) => {

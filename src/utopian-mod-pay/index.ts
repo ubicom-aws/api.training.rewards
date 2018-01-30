@@ -1,5 +1,5 @@
+import steemAPI, { getContent, getDiscussionsByBlog } from '../server/steemAPI';
 import { ModeratorStats, CommentOpts } from './mod_processor';
-import steemAPI, { getContent } from '../server/steemAPI';
 import Moderator from '../server/models/moderator.model';
 import { CategoryValue, formatCat } from './util';
 import User from '../server/models/user.model';
@@ -14,7 +14,10 @@ import * as util from 'util';
 const TEST = process.env.TEST === 'false' ? false : true;
 const DO_UPVOTE = process.env.DO_UPVOTE === 'false' ? false : true;
 const FORCE = process.env.FORCE === 'true';
+
 let POSTER_TOKEN = process.env.POSTER_TOKEN;
+let POSTER_ACCOUNT: string;
+
 let UTOPIAN_TOKEN = process.env.UTOPIAN_TOKEN;
 let UTOPIAN_ACCOUNT: string;
 
@@ -114,30 +117,61 @@ mongoose.connect(config.mongo, {
 
 const conn = mongoose.connection;
 conn.once('open', async () => {
-  try {
-    POSTER_TOKEN = (await sc2.getToken(POSTER_TOKEN as any, true)).access_token;
-    UTOPIAN_TOKEN = (await sc2.getToken(UTOPIAN_TOKEN as any, true)).access_token;
-
-    const utopian = await sc2.send('/me', {
-      token: UTOPIAN_TOKEN
-    });
-    UTOPIAN_ACCOUNT = utopian.name;
-    if (!TEST && DO_UPVOTE) {
-      const acc = new Account(utopian.account);
-      const power = acc.getRecoveredPower().toNumber();
-      if (power < 9900) {
-        if (!FORCE) {
-          throw new Error('Not enough power, currently at ' + power);
+  await (async () => {
+    try {
+      {
+        UTOPIAN_TOKEN = (await sc2.getToken(UTOPIAN_TOKEN as any, true)).access_token;
+        const utopian = await sc2.send('/me', {
+          token: UTOPIAN_TOKEN
+        });
+        UTOPIAN_ACCOUNT = utopian.name;
+        if (!TEST && DO_UPVOTE) {
+          const acc = new Account(utopian.account);
+          const power = acc.getRecoveredPower().toNumber();
+          if (power < 9900) {
+            if (!FORCE) {
+              return console.log('Not enough power, current at', power);
+            }
+            console.log('WARNING: Force voting at power', power);
+          }
         }
-        console.log('WARNING: Force voting at power', power);
       }
-    }
 
-    // Run the payment script
-    await run();
-  } catch(e) {
-    console.log('Error running pay script', e);
-  }
+      if (!FORCE) {
+        const poster = (await sc2.getToken(POSTER_TOKEN as any, true));
+        POSTER_TOKEN = poster.access_token;
+        POSTER_ACCOUNT = poster.username;
+
+        const posts = await getDiscussionsByBlog({
+          limit: 100,
+          tag: POSTER_ACCOUNT,
+          truncate_body: 1 // We don't need the body
+        });
+
+        const threshold = 7 * 24 * 60 * 60 * 1000;
+        for (const post of posts) {
+          if (post.author !== POSTER_ACCOUNT || !post.json_metadata) {
+            continue;
+          }
+          const meta = JSON.parse(post.json_metadata);
+          const tags: string[] = meta.tags;
+          if (tags && tags.includes('utopian-pay')) {
+            const postTime = new Date(post.created + 'Z').getTime();
+            if (postTime + threshold > Date.now()) {
+              return console.log('A week hasn\'t passed since the last post, aborting...');
+            }
+            break;
+          }
+        }
+      }
+
+      // Run the payment script
+      await run();
+    } catch(e) {
+      console.log('Error running pay script', e);
+    }
+  })();
+
   conn.close();
 });
 
@@ -247,9 +281,6 @@ of the total amount of posts were accepted by moderators.
         console.log('Estimated weight value for $' + (payout) + ' SBD is ' + est);
       }
 
-      const author = (await sc2.send('/me', {
-        token: POSTER_TOKEN
-      })).name;
       const date = new Date();
       const dateString = date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
       const title = 'Utopian Moderator Payout - ' + dateString;
@@ -259,22 +290,24 @@ of the total amount of posts were accepted by moderators.
         ['comment',
           {
             parent_author: '',
-            parent_permlink: TEST ? 'testcategory' : 'utopian-io',
-            author,
+            parent_permlink: 'utopian-io',
+            author: POSTER_ACCOUNT,
             permlink,
             title,
             body: mainPost,
-            json_metadata : JSON.stringify({})
+            json_metadata : JSON.stringify({
+              tags: ['utopian-io', 'utopian-pay']
+            })
           }
         ]
       ];
 
-      let existingContent = await getContent(author, permlink);
+      let existingContent = await getContent(POSTER_ACCOUNT, permlink);
       if (!(existingContent.author && existingContent.permlink)) {
         operations.push([
           'comment_options',
           {
-            author,
+            author: POSTER_ACCOUNT,
             permlink,
             allow_curation_rewards: false,
             allow_votes: true,
@@ -301,7 +334,7 @@ of the total amount of posts were accepted by moderators.
         try {
           await new Promise(resolve => setTimeout(resolve, 5000));
           await broadcast(mod, account, {
-            parentAuthor: author,
+            parentAuthor: POSTER_ACCOUNT,
             parentPermlink: permlink,
             permlink: permlink + '-comment',
             title
