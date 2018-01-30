@@ -286,17 +286,18 @@ of the total amount of posts were accepted by moderators.
       const title = 'Utopian Moderator Payout - ' + dateString;
       const permlink = 'utopian-pay-' + dateString.replace(/\//g, '-');
 
+      const parentCategory = DO_UPVOTE ? 'utopian-io' : 'testcategory';
       const operations: any[] = [
         ['comment',
           {
             parent_author: '',
-            parent_permlink: 'utopian-io',
+            parent_permlink: parentCategory,
             author: POSTER_ACCOUNT,
             permlink,
             title,
             body: mainPost,
             json_metadata : JSON.stringify({
-              tags: ['utopian-io', 'utopian-pay']
+              tags: [parentCategory, 'utopian-pay']
             })
           }
         ]
