@@ -45,4 +45,4 @@ npm run build
 npm run dev-server
 
 ## License
-MIT
+GNU Public License v3.0. Copyright Utopian.io
