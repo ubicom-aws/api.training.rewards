@@ -62,8 +62,8 @@ const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
     flagged: 0.50
   },
   blog: {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 0.75,
+    flagged: 0.75
   },
   'video-tutorials': {
     reviewed: 1,
