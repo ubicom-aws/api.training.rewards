@@ -62,8 +62,8 @@ const UserSchema = new mongoose.Schema({
     social_id: String,
     social_verified: Boolean
   }],
-  privacy: { type: Object, default: { accepted: false, date: Date.now(), ip: '127.0.0.1' } },
-  tos: { type: Object, default: { accepted: false, date: Date.now(), ip: '127.0.0.1' } },
+  privacy: { type: Object, default: { accepted: false, date: '01.01.1800', ip: '127.0.0.1' } },
+  tos: { type: Object, default: { accepted: false, date: '01.01.1800', ip: '127.0.0.1' } },
   last_passwords: [] // last 4 digits of the last passwords for recovery reasons
 });
 
