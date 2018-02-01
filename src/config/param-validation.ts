@@ -118,6 +118,11 @@ export default {
       code: Joi.string().required()
     }
   },
+  phoneReset: {
+    body: {
+      user_id: Joi.string().required()
+    }
+  },
   accountCreate: {
     body: {
       user_id: Joi.string().required(),
@@ -127,6 +132,12 @@ export default {
       posting_auth: Joi.object().required(),
       memo_auth: Joi.object().required(),
       last_digits_password: Joi.string().required()
+    }
+  },
+  accountAccept: {
+    body: {
+      user_id: Joi.string().required(),
+      type: Joi.string().valid('tos', 'privacy').required()
     }
   },
   tables: {
