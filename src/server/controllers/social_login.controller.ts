@@ -146,7 +146,7 @@ async function email_request(req, res, next) {
     await found_user.save()
     let confirmation_link = process.env.REG_TESTNET === 'false' ? `https://signup.utopian.io` : `http://localhost:${process.env.REGISTRATION_FRONTEND_PORT}`
     let transporter = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 465, secure: true, auth: { user: process.env.GOOGLE_MAIL_ACCOUNT, pass: process.env.GOOGLE_MAIL_PASSWORD } })
-    let mailOptions = { from: process.env.UTOPIAN_MAIL, to: req.body.email, subject: 'Utopian Email Confirmation', text: 'Hey there,\n\n' + `Please confirm your email for Utopian.io by clicking on this link: ${confirmation_link}/email/confirm/${token.token}` + '.\n' }
+    let mailOptions = { from: process.env.UTOPIAN_MAIL_ACCOUNT, to: req.body.email, subject: 'Utopian Email Confirmation', text: 'Hey there,\n\n' + `Please confirm your email for Utopian.io by clicking on this link: ${confirmation_link}/email/confirm/${token.token}` + '.\n' }
     await transporter.sendMail(mailOptions)
     res.status(200).send('A verification email has been sent to ' + found_user.email + '.')
   } catch (error) {
@@ -349,12 +349,13 @@ async function account_create(req, res, next) {
     }
 
     let op:any = ['account_create_with_delegation', {
-      fee: creation_fee, delegation, creator: process.env.ACCOUNT_CREATOR,
+      fee: creation_fee, delegation, creator: process.env.REG_TESTNET !== 'false' ? process.env.ACCOUNT_CREATOR_TEST : process.env.ACCOUNT_CREATOR,
       new_account_name: account_name, owner: owner_auth, active: active_auth,
       posting: posting_auth, memo_key: memo_auth.key_auths[0][0], json_metadata: '', extensions:[]
     }]
-
-    const creator_key:any = dsteem.PrivateKey.from(String(process.env.ACCOUNT_CREATOR_ACTIVE_KEY))
+    
+    let ACTIV_KEY = process.env.REG_TESTNET !== 'false' ? process.env.ACCOUNT_CREATOR_ACTIVE_KEY_TEST : process.env.ACCOUNT_CREATOR_ACTIVE_KEY
+    const creator_key:any = dsteem.PrivateKey.from(String())
     await client.broadcast.sendOperations([op], creator_key)
 
     found_user.last_digits_password = last_digits_password
