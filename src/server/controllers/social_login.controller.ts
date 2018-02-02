@@ -76,6 +76,7 @@ async function authenticate(req, res, next) {
             let resp_email = await request.get(EMAIL_API_GITHUB).query({access_token})
             user.email = await get_primary_email(resp_email.body)
         }
+        
         let found_user = await pendingUser.get(user.id)
         if(found_user) {
           found_user.social_verified = user.verified
@@ -84,7 +85,8 @@ async function authenticate(req, res, next) {
           await found_user.save()
           res.status(200).json({user: found_user, access_token})
         } else {
-          user = await pendingUser.create({ social_name: user.name, social_id: user.id, social_verified: user.verified, social_email: user.email, social_provider: provider })
+          let salt = generate_rnd_string(4)
+          user = await pendingUser.create({ social_name: user.name, social_id: user.id, social_verified: user.verified, social_email: user.email, social_provider: provider, salt })
           res.status(200).json({user, access_token})
         }
       })
@@ -142,9 +144,9 @@ async function email_request(req, res, next) {
 
     found_user.email = req.body.email
     await found_user.save()
-
+    let confirmation_link = process.env.REG_TESTNET === 'false' ? `https://signup.utopian.io` : `http://localhost:${process.env.REGISTRATION_FRONTEND_PORT}`
     let transporter = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 465, secure: true, auth: { user: process.env.GOOGLE_MAIL_ACCOUNT, pass: process.env.GOOGLE_MAIL_PASSWORD } })
-    let mailOptions = { from: process.env.UTOPIAN_MAIL, to: req.body.email, subject: 'Utopian Email Confirmation', text: 'Hey there,\n\n' + `Please confirm your email for Utopian.io by clicking on this link: https://signup.utopian.io/email/confirm/${token.token}` + '.\n' }
+    let mailOptions = { from: process.env.UTOPIAN_MAIL_ACCOUNT, to: req.body.email, subject: 'Utopian Email Confirmation', text: 'Hey there,\n\n' + `Please confirm your email for Utopian.io by clicking on this link: ${confirmation_link}/email/confirm/${token.token}` + '.\n' }
     await transporter.sendMail(mailOptions)
     res.status(200).send('A verification email has been sent to ' + found_user.email + '.')
   } catch (error) {
@@ -177,28 +179,26 @@ async function phone_request(req, res, next) {
   try {
     let found_user:any = await pendingUser.findOne({ _id: req.body.user_id })
     if(!found_user) return res.status(500).send({message: 'User not found'})
-    let main_number:string = req.body.phone_number.replace(/\D/g,'')
-    if(main_number.substring(0,1) === '0') main_number = main_number.substring(1, main_number.length)
-    let phone_number = req.body.country_code + main_number
-    
+
+    let phone_number = make_phonenumber_sane(req.body.phone_number, req.body.country_code)
+    console.log(phone_number)
     let duplicate_user:any = await pendingUser.findOne({ phone_number })
     let number_in_use = false
+    console.log(duplicate_user)
     if(duplicate_user) number_in_use = duplicate_user.social_id !== found_user.social_id
     if(await realUser.findOne({ phone_number }) || number_in_use || found_user.sms_verified ) return res.status(500).send({ message: 'The phone number is already getting used' })
 
     if(await phoneCode.findOne({ user_id: found_user._id })) return res.status(500).send({message: 'You have already a pending sms-confirmation!'})
-    if(found_user.sms_verif_tries >= 3) return res.status(500).send({message: 'Your requests for sms-verification went over the limit - please contact us on discord!'})
+    if(found_user.sms_verif_tries > 3) return res.status(500).send({message: 'Your requests for sms-verification went over the limit - please contact us on discord!'})
 
     let random_code = crypto.randomBytes(2).toString('hex')
-
+      
+    let response = await send_sms(phone_number, random_code)
+    let valid_number = process.env.REG_TESTNET === 'true' ? process.env.REG_TESTNET === 'true' : response.body.status !== '0'
     
-    let response = await request.post('https://rest.nexmo.com/sms/json')
-    .query({ to: phone_number, from: 'UTOPIAN.IO', text: `Your Code: ${random_code}` , api_key: process.env.NEXMO_API_KEY, api_secret: process.env.NEXMO_API_SECRET })
-    console.log(response.body)
-    if(response.body.status !== '0') {
+    if(valid_number) {
       let phone_code:any = new phoneCode({ user_id: found_user._id, code: random_code, phone_number })
       await phone_code.save()
-      console.log(phone_code.code)
       found_user.sms_verif_tries += 1
       await found_user.save()
       res.status(200).send('Code has been send via SMS')
@@ -211,10 +211,21 @@ async function phone_request(req, res, next) {
   }
 }
 
+async function phone_resend(req, res, next) {
+  try {
+    await remove_code(req.body.user_id)
+    await phone_request(req, res, next)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: filter_error_message(error.message)})
+  }
+}
+
 async function phone_confirm(req, res, next) {
   try {
-    let code:any = await phoneCode.findOne({ user_id: req.body.user_id,  code: req.body.code })
+    let code:any = process.env.REG_TESTNET === 'false' ?  await phoneCode.findOne({ user_id: req.body.user_id,  code: req.body.code }) : { phone_number: '49123456789', user_id: req.body.user_id }
     if(!code) return res.status(400).send({ type: 'not-verified', message: 'Invalid SMS-Code' })
+    
   
     let found_user:any = await pendingUser.findOne({ _id: code.user_id })
     if(!found_user) return res.status(400).send({ message: 'We were unable to find a user for this code.' })
@@ -231,6 +242,46 @@ async function phone_confirm(req, res, next) {
   }
 }
 
+async function send_sms(phone_number, random_code) {
+  try {
+    let response
+    if(process.env.REG_TESTNET === 'false') {
+      response = await request.post('https://rest.nexmo.com/sms/json')
+      .query({ to: phone_number, from: 'UTOPIAN.IO', text: `Your Code: ${random_code}` , api_key: process.env.NEXMO_API_KEY, api_secret: process.env.NEXMO_API_SECRET })
+    }
+    return response
+  } catch (error) {
+    console.error(error)
+    return false
+  }
+}
+
+function make_phonenumber_sane(phone_number, country_code) {
+  try {
+    let main_number:string = phone_number.replace(/\D/g,'')
+    if(main_number.substring(0,1) === '0') main_number = main_number.substring(1, main_number.length)
+    return country_code + main_number
+  } catch (error) {
+    console.error(error)
+    return false
+  }
+}
+
+async function phone_reset(req, res, next) {
+  try {
+    await remove_code(req.body.user_id)
+    res.status(200).send({ message: "Reset was successful." })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: filter_error_message(error.message)})
+  }
+}
+
+async function remove_code(user_id) {
+  let code:any = await phoneCode.findOne({ user_id: user_id })
+  if(code) await code.remove()
+}
+
 function filter_error_message(message) {
   console.log(message)
   if(message === 'No recipients defined') { message = 'You entered an invalid Email'}
@@ -243,6 +294,26 @@ function filter_error_message(message) {
   else if(message.includes('could not insert object, most likely a uniqueness constraint was violated:')) { message = 'Account Name is already getting used. Please go back and choose another one.' }
   else { message = 'We had an internal error. Please try again or contact us on discord!' }
   return message
+}
+
+async function account_accept(req, res, next) {
+  try {
+    let { user_id, type } = req.body
+
+    let found_user:any = await pendingUser.findOne({ _id: user_id })
+    if(!found_user) return res.status(500).send({message: 'User not found'})
+
+    found_user[type].accepted = true
+    found_user[type].ip = req.connection.remoteAddress
+    found_user[type].date = new Date().toISOString()
+
+    found_user.markModified(type)
+    await found_user.save()
+    res.status(200).send({ message: "Success.", found_user  })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: filter_error_message(error.message)})
+  }
 }
 
 // Account Creation
@@ -270,7 +341,7 @@ async function account_create(req, res, next) {
     console.log({ target_delegation, delegation })
 
     // CHANGE PREFIX FOR TESTNET
-    if(process.env.NODE_ENV !== 'production') {
+    if(process.env.REG_TESTNET !== 'false' ) {
       owner_auth.key_auths[0][0] = owner_auth.key_auths[0][0].replace('STM','STX')
       active_auth.key_auths[0][0] = active_auth.key_auths[0][0].replace('STM','STX')
       posting_auth.key_auths[0][0] = posting_auth.key_auths[0][0].replace('STM','STX')
@@ -278,12 +349,13 @@ async function account_create(req, res, next) {
     }
 
     let op:any = ['account_create_with_delegation', {
-      fee: creation_fee, delegation, creator: process.env.ACCOUNT_CREATOR,
+      fee: creation_fee, delegation, creator: process.env.REG_TESTNET !== 'false' ? process.env.ACCOUNT_CREATOR_TEST : process.env.ACCOUNT_CREATOR,
       new_account_name: account_name, owner: owner_auth, active: active_auth,
       posting: posting_auth, memo_key: memo_auth.key_auths[0][0], json_metadata: '', extensions:[]
     }]
-
-    const creator_key:any = dsteem.PrivateKey.from(String(process.env.ACCOUNT_CREATOR_ACTIVE_KEY))
+    
+    let ACTIV_KEY = process.env.REG_TESTNET !== 'false' ? process.env.ACCOUNT_CREATOR_ACTIVE_KEY_TEST : process.env.ACCOUNT_CREATOR_ACTIVE_KEY
+    const creator_key:any = dsteem.PrivateKey.from(String())
     await client.broadcast.sendOperations([op], creator_key)
 
     found_user.last_digits_password = last_digits_password
@@ -303,7 +375,6 @@ async function account_create(req, res, next) {
   
 export async function create_new_user(pending_user) {
   try {
-
     let { steem_account, email, phone_number, social_provider, social_name, social_id, social_verified } = pending_user
 
     let user:any = new realUser({ account: steem_account, email: email, phone_number: phone_number ? phone_number : '' })
@@ -314,6 +385,10 @@ export async function create_new_user(pending_user) {
     if(!user.last_passwords) user.last_passwords = []
     user.last_passwords.push(pending_user.last_digits_password)
   
+    user.details.recoveryAccount = process.env.ACCOUNT_CREATOR
+    user.privacy = pending_user.privacy
+    user.tos = pending_user.tos
+
     await user.save()
     return user
   } catch (error) {
@@ -322,9 +397,7 @@ export async function create_new_user(pending_user) {
   }
 }
 
-export async function get_account(name: string) {
-  let acc = await client.database.getAccounts([name])
-  return acc[0]
-}
+function generate_rnd_string(length){ return crypto.randomBytes(Math.ceil(length/2)).toString('hex').slice(0,length) }
+export async function get_account(name: string) { let acc = await client.database.getAccounts([name]); return acc[0] }
 
-export default { authenticate, email_confirm, email_request, phone_request, phone_confirm, account_create }
+export default { authenticate, email_confirm, email_request, phone_request, phone_confirm, phone_reset, phone_resend, account_create, account_accept }
