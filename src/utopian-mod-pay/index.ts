@@ -137,11 +137,11 @@ conn.once('open', async () => {
         }
       }
 
-      if (!FORCE) {
-        const poster = (await sc2.getToken(POSTER_TOKEN as any, true));
-        POSTER_TOKEN = poster.access_token;
-        POSTER_ACCOUNT = poster.username;
+      const poster = (await sc2.getToken(POSTER_TOKEN as any, true));
+      POSTER_TOKEN = poster.access_token;
+      POSTER_ACCOUNT = poster.username;
 
+      if (!FORCE) {
         const posts = await getDiscussionsByBlog({
           limit: 100,
           tag: POSTER_ACCOUNT,
@@ -166,6 +166,8 @@ conn.once('open', async () => {
       }
 
       // Run the payment script
+      assert(UTOPIAN_ACCOUNT, 'missing utopian account');
+      assert(POSTER_ACCOUNT, 'missing poster account');
       await run();
     } catch(e) {
       console.log('Error running pay script', e);
