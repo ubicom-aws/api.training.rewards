@@ -7,7 +7,7 @@ type CallbackFunction = (...args) => any;
 
 const DBURL = "mongodb://localhost/utopian-test";
 const connection = mongoose.connect(DBURL);
-mongoose.Promise = global.Promise;
+(mongoose as any).Promise = global.Promise;
 
 const generateUsers = () => {
     let usersArray = Array();
@@ -40,7 +40,7 @@ async function generatePosts() {
     const count: number = await User.count({});
     const arrayOfAuthors: any[] = [];
     for (let i = 0; i < count; ++i) {
-        arrayOfAuthors.push((await User.findOne().skip(i))!.account); // ! is not null assertion in typescript (to avoid Typescript error)
+        arrayOfAuthors.push((await User.findOne().skip(i) as any).account);
     }
     return arrayOfAuthors.map((author, index) => {
         //generating array of
