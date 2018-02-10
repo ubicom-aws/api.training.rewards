@@ -26,6 +26,9 @@ export function aggregateMatch(startDate: Date | undefined, endDate: Date, moder
         case PostStatus.REVIEWED:
             matcher.$match['json_metadata.moderator.reviewed'] = true;
             break;
+        case PostStatus.PENDING:
+            matcher.$match['json_metadata.moderator.pending'] = true;
+            break;    
         case PostStatus.FLAGGED:
             matcher.$match['json_metadata.moderator.flagged'] = true;
             break
