@@ -5,6 +5,7 @@ import Post from '../../../models/post.model';
 export enum PostStatus {
     ANY = 'any',
     REVIEWED = 'reviewed',
+    PENDING = 'pending',
     FLAGGED = 'flagged'
 }
 
