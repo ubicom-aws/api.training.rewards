@@ -144,9 +144,9 @@ async function email_request(req, res, next) {
 
     found_user.email = req.body.email
     await found_user.save()
-    let confirmation_link = process.env.REG_TESTNET === 'false' ? `https://signup.utopian.io` : `http://localhost:${process.env.REGISTRATION_FRONTEND_PORT}`
+    let confirmation_link = process.env.NODE_ENV === 'production' ? `https://signup.utopian.io` : `http://localhost:${process.env.REGISTRATION_FRONTEND_PORT}`
     let transporter = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 465, secure: true, auth: { user: process.env.GOOGLE_MAIL_ACCOUNT, pass: process.env.GOOGLE_MAIL_PASSWORD } })
-    let mailOptions = { from: process.env.UTOPIAN_MAIL_ACCOUNT, to: req.body.email, subject: 'Utopian Email Confirmation', text: 'Hey there,\n\n' + `Please confirm your email for Utopian.io by clicking on this link: ${confirmation_link}/email/confirm/${token.token}` + '.\n' }
+    let mailOptions = { from: process.env.GOOGLE_MAIL_ACCOUNT, to: req.body.email, subject: 'Utopian Email Confirmation', text: 'Hey there,\n\n' + `Please confirm your email for Utopian.io by clicking on this link: ${confirmation_link}/email/confirm/${token.token}` + '.\n' }
     await transporter.sendMail(mailOptions)
     res.status(200).send('A verification email has been sent to ' + found_user.email + '.')
   } catch (error) {
@@ -333,12 +333,9 @@ async function account_create(req, res, next) {
 
     const ratio:any = constants['STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO']
     const modifier:any = constants['STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER']
-
-    console.log({ creation_fee, share_price, ratio, modifier })
     
     const target_delegation = share_price.convert(creation_fee.multiply(modifier * ratio))
     const delegation = target_delegation.subtract(share_price.convert(creation_fee.multiply(ratio - 1)))
-    console.log({ target_delegation, delegation })
 
     // CHANGE PREFIX FOR TESTNET
     if(process.env.REG_TESTNET !== 'false' ) {
@@ -348,14 +345,17 @@ async function account_create(req, res, next) {
       memo_auth.key_auths[0][0] = memo_auth.key_auths[0][0].replace('STM','STX')
     }
 
+    let CREATOR = process.env.REG_TESTNET !== 'false' ? process.env.ACCOUNT_CREATOR_TEST : process.env.ACCOUNT_CREATOR
+
     let op:any = ['account_create_with_delegation', {
-      fee: creation_fee, delegation, creator: process.env.REG_TESTNET !== 'false' ? process.env.ACCOUNT_CREATOR_TEST : process.env.ACCOUNT_CREATOR,
+      fee: creation_fee, delegation, creator: CREATOR,
       new_account_name: account_name, owner: owner_auth, active: active_auth,
       posting: posting_auth, memo_key: memo_auth.key_auths[0][0], json_metadata: '', extensions:[]
     }]
     
-    let ACTIV_KEY = process.env.REG_TESTNET !== 'false' ? process.env.ACCOUNT_CREATOR_ACTIVE_KEY_TEST : process.env.ACCOUNT_CREATOR_ACTIVE_KEY
-    const creator_key:any = dsteem.PrivateKey.from(String())
+    let ACTIVE_KEY = process.env.REG_TESTNET !== 'false' ? process.env.ACCOUNT_CREATOR_PASSWORD_TEST : process.env.ACCOUNT_CREATOR_ACTIVE_KEY
+    const creator_key:any = process.env.REG_TESTNET !== 'false' ? dsteem.PrivateKey.fromLogin(String(CREATOR), String(ACTIVE_KEY), 'active') : dsteem.PrivateKey.from(String(ACTIVE_KEY))
+
     await client.broadcast.sendOperations([op], creator_key)
 
     found_user.last_digits_password = last_digits_password

@@ -32,7 +32,7 @@ router.route('/phone/resend')
 router.route('/account/create')
   .post(validate(paramValidation.accountCreate), socialLoginCtrl.account_create)
 
-  router.route('/account/accept')
+router.route('/account/accept')
   .post(validate(paramValidation.accountAccept), socialLoginCtrl.account_accept)
 
 
