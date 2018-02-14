@@ -100,12 +100,12 @@ export async function validateNewPost(post: any,
 
   // New posts aren't moderated yet!
   if (checkModerated && meta.moderator) return false;
-  
+
   // New posts can't have questionaire filled.
-  if(checkModerated && meta.questions.length) return false;
+  if (checkModerated && meta.questions && meta.questions.length) return false;
 
   // New posts can't have questionaire score filled.
-  if(checkModerated && meta.score) return false;
+  if (checkModerated && meta.score) return false;
 
   return true;
 }
