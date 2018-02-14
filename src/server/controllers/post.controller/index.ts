@@ -71,6 +71,8 @@ async function update(req, res, next) {
   const moderator = req.body.moderator || null;
   const pending = getBoolean(req.body.pending);
   const reviewed = getBoolean(req.body.reviewed);
+  const questions = req.body.questions || [];
+  const score = req.body.score ? parseFloat(req.body.score) : null;
 
   try {
     const post = await getUpdatedPost(author, permlink);
@@ -85,6 +87,9 @@ async function update(req, res, next) {
         return res.json({"message":"Unauthorized"});
       }
       post.json_metadata.moderator.account = moderator;
+
+      post.json_metadata.questions = questions;
+      post.json_metadata.score = score;
 
       if (reviewed) {
         post.json_metadata.moderator.time = new Date().toISOString();
