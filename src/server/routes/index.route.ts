@@ -10,9 +10,10 @@ import projectRoutes from './project.route';
 import loginRoutes from './login.route';
 import logoutRoutes from './logout.route';
 import sc2Routes from './sc2.route';
-import socialLoginRoutes from './social_login.route'
-import tableRoutes from './tables.route'
-import faqRoutes from './faq.route'
+import socialLoginRoutes from './social_login.route';
+import tableRoutes from './tables.route';
+import faqRoutes from './faq.route';
+import ruleRoutes from './rule.route';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -45,5 +46,7 @@ router.use('/tables', tableRoutes);
 router.use('/auth', socialLoginRoutes);
 
 router.use('/faq', faqRoutes);
+
+router.use('/rules', ruleRoutes)
 
 export default router;

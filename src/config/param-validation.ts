@@ -175,5 +175,31 @@ export default {
       category: Joi.string(),
       parent_category: Joi.string()
     }
-  }
+  },
+  createRule: {
+    body: {
+      title: Joi.string().required(),
+      html: Joi.string().required(),
+      category_name: Joi.string().required(),
+      category: Joi.string().required(),
+      parent_category: Joi.string()
+    }
+  },
+  updateRule: {
+    body: {
+      id: Joi.string().required(),
+      title: Joi.string().required(),
+      html: Joi.string().required(),
+      category_name: Joi.string().required(),
+      category: Joi.string().required(),
+      parent_category: Joi.string().allow(null)
+    }
+  },
+  listRule: {
+    query: {
+      category: Joi.string(),
+      parent_category: Joi.string()
+    }
+  },
+
 };
