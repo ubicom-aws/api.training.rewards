@@ -78,7 +78,7 @@ async function update(req, res, next) {
   const reviewed = getBoolean(req.body.reviewed);
 
   const questions = req.body.questions || [];
-  const score = req.body.score ? parseFloat(req.body.score) : null;
+  const score = req.body.score ? parseFloat(req.body.score) : 0;
 
   try {
     const post = await getUpdatedPost(author, permlink);
