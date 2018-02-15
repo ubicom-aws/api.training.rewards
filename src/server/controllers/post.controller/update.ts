@@ -48,6 +48,8 @@ export function updatePost(post: any, updatedPost: any): any {
   if (!updatedPost.json_metadata.issue && post.json_metadata.issue) updatedPost.json_metadata.issue = post.json_metadata.issue;
   if (updatedPost.json_metadata.type) updatedPost.json_metadata.type = updatedPost.json_metadata.type.replace("announcement-", "task-");
   updatedPost.json_metadata.moderator = post.json_metadata.moderator;
+  updatedPost.json_metadata.questions = post.json_metadata.questions;
+  updatedPost.json_metadata.score = post.json_metadata.score;
 
   Object.assign(post, updatedPost);
   return post;
@@ -98,6 +100,12 @@ export async function validateNewPost(post: any,
 
   // New posts aren't moderated yet!
   if (checkModerated && meta.moderator) return false;
+
+  // New posts can't have questionaire filled.
+  if (checkModerated && meta.questions && meta.questions.length) return false;
+
+  // New posts can't have questionaire score filled.
+  if (checkModerated && meta.score) return false;
 
   return true;
 }

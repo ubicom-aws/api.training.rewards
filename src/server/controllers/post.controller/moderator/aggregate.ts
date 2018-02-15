@@ -6,13 +6,11 @@ export function aggregateMatch(startDate: Date | undefined, endDate: Date, moder
             'json_metadata.moderator.time': {
                 $lt: endDate.toISOString()
             },
-
         }
     };
 
     if (startDate) {
         matcher.$match['json_metadata.moderator.time'].$gte = startDate.toISOString();
-
     }
 
     if (moderator) {
@@ -21,14 +19,18 @@ export function aggregateMatch(startDate: Date | undefined, endDate: Date, moder
 
     switch (status) {
         case PostStatus.ANY:
-            matcher.$match['json_metadata.moderator.account'] = {  $ne: null };
+            if (!moderator) 
+                matcher.$match['json_metadata.moderator.account'] = {  $ne: null };
             break;
         case PostStatus.REVIEWED:
             matcher.$match['json_metadata.moderator.reviewed'] = true;
             break;
         case PostStatus.FLAGGED:
             matcher.$match['json_metadata.moderator.flagged'] = true;
-            break
+            break;
+        case PostStatus.PENDING:
+            matcher.$match['json_metadata.moderator.pending'] = true;
+            break;
     }
     return matcher;
 }

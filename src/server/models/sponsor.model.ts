@@ -26,7 +26,7 @@ const SponsorSchema = new mongoose.Schema({
   is_witness: Boolean,
   projects: {
     type: Array,
-    require: false,
+    required: false,
   },
 });
 
