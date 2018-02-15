@@ -9,13 +9,13 @@ const ModeratorSchema = new mongoose.Schema({
   account: {
     type: String,
     required: true,
-    unique: true,
+    unique: true
   },
   banned: Boolean,
   reviewed: Boolean,
   supermoderator: {
     type: Boolean,
-    required: false,
+    required: false
   },
   referrer: {
     type: String,
@@ -23,7 +23,11 @@ const ModeratorSchema = new mongoose.Schema({
   },
   apprentice: {
     type: Boolean,
-    required: false,
+    required: false
+  },
+  opted_out: {
+    type: Boolean,
+    required: false
   },
   total_paid_rewards_steem: Number,
   total_moderated: Number,
