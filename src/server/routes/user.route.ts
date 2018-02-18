@@ -13,6 +13,12 @@ router.route('/')
 router.route('/:userId')
   .get(userCtrl.get);
 
+router.route('/:userId/approveTOS')
+  .get(userCtrl.approveTOS);
+
+router.route('/:userId/approvePrivacy')
+  .get(userCtrl.approvePrivacy);
+
 router.route('/:user/avatar')
   .get(validate(paramValidation.avatarUser), userCtrl.avatar);
 
@@ -23,6 +29,8 @@ router.route('/:userId/ban')
   .get(userCtrl.getBan)
   .post(requireSupervisor, validate(paramValidation.banUser), userCtrl.ban);
 
+
+  
 router.param('userId', (req, res, next, id) => {
   requireAuth(req, res, async (e) => {
     if (e) return next(e);

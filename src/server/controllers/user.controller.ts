@@ -89,6 +89,8 @@ function get(req, res) {
     banned: user.banned,
     details: user.details,
     repos: user.repos ? (user.repos) : undefined,
+	tos: user.tos,
+	privacy: user.privacy,
     github: user.github ? {
       login: user.github.login,
       account: user.github.account,
@@ -229,4 +231,46 @@ async function create(req, res, next) {
   }
 }
 
-export default {avatar, ban, getBan, get, getRepos, getGithubRepos, create};
+
+async function approveTOS(req, res, next)
+{
+	let user = req.user;
+	let userIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+	// No user -> No access?
+	if(!user)
+		return res.sendStatus(550);
+
+	user.tos.push({
+		date: new Date(),
+		ip: userIp
+	});
+
+	user.save()
+    .then(savedUser => res.json({
+		approoved: true,
+    })).catch(e => next(e));
+}
+
+
+
+async function approvePrivacy(req, res, next)
+{
+	let user = req.user;
+	let userIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+	// No user -> No access?
+	if(!user)
+		return res.sendStatus(550);
+
+	user.privacy.push({
+		date: new Date(),
+		ip: userIp
+	});
+
+	user.save()
+    .then(savedUser => res.json({
+		approoved: true,
+    })).catch(e => next(e));
+}
+
+
+export default {avatar, ban, getBan, get, getRepos, getGithubRepos, create, approveTOS, approvePrivacy};
