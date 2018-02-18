@@ -298,21 +298,26 @@ function filter_error_message(message) {
 
 async function account_accept(req, res, next) {
   try {
-    let { user_id, type } = req.body
+    let { user_id, type } = req.body;
 
-    let found_user:any = await pendingUser.findOne({ _id: user_id })
-    if(!found_user) return res.status(500).send({message: 'User not found'})
+    let found_user:any = await pendingUser.findOne({ _id: user_id });
+    if(!found_user)
+		return res.status(500).send({message: 'User not found'});
+	
+	if(!found_user[type])
+	{
+		found_user[type] = {};
+	}
+	
+    found_user[type].ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    found_user[type].date = new Date();
 
-    found_user[type].accepted = true
-    found_user[type].ip = req.connection.remoteAddress
-    found_user[type].date = new Date().toISOString()
-
-    found_user.markModified(type)
-    await found_user.save()
-    res.status(200).send({ message: "Success.", found_user  })
+    found_user.markModified(type);
+    await found_user.save();
+    res.status(200).send({ message: "Success.", found_user  });
   } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: filter_error_message(error.message)})
+    console.error(error);
+    res.status(500).json({ message: filter_error_message(error.message)});
   }
 }
 
