@@ -302,13 +302,13 @@ async function account_accept(req, res, next) {
 
     let found_user:any = await pendingUser.findOne({ _id: user_id });
     if(!found_user)
-		return res.status(500).send({message: 'User not found'});
+		  return res.status(500).send({message: 'User not found'});
 	
-	if(!found_user[type])
-	{
-		found_user[type] = {};
-	}
-	
+    if(!found_user[type])
+    {
+      found_user[type] = {};
+    }
+    
     found_user[type].ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     found_user[type].date = new Date();
 
