@@ -306,12 +306,14 @@ async function account_accept(req, res, next) {
 	
     if(!found_user[type])
     {
-      found_user[type] = {};
+      found_user[type] = [];
     }
     
-    found_user[type].ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    found_user[type].date = new Date();
-
+    found_user[type].push({
+	  ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+	  date: new Date(),
+	});
+	
     found_user.markModified(type);
     await found_user.save();
     res.status(200).send({ message: "Success.", found_user  });
