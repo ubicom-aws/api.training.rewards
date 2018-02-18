@@ -8,69 +8,69 @@ import Session from './session.model';
  * User Schema
  */
 const UserSchema = new mongoose.Schema({
-	account: {
-		type: String,
-		required: true
-	},
-	schemaVersion: {
-		type: Number,
-		default: 0,
-	},
-	github: Object,
-	refresh_token: String,
-	sc2: new mongoose.Schema({
-		token: String,
-		refresh_token: String,
-		expiry: Date
-	}),
-	createdAt: {
-		type: Date,
-		default: Date.now
-	},
-	details: {
-		type: Object,
-		default: {
-			recoveryAccount: 'steem',
-			connectedToSteem: false,
-			lastUpdate: Date.now(),
-			votingForWiteness: false,
-		}
-	},
-	banned: {
-		type: Number,
-		default: 0,
-	},
-	bannedBy: {
-		type: String,
-		default: "",
-	},
-	bannedUntil: {
-		type: Date,
-		default: new Date(0),
-	},
-	banReason: {
-		type: String,
-		default: "",
-	},
-	email_verified: Boolean,
-	sms_verified: Boolean,
-	email: String,
-	phone_number: String,
-	social_data: [{
-		provider: String,
-		social_name: String,
-		social_id: String,
-		social_verified: Boolean
-	}],
-	privacy: [{
-		date: Date,
-		ip: String,
-	}],
-	tos: [{
-		date: Date,
-		ip: String,
-	}],
-	last_passwords: [] // last 4 digits of the last passwords for recovery reasons
+  account: {
+    type: String,
+    required: true
+  },
+  schemaVersion: {
+    type: Number,
+    default: 0,
+  },
+  github: Object,
+  refresh_token: String,
+  sc2: new mongoose.Schema({
+    token: String,
+    refresh_token: String,
+    expiry: Date
+  }),
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  details: {
+    type: Object,
+    default: {
+      recoveryAccount: 'steem',
+      connectedToSteem: false,
+      lastUpdate: Date.now(),
+      votingForWiteness: false,
+    }
+  },
+  banned: {
+    type: Number,
+    default: 0,
+  },
+  bannedBy: {
+    type: String,
+    default: "",
+  },
+  bannedUntil: {
+    type: Date,
+    default: new Date(0),
+  },
+  banReason: {
+    type: String,
+    default: "",
+  },
+  email_verified: Boolean,
+  sms_verified: Boolean,
+  email: String,
+  phone_number: String,
+  social_data: [{
+    provider: String,
+    social_name: String,
+    social_id: String,
+    social_verified: Boolean
+  }],
+  privacy: [{
+    date: Date,
+    ip: String,
+  }],
+  tos: [{
+    date: Date,
+    ip: String,
+  }],
+  last_passwords: [] // last 4 digits of the last passwords for recovery reasons
 });
 
 UserSchema.index({

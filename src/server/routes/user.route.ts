@@ -30,7 +30,6 @@ router.route('/:userId/ban')
   .post(requireSupervisor, validate(paramValidation.banUser), userCtrl.ban);
 
 
-  
 router.param('userId', (req, res, next, id) => {
   requireAuth(req, res, async (e) => {
     if (e) return next(e);
