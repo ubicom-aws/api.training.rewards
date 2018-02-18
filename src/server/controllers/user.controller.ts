@@ -248,7 +248,7 @@ async function approveTOS(req, res, next)
 
   user.save()
   .then(savedUser => res.json({
-    approoved: true,
+    approved: true,
   })).catch(e => next(e));
 }
 
@@ -269,7 +269,7 @@ async function approvePrivacy(req, res, next)
 
   user.save()
   .then(savedUser => res.json({
-    approoved: true,
+    approved: true,
   })).catch(e => next(e));
 }
 
