@@ -26,7 +26,7 @@ function postMapper(post) {
 
   post.questions = post.json_metadata.questions || [];
   post.score = post.json_metadata.score || 0;
-  
+
   return post;
 }
 
@@ -68,7 +68,7 @@ async function create(req, res, next) {
 }
 
 async function update(req, res, next) {
-	
+
   const author = req.params.author;
   const permlink = req.params.permlink;
   const flagged = getBoolean(req.body.flagged);
@@ -76,6 +76,7 @@ async function update(req, res, next) {
   const moderator = req.body.moderator || null;
   const pending = getBoolean(req.body.pending);
   const reviewed = getBoolean(req.body.reviewed);
+  const contribType = req.body.type;
 
   const questions = req.body.questions || [];
   const score = req.body.score ? parseFloat(req.body.score) : 0;
@@ -96,6 +97,10 @@ async function update(req, res, next) {
 
       post.json_metadata.questions = questions;
       post.json_metadata.score = score;
+      // if contribution type was updated
+      if (contribType) {
+        post.json_metadata.type = contribType;
+      }
 
       if (reviewed) {
         post.json_metadata.moderator.time = new Date().toISOString();
@@ -173,12 +178,14 @@ async function update(req, res, next) {
     try {
       post.markModified('json_metadata.repository');
       post.markModified('json_metadata.moderator');
+      post.markModified('json_metadata.type');
       const savedPost = await post.save();
       sendPost(res, savedPost);
     } catch (e) {
       console.log("ERROR REVIEWING POST", e);
       next(e);
     }
+
   } catch (e) {
     next(e);
   }
