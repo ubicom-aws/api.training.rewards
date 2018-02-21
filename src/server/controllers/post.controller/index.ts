@@ -76,7 +76,8 @@ async function update(req, res, next) {
   const moderator = req.body.moderator || null;
   const pending = getBoolean(req.body.pending);
   const reviewed = getBoolean(req.body.reviewed);
-  const contribType = req.body.type;
+  const contribType = req.body.type || null;
+  const repo = req.body.repository || {};
 
   const questions = req.body.questions || [];
   const score = req.body.score ? parseFloat(req.body.score) : 0;
@@ -100,6 +101,9 @@ async function update(req, res, next) {
       // if contribution type was updated
       if (contribType) {
         post.json_metadata.type = contribType;
+      }
+      if (repo) {
+        post.json_metadata.repository = repo;
       }
 
       if (reviewed) {
