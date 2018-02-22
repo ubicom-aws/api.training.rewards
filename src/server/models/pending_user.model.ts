@@ -19,8 +19,14 @@ const pendingUserSchema = new mongoose.Schema({
   sms_verif_tries: { type: Number, default: 0 },
   email_verified: { type: Boolean, default: false },
   salt: { type: String },
-  privacy: { type: Object, default: { accepted: false, date: '01.01.1800', ip: '127.0.0.1' } },
-  tos: { type: Object, default: { accepted: false, date: '01.01.1800', ip: '127.0.0.1' } }
+  privacy: [{
+    date: Date,
+    ip: String,
+  }],
+  tos: [{
+    date: Date,
+    ip: String,
+  }],
 })
 
 

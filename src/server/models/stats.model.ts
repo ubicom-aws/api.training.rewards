@@ -66,6 +66,14 @@ const StatsSchema = new mongoose.Schema({
     'task-social': categoriesStats,
     blog: categoriesStats,
   },
+  last_date_edit_tos: {
+	  type: Date,
+	  default: new Date,
+  },
+  last_date_edit_privacy: {
+	  type: Date,
+	  default: new Date,
+  }
 });
 
 export interface StatsSchemaDoc extends mongoose.Document {
