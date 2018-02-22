@@ -246,6 +246,13 @@ async function approveTOS(req, res, next)
     ip: userIp
   });
 
+  // Map aggreements without accept
+  user.tos = user.tos.map( agreement => {
+	  return {
+		  date: agreement.date,
+		  ip: agreement.ip,
+	  }
+  });
   user.save()
   .then(savedUser => res.json({
     approved: true,
@@ -267,6 +274,13 @@ async function approvePrivacy(req, res, next)
     ip: userIp
   });
 
+  // Map aggreements without accept
+  user.privacy = user.privacy.map( agreement => {
+	  return {
+		  date: agreement.date,
+		  ip: agreement.ip,
+	  }
+  });
   user.save()
   .then(savedUser => res.json({
     approved: true,
