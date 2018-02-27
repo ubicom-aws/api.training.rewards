@@ -28,6 +28,7 @@ conn.once('open', function ()
 
   const query = {
     'json_metadata.moderator.reviewed': true,
+    'json_metadata.type': /^(?!task-).+/,
     author: { $ne: botAccount },
     'active_votes.voter': { $ne: botAccount },
     created: {
