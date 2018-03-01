@@ -91,6 +91,9 @@ export class ModeratorStats {
           'json_metadata.moderator.time': {
             $lt: RUNTIME_NOW.toISOString()
           },
+          'created': {
+            $lt: RUNTIME_NOW.toISOString()
+          },
           $or: [
             { 'json_metadata.moderator.flagged': { $eq: true } },
             { 'json_metadata.moderator.reviewed': { $eq: true } }
