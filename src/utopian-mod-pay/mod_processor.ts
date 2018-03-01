@@ -71,7 +71,7 @@ export class ModeratorStats {
   static async get(mod: any): Promise<ModeratorStats|undefined> {
     const posts: any[] = await Post.find({
       'json_metadata.moderator.account': mod.account,
-      'created': {
+      'json_metadata.moderator.time': {
         $gte: new Date(RUNTIME_NOW.getTime() - (1000 * 60 * 60 * 24 * 7)).toISOString(),
         $lt: RUNTIME_NOW.toISOString()
       }
@@ -88,7 +88,7 @@ export class ModeratorStats {
       {
         $match: {
           'json_metadata.moderator.account': mod.account,
-          'created': {
+          'json_metadata.moderator.time': {
             $lt: RUNTIME_NOW.toISOString()
           },
           $or: [
