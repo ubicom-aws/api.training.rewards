@@ -1,5 +1,5 @@
+import { CategoryValue, formatCat, RUNTIME_NOW } from './util';
 import Moderator from '../server/models/moderator.model';
-import { CategoryValue, formatCat } from './util';
 import Post from '../server/models/post.model';
 import * as util from 'util';
 
@@ -56,7 +56,7 @@ export class ModeratorStats {
             ]
           }]]
         }
-      ])
+      ]);
     }
     return ops;
   }
@@ -72,7 +72,8 @@ export class ModeratorStats {
     const posts: any[] = await Post.find({
       'json_metadata.moderator.account': mod.account,
       'created': {
-        $gte: new Date(Date.now() - (1000 * 60 * 60 * 24 * 7)).toISOString()
+        $gte: new Date(RUNTIME_NOW.getTime() - (1000 * 60 * 60 * 24 * 7)).toISOString(),
+        $lt: RUNTIME_NOW.toISOString()
       }
     });
 
@@ -82,6 +83,27 @@ export class ModeratorStats {
     if (!total) {
       return;
     }
+
+    let totalModerated: number = ((await Post.aggregate([
+      {
+        $match: {
+          'json_metadata.moderator.account': mod.account,
+          'created': {
+            $lt: RUNTIME_NOW.toISOString()
+          },
+          $or: [
+            { 'json_metadata.moderator.flagged': { $eq: true } },
+            { 'json_metadata.moderator.reviewed': { $eq: true } }
+          ]
+        }
+      },
+      {
+        $group: {
+          _id: '$json_metadata.moderator.account',
+          count: { $sum: 1 }
+        }
+      }
+    ]))[0] as any).count;
 
     let comment =
 `
@@ -99,7 +121,7 @@ ${mod.supermoderator ? 'I am a Utopian supervisor.' : ''}\
 
 In total for this week, I have moderated ${total} \
 post${total === 1 ? '' : 's'} on Utopian. Overall, I moderated a total of \
-${mod.total_moderated} posts.
+${totalModerated} posts.
 `;
 
     const cats = processModCategories(posts);
