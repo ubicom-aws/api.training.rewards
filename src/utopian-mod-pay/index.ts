@@ -1,7 +1,7 @@
 import steemAPI, { getContent, getDiscussionsByBlog } from '../server/steemAPI';
+import { CategoryValue, formatCat, getRoundedDate, RUNTIME_NOW } from './util';
 import { ModeratorStats, CommentOpts } from './mod_processor';
 import Moderator from '../server/models/moderator.model';
-import { CategoryValue, formatCat } from './util';
 import User from '../server/models/user.model';
 import Post from '../server/models/post.model';
 import config from '../config/config';
@@ -119,53 +119,18 @@ const conn = mongoose.connection;
 conn.once('open', async () => {
   await (async () => {
     try {
-      {
-        UTOPIAN_TOKEN = (await sc2.getToken(UTOPIAN_TOKEN as any, true)).access_token;
-        const utopian = await sc2.send('/me', {
-          token: UTOPIAN_TOKEN
-        });
-        UTOPIAN_ACCOUNT = utopian.name;
-        if (!TEST && DO_UPVOTE) {
-          const acc = new Account(utopian.account);
-          const power = acc.getRecoveredPower().toNumber();
-          if (power < 9900) {
-            if (!FORCE) {
-              return console.log('Not enough power, current at', power);
-            }
-            console.log('WARNING: Force voting at power', power);
-          }
-        }
-      }
+      console.log('Running with target pay date: ' + RUNTIME_NOW.toISOString());
+
+      UTOPIAN_TOKEN = (await sc2.getToken(UTOPIAN_TOKEN as any, true)).access_token;
+      const utopian = await sc2.send('/me', {
+        token: UTOPIAN_TOKEN
+      });
+      UTOPIAN_ACCOUNT = utopian.name;
 
       const poster = (await sc2.getToken(POSTER_TOKEN as any, true));
       POSTER_TOKEN = poster.access_token;
       POSTER_ACCOUNT = poster.username;
 
-      if (!FORCE) {
-        const posts = await getDiscussionsByBlog({
-          limit: 100,
-          tag: POSTER_ACCOUNT,
-          truncate_body: 1 // We don't need the body
-        });
-
-        const threshold = 7 * 24 * 60 * 60 * 1000;
-        for (const post of posts) {
-          if (post.author !== POSTER_ACCOUNT || !post.json_metadata) {
-            continue;
-          }
-          const meta = JSON.parse(post.json_metadata);
-          const tags: string[] = meta.tags;
-          if (tags && tags.includes('utopian-pay')) {
-            const postTime = new Date(post.created + 'Z').getTime();
-            if (postTime + threshold > Date.now()) {
-              return console.log('A week hasn\'t passed since the last post, aborting...');
-            }
-            break;
-          }
-        }
-      }
-
-      // Run the payment script
       assert(UTOPIAN_ACCOUNT, 'missing utopian account');
       assert(POSTER_ACCOUNT, 'missing poster account');
       await run();
@@ -283,7 +248,7 @@ of the total amount of posts were accepted by moderators.
         console.log('Estimated weight value for $' + (payout) + ' SBD is ' + est);
       }
 
-      const date = new Date();
+      const date = getRoundedDate(RUNTIME_NOW);
       const dateString = date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
       const title = 'Utopian Moderator Payout - ' + dateString;
       const permlink = 'utopian-pay-' + dateString.replace(/\//g, '-');
@@ -305,8 +270,12 @@ of the total amount of posts were accepted by moderators.
         ]
       ];
 
-      let existingContent = await getContent(POSTER_ACCOUNT, permlink);
-      if (!(existingContent.author && existingContent.permlink)) {
+      let mainPostExists: boolean;
+      {
+        const existingContent = await getContent(POSTER_ACCOUNT, permlink);
+        mainPostExists = existingContent.author && existingContent.permlink;
+      }
+      if (!mainPostExists) {
         operations.push([
           'comment_options',
           {
@@ -315,13 +284,13 @@ of the total amount of posts were accepted by moderators.
             allow_curation_rewards: false,
             allow_votes: true,
             max_accepted_payout: '0.000 SBD',
-            percent_steem_dollars : 10000,
+            percent_steem_dollars : 10000
           }
         ]);
       }
 
       console.log('BROADCASTING MAIN POST:', util.inspect(operations));
-      if (!TEST) {
+      if (!TEST && (!mainPostExists || (mainPostExists && FORCE))) {
         await sc2.send('/broadcast', {
           token: POSTER_TOKEN,
           data: {
@@ -335,7 +304,9 @@ of the total amount of posts were accepted by moderators.
           continue;
         }
         try {
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          if (!TEST) {
+            await new Promise(resolve => setTimeout(resolve, 5000));
+          }
           await broadcast(mod, account, {
             parentAuthor: POSTER_ACCOUNT,
             parentPermlink: permlink,
@@ -358,9 +329,11 @@ async function broadcast(mod: ModeratorStats,
                           account: Account,
                           opts: CommentOpts) {
   const content = await getContent(mod.moderator.account, opts.permlink);
-  const operations = mod.getCommentOps(opts, !(content.author && content.permlink));
+  let commentExists = content.author && content.permlink;
+
+  const operations = mod.getCommentOps(opts, !commentExists);
   console.log('BROADCASTING MODERATOR COMMENT\n' + util.inspect(operations));
-  if (!TEST) {
+  if (!TEST && (!commentExists || (commentExists && FORCE))) {
     try {
       const user = await User.get(mod.moderator.account);
       await sc2.send('/broadcast', {
@@ -377,7 +350,8 @@ async function broadcast(mod: ModeratorStats,
 
   const weight = await account.estimateWeight(mod.rewards);
   console.log('BROADCASTING UPVOTE FOR $' + mod.rewards + ' SBD (weight: ' + weight + ')');
-  if (!TEST && DO_UPVOTE) {
+  const hasVote = commentExists && content.active_votes.map(v => v.voter).includes(UTOPIAN_ACCOUNT);
+  if (!TEST && DO_UPVOTE && (!hasVote || (hasVote && FORCE))) {
     try {
       await sc2.send('/broadcast', {
         token: UTOPIAN_TOKEN,
