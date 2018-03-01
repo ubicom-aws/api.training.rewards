@@ -88,9 +88,6 @@ export class ModeratorStats {
       {
         $match: {
           'json_metadata.moderator.account': mod.account,
-          'created': {
-            $lt: RUNTIME_NOW.toISOString()
-          },
           $and: [
             {
               $or: [
