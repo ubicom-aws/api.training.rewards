@@ -27,16 +27,15 @@ const pendingUserSchema = new mongoose.Schema({
     date: Date,
     ip: String,
   }],
-}, {usePushEach: true})
-
+})
 
 export interface UserSchemaDoc extends mongoose.Document {
 }
-  
+
 export interface UserSchemaModel extends mongoose.Model<UserSchemaDoc> {
     get(id: any): any
 }
-  
+
 pendingUserSchema.statics = {
   get(social_id) {
     return this.findOne({social_id})
