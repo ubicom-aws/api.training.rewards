@@ -27,8 +27,7 @@ const pendingUserSchema = new mongoose.Schema({
     date: Date,
     ip: String,
   }],
-}, { usePushEach: true } as any)
-
+})
 
 export interface UserSchemaDoc extends mongoose.Document {
 }
