@@ -94,68 +94,71 @@ async function update(req, res, next) {
         res.status(HttpStatus.UNAUTHORIZED);
         return res.json({"message":"Unauthorized"});
       }
-      post.json_metadata.moderator.account = moderator;
 
-      post.json_metadata.questions = questions;
-      post.json_metadata.score = score;
-      // if contribution type was updated
-      if (contribType) {
-        post.json_metadata.type = contribType;
-      }
-      if (repo) {
-        post.json_metadata.repository = repo;
-      }
-      if (tags) {
-        post.json_metadata.tags = tags;
-      }
-
-      if (reviewed) {
-        post.json_metadata.moderator.time = new Date().toISOString();
-        post.json_metadata.moderator.reviewed = true;
-        post.json_metadata.moderator.pending = false;
-        post.json_metadata.moderator.flagged = false;
-
-        if (post.json_metadata.type === 'bug-hunting') {
-          try {
-            const user = await User.get(post.author);
-            if (user.github && user.github.account) {
-              const resGithub = await request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
-                .set('Content-Type', 'application/json')
-                .set('Accept', 'application/json')
-                .set('Authorization', `token ${user.github.token}`)
-                .send({
-                  title: post.title,
-                  body: post.body,
-                });
-              const issue = resGithub.body;
-              const { html_url, number, id, title } = issue;
-
-              post.json_metadata.issue = {
-                url: html_url,
-                number,
-                id,
-                title,
-              };
-            }
-          } catch (e) {
-            console.log("ERROR REVIEWING GITHUB", e);
-          }
+      // don't modify json_metadata.moderator when operation is inline edit of category, repo, or tags
+      if (contribType || repo || tags) {
+        if (contribType) {
+          post.json_metadata.type = contribType;
         }
-      } else if (flagged) {
-        post.json_metadata.moderator.time = new Date().toISOString();
-        post.json_metadata.moderator.flagged = true;
-        post.json_metadata.moderator.reviewed = false;
-        post.json_metadata.moderator.pending = false;
-      } else if (pending) {
-        post.json_metadata.moderator.time = new Date().toISOString();
-        post.json_metadata.moderator.pending = true;
-        post.json_metadata.moderator.reviewed = false;
-        post.json_metadata.moderator.flagged = false;
-      } else if (reserved) {
-        post.json_metadata.moderator.time = new Date().toISOString();
-        post.json_metadata.moderator.pending = false;
-        post.json_metadata.moderator.reviewed = false;
-        post.json_metadata.moderator.flagged = false;
+        if (repo) {
+          post.json_metadata.repository = repo;
+        }
+        if (tags) {
+          post.json_metadata.tags = tags;
+        }
+      } else {
+        post.json_metadata.moderator.account = moderator;
+        post.json_metadata.questions = questions;
+        post.json_metadata.score = score;
+
+        if (reviewed) {
+          post.json_metadata.moderator.time = new Date().toISOString();
+          post.json_metadata.moderator.reviewed = true;
+          post.json_metadata.moderator.pending = false;
+          post.json_metadata.moderator.flagged = false;
+
+          if (post.json_metadata.type === 'bug-hunting') {
+            try {
+              const user = await User.get(post.author);
+              if (user.github && user.github.account) {
+                const resGithub = await request.post(`https://api.github.com/repos/${post.json_metadata.repository.full_name.toLowerCase()}/issues`)
+                  .set('Content-Type', 'application/json')
+                  .set('Accept', 'application/json')
+                  .set('Authorization', `token ${user.github.token}`)
+                  .send({
+                    title: post.title,
+                    body: post.body,
+                  });
+                const issue = resGithub.body;
+                const { html_url, number, id, title } = issue;
+
+                post.json_metadata.issue = {
+                  url: html_url,
+                  number,
+                  id,
+                  title,
+                };
+              }
+            } catch (e) {
+              console.log("ERROR REVIEWING GITHUB", e);
+            }
+          }
+        } else if (flagged) {
+          post.json_metadata.moderator.time = new Date().toISOString();
+          post.json_metadata.moderator.flagged = true;
+          post.json_metadata.moderator.reviewed = false;
+          post.json_metadata.moderator.pending = false;
+        } else if (pending) {
+          post.json_metadata.moderator.time = new Date().toISOString();
+          post.json_metadata.moderator.pending = true;
+          post.json_metadata.moderator.reviewed = false;
+          post.json_metadata.moderator.flagged = false;
+        } else if (reserved) {
+          post.json_metadata.moderator.time = new Date().toISOString();
+          post.json_metadata.moderator.pending = false;
+          post.json_metadata.moderator.reviewed = false;
+          post.json_metadata.moderator.flagged = false;
+        }
       }
 
       try {
@@ -183,10 +186,14 @@ async function update(req, res, next) {
     }
 
     try {
-      post.markModified('json_metadata.repository');
-      post.markModified('json_metadata.moderator');
-      post.markModified('json_metadata.type');
-      post.markModified('json_metadata.tags');
+      // don't modify json_metadata.moderator when operation is inline edit of category, repo, or tags
+      if (contribType || repo || tags) {
+        post.markModified('json_metadata.type');
+        post.markModified('json_metadata.tags');
+        post.markModified('json_metadata.repository');
+      } else {
+        post.markModified('json_metadata.moderator');
+      }
       const savedPost = await post.save();
       sendPost(res, savedPost);
     } catch (e) {
