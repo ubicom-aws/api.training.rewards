@@ -187,13 +187,13 @@ async function update(req, res, next) {
 
     try {
       // don't modify json_metadata.moderator when operation is inline edit of category, repo, or tags
-      if (contribType || repo || tags) {
-        post.markModified('json_metadata.type');
-        post.markModified('json_metadata.tags');
-        post.markModified('json_metadata.repository');
-      } else {
-        post.markModified('json_metadata.moderator');
-      }
+      if (questions) post.markModified('json_metadata.questions');
+      if (score) post.markModified('json_metadata.score');
+      if (contribType) post.markModified('json_metadata.type');
+      if (repo) post.markModified('json_metadata.repository');
+      if (tags) post.markModified('json_metadata.tags');
+      if (moderator) post.markModified('json_metadata.moderator');
+
       const savedPost = await post.save();
       sendPost(res, savedPost);
     } catch (e) {
