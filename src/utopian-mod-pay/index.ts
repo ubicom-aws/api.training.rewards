@@ -29,40 +29,40 @@ const MAX_POINTS = 150;
 // Earnings multiplier
 const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
   ideas: {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 0.75,
+    flagged: 0.75
   },
   development: {
+    reviewed: 2,
+    flagged: 2
+  },
+  translations: {
     reviewed: 1.25,
     flagged: 1.25
   },
-  translations: {
+  graphics: {
     reviewed: 1,
     flagged: 1
   },
-  graphics: {
+  documentation: {
     reviewed: 0.75,
     flagged: 0.75
-  },
-  documentation: {
-    reviewed: 0.50,
-    flagged: 0.50
   },
   copywriting: {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 0.75,
+    flagged: 0.75
   },
   tutorials: {
-    reviewed: 0.75,
-    flagged: 0.75
+    reviewed: 1,
+    flagged: 1
   },
   analysis: {
-    reviewed: 0.75,
-    flagged: 0.75
+    reviewed: 1.25,
+    flagged: 1.25
   },
   social: {
-    reviewed: 0.75,
-    flagged: 0.75
+    reviewed: 1,
+    flagged: 1
   },
   blog: {
     reviewed: 0.75,
