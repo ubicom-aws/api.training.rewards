@@ -24,7 +24,7 @@ let UTOPIAN_ACCOUNT: string;
 // Point value is in relation to 1 SBD
 const POST_MODERATION_THRESHOLD = 1;
 const POINT_VALUE = 1;
-const MAX_POINTS = 130;
+const MAX_POINTS = 150;
 
 // Earnings multiplier
 const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
@@ -33,19 +33,19 @@ const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
     flagged: 0.50
   },
   development: {
-    reviewed: 1,
-    flagged: 1
-  },
-  translations: {
     reviewed: 1.25,
     flagged: 1.25
+  },
+  translations: {
+    reviewed: 1,
+    flagged: 1
   },
   graphics: {
     reviewed: 0.75,
     flagged: 0.75
   },
   documentation: {
-    reviewed: 0.5,
+    reviewed: 0.50,
     flagged: 0.50
   },
   copywriting: {
@@ -61,20 +61,20 @@ const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
     flagged: 0.75
   },
   social: {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 0.75,
+    flagged: 0.75
   },
   blog: {
     reviewed: 0.75,
     flagged: 0.75
   },
   'video-tutorials': {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 1.25,
+    flagged: 1.25
   },
   'bug-hunting': {
-    reviewed: 0.75,
-    flagged: 0.75
+    reviewed: 1,
+    flagged: 1
   },
   'task-ideas': {
     reviewed: 0.50,

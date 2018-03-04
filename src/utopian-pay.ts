@@ -119,7 +119,7 @@ conn.once('open', function ()
                                         const sponsorPayout = (sponsorPercent * totalSteem / 100) > 0.001 ? (sponsorPercent * totalSteem / 100) : 0.001;
 
                                         const finalSponsorPayout = `${sponsorPayout.toFixed(3)} STEEM`;
-                                        const memoSponsor = `Hello ${sponsor.account}, here is your weekly payout as a Sponsor.`;
+                                        const memoSponsor = `Hello ${sponsor.account}, here is your weekly reward as a Sponsor.`;
 
                                         totalPaidSponsors = totalPaidSponsors + sponsorPayout;
 
@@ -172,7 +172,7 @@ conn.once('open', function ()
                                     const moderatorPayout = (moderatorPercent * totalSteem / 100) >= 0.001 ? (moderatorPercent * totalSteem / 100) : 0.001;
 
                                     const finalModeratorPayout = `${moderatorPayout.toFixed(3)} STEEM`;
-                                    const memoModerator = `Hello ${moderator.account}, here is your weekly payout as a Moderator.`;
+                                    const memoModerator = `Hello ${moderator.account}, here is your weekly reward as a Moderator.`;
 
                                     totalPaidModerators = totalPaidModerators + moderatorPayout;
 
@@ -307,7 +307,7 @@ conn.once('open', function ()
                                 const supervisorPercent = supervisorShares * percentModerators / 100;
                                 const supervisorPayout = (supervisorPercent * totalSteem / 100) >= 0.001 ? (supervisorPercent * totalSteem / 100) : 0.001;
                                 const finalSupervisorPayout = `${supervisorPayout.toFixed(3)} STEEM`;
-                                const memoSupervisor = `Hello ${supervisor.account}, here is your weekly payout as a Supervisor.`;
+                                const memoSupervisor = `Hello ${supervisor.account}, here is your weekly reward as a Supervisor.`;
 
                                 totalPaidSupervisors = totalPaidSupervisors + supervisorPayout;
 
