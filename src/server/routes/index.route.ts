@@ -31,7 +31,7 @@ router.use('/logout', requireAuth, logoutRoutes);
 
 router.use('/sc2', requireAuth, sc2Routes);
 
-router.use('/projects', requireAuth, projectRoutes);
+router.use('/projects', projectRoutes);
 
 router.use('/posts', postRoutes);
 
