@@ -18,7 +18,7 @@ const validTypes = [
   'task-bug-hunting',
   'bug-hunting',
   'task-translations',
-  'translations',
+  // 'translations',
   'task-analysis',
   'analysis',
   'task-graphics',
