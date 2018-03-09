@@ -949,42 +949,43 @@ Endpoints for manipulating posts in the local database and the STEEM blockchain.
 
 ## Projects Collection [/projects]
 
-### Get Project [GET /projects/{platform}/{external_id}]
-
-+ Parameters
-    + platform (enum[string], required) - Platform the project resides on.
-        + Members
-            + `github`
-
-    + external_id (number, required) - ID of the project on the platform.
-
-+ Request
-
-    + Headers
-
-            session: secret-session
+### Get Projects [GET /projects]
 
 + Response 200 (application/json)
 
         {
-            "name":"busy",
-            "platform":"github",
-            "external_id":64382195,
-            "steem_account":{
-                "account":"busy.utp"
-            },
-            "sponsorship":{
-                "$init":true,
-                "rejected":{
-                    "message":"",
-                    "status":false
-                },
-                "enabled":true
-            },
-            "sponsors":[
+            "total": 1,
+            "results": [
                 {
-                    "account":"utopian-io",
-                    "vesting_shares":0
+                    "_id": "5aa1003f0e46572189067330",
+                    "creation_date": "2018-03-08T10:01:36.000Z",
+                    "owner": "wehmoen",
+                    "platform": "github",
+                    "repository": 1234,
+                    "name": "Utopian.io",
+                    "description": "With utopian.io you will be rewarded for your hard work on open source software!",
+                    "introduction": "Our modern world is driven by open source software. Why not earn some money with contributing to it?",
+                    "__v": 0,
+                    "videos": [],
+                    "pictures": [
+                        {
+                            "order": 1,
+                            "url": "https://utopian.ams3.digitaloceanspaces.com/4462457-abstract-backgrounds.jpg",
+                            "file_name": "4462457-abstract-backgrounds.jpg",
+                            "id": "0ca8c974e570c079e2aa32ce633a654b"
+                        }
+                    ],
+                    "notification_types": [
+                        {
+                            "platform": "github",
+                            "type": "tutorials"
+                        }
+                    ],
+                    "allowed_types": [
+                        "tutorials",
+                        "blog",
+                        "development"
+                    ]
                 }
             ]
         }
@@ -992,8 +993,7 @@ Endpoints for manipulating posts in the local database and the STEEM blockchain.
 ### Create Project [POST /projects]
 
 + Request (application/json)
-    Creates a project that is ready to be reviewed. When the project is approved
-    it will have a sponsor account used to upvote contributions.
+    Creates a project for which users can create contributions. 
 
     + Headers
 
@@ -1001,83 +1001,168 @@ Endpoints for manipulating posts in the local database and the STEEM blockchain.
 
     + Attributes
         + owner (string, required) - The owner must be a project maintainer.
-        + platform (string, required) - The platform the project resides on.
-        + external_id (number, required) - The external ID which represents the project on the platform.
-        + project_name (string, required) - The name of the project.
+        + platform (enum[string], required) - The platform the project resides on.
+            + `github`
+        + repository (number, required) - The external project id.
+        + name (string, required) - The name of the project.
+        + description (string, required) - The description of the project
+        + introduction (string, required) - A short introduction to the project
+        + tags (array, required) - The tags for this project. Minimal 1. Maximal 5
+            + tag (string)
+        + allowed_types (array, required) - The categories in which users can contribute to this project
+            + (string)
+        + notification_types (array, required) - The categories for which the project owner wants notifications
+            + (object)
+                + type (string, required)
+                + platform (enum[string], required)
+                    + `github`
+                    + `system`
+        + pictures (array, required)
+            + (object)
+                + id (string, required) - A unique ID
+                + file_name (string, required) - The original file name
+                + url (string, required) - The link to the file
+                + order (number, required)
+        + videos (array, required)
+            + (object)
+                + id (string, required) - A unique ID
+                + file_name (string, required) - The original file name
+                + url (string, required) - The link to the file
+                + order (number, required)
+        
 
 + Response 200 (application/json)
 
         {
-            "name":"busy",
-            "platform":"github",
-            "external_id":64382195,
-            "steem_account":{
-                "account":"busy.utp"
-            },
-            "sponsorship":{
-                "$init":true,
-                "rejected":{
-                    "message":"",
-                    "status":false
-                },
-                "enabled":false
-            },
-            "sponsors":[]
+            "__v": 0,
+            "creation_date": "2018-03-08T09:19:59.000Z",
+            "owner": "wehmoen",
+            "platform": "github",
+            "repository": 1234,
+            "name": "Test Project",
+            "description": "This is a test project",
+            "introduction": "Welcome to this project",
+            "_id": "5aa1003f0e46572189067330",
+            "videos": [
+                {
+                    "order": 1,
+                    "url": "https://img.com/video.mp4",
+                    "file_name": "video.mp4",
+                    "id": "1234"
+                }
+            ],
+            "pictures": [
+                {
+                    "order": 1,
+                    "url": "https://img.com/picture.jpg",
+                    "file_name": "picture.jpg",
+                    "id": "1234"
+                }
+            ],
+            "notification_types": [
+                {
+                    "platform": "system",
+                    "type": "ideas"
+                }
+            ],
+            "allowed_types": [
+                "tutorials",
+                "blog",
+                "development"
+            ]
         }
 
-### Add Sponsor [POST /projects/{platform}/{external_id}/sponsors]
 
-+ Parameters
-    + platform (enum[string], required) - Platform the project resides on.
-        + Members
-            + `github`
-
-    + external_id (number, required) - ID of the project on the platform.
+### Update Project [PUT /projects]
 
 + Request
-    Sets the user as a sponsor of the project.
+        + Headers
+            session: session-secret
 
-    + Headers
 
-            session: secret-session
-
-    + Attributes
-        + sponsor (string, required) - The sponsor of the project.
+   + Attributes
+        + id (string, required) - The ID of the project which should be updated.
+        + platform (enum[string], required) - The platform the project resides on.
+            + `github`
+        + repository (number, required) - The external project id.
+        + name (string, required) - The name of the project.
+        + description (string, required) - The description of the project
+        + introduction (string, required) - A short introduction to the project
+        + tags (array, required) - The tags for this project. Minimal 1. Maximal 5
+            + tag (string)
+        + allowed_types (array, required) - The categories in which users can contribute to this project
+            + (string)
+        + notification_types (array, required) - The categories for which the project owner wants notifications
+            + (object)
+                + type (string, required)
+                + platform (enum[string], required)
+                    + `github`
+                    + `system`
+        + pictures (array, required)
+            + (object)
+                + id (string, required) - A unique ID
+                + file_name (string, required) - The original file name
+                + url (string, required) - The link to the file
+                + order (number, required)
+        + videos (array, required)
+            + (object)
+                + id (string, required) - A unique ID
+                + file_name (string, required) - The original file name
+                + url (string, required) - The link to the file
+                + order (number, required)
 
 + Response 200 (application/json)
 
         {
-            "account": "elear"
+            "_id": "5aa1003f0e46572189067330",
+            "creation_date": "2018-03-08T09:23:28.000Z",
+            "owner": "wehmoen",
+            "platform": "github",
+            "repository": 1234,
+            "name": "Utopian.io",
+            "description": "With utopian.io you will be rewarded for your hard work on open source software!",
+            "introduction": "Our modern world is driven by open source software. Why not earn some money with contributing to it?",
+            "__v": 0,
+            "videos": [],
+            "pictures": [
+                {
+                    "order": 1,
+                    "url": "https://steemitimages.com/DQmSWFRyxSevMVna2V4TRYG5KqLYJ3pMrtDMeCsxyhXqb1d/utopian-post-banner.png",
+                    "file_name": "utopian.jpg",
+                    "id": "1234"
+                }
+            ],
+            "notification_types": [
+                {
+                    "platform": "github",
+                    "type": "tutorials"
+                }
+            ],
+            "allowed_types": [
+                "tutorials",
+                "blog",
+                "development"
+            ]
         }
-
-### Vote With Sponsors [POST /projects/{platform}/{external_id}/sponsors/vote]
-
-+ Parameters
-    + platform (enum[string], required) - Platform the project resides on.
-        + Members
-            + `github`
-
-    + external_id (number, required) - ID of the project on the platform.
+   
+   
+### Delete Project [DELETE /project]
 
 + Request
-    Sets the user as a sponsor of the project.
+        + Headers
+            session: session-secret
 
-    + Headers
 
-            session: secret-session
-
-    + Attributes
-        + author (string, required) - Post author to vote.
-        + permlink (string, required) - Post permlink to vote.
-        + vote (number, required) - Vote weight to give on the post.
-            Parameter can be a maximum of 10000 for a 100% vote.
-
+   + Attributes
+        + id (string, required) - The ID of the project which should be updated.
+        
 + Response 200 (application/json)
 
         {
-            "message": "Vote broadcasted"
+            "status": "ok"
         }
 
+            
 ## Sponsors Collection [/sponsors]
 
 ### List Sponsors [GET]
