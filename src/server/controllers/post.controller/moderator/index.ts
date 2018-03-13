@@ -77,9 +77,12 @@ export async function moderator(req, res, next) {
         ];
 
         const data: any[] = await Post.aggregate(aggregateQuery);
+    
+        const total = await Post
+            .countAll({ query: aggregateMatch(params.start_date, params.end_date, params.moderator, params.post_status)['$match'] });
 
         res.json({
-            total: data.length,
+            total,
             results: data
         });
     } catch (e) {
