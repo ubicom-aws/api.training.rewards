@@ -263,5 +263,20 @@ export default {
                 id: Joi.string().required()
             }
         }
+    },
+    upload: {
+        project: {
+            body: {
+                project: Joi.number().required(),
+                type: Joi.string().valid('picture','video').required()
+            }
+        },
+        project_delete: {
+            body: {
+                project: Joi.number().required(),
+                type: Joi.string().valid('picture','video').required(),
+                filename: Joi.string().required()
+            }
+        }
     }
 };

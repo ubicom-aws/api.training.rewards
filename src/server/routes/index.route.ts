@@ -14,6 +14,7 @@ import socialLoginRoutes from './social_login.route';
 import tableRoutes from './tables.route';
 import faqRoutes from './faq.route';
 import ruleRoutes from './rule.route';
+import uploadRoutes from './upload.route';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -48,5 +49,7 @@ router.use('/auth', socialLoginRoutes);
 router.use('/faq', faqRoutes);
 
 router.use('/rules', ruleRoutes)
+
+router.use('/upload', uploadRoutes);
 
 export default router;
