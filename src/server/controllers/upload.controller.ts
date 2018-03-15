@@ -27,7 +27,7 @@ function uploadUserFile(req, res, next) {
         if (err)
             return res.status(500).json(err);
 
-        s3.uploadUserFile(tmp_file, upload.name, upload.mimetype, 'wehmoen').then((data) => {
+        s3.uploadUserFile(tmp_file, upload.name, upload.mimetype, res.locals.user).then((data) => {
             fs.unlinkSync(tmp_file);
             res.json(data);
         }).catch((err) => {
@@ -40,7 +40,7 @@ function uploadUserFile(req, res, next) {
 function deleteUserFile(req, res, next) {
     if (!req.body.filename)
         res.status(500).json({error: "No filename given"});
-    s3.deleteUserFile('wehmoen', req.body.filename).then((data) => {
+    s3.deleteUserFile(res.locals.user, req.body.filename).then((data) => {
         res.json(data);
     }).catch((err) => {
         res.status(500).json(err);

@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { requireAuth } from './middleware';
+import {requireAuth} from './middleware';
 
 import userRoutes from './user.route';
 import postRoutes from './post.route';
@@ -20,7 +20,7 @@ const router = express.Router(); // eslint-disable-line new-cap
 
 /** GET /health-check - Check service health */
 router.get('/health-check', (req, res) =>
-  res.send('OK')
+    res.send('OK')
 );
 
 // mount user routes at /users
@@ -50,6 +50,6 @@ router.use('/faq', faqRoutes);
 
 router.use('/rules', ruleRoutes)
 
-router.use('/upload', uploadRoutes);
+router.use('/upload', requireAuth, uploadRoutes);
 
 export default router;
