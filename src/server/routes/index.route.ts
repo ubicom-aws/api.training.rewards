@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { requireAuth } from './middleware';
+import {requireAuth} from './middleware';
 
 import userRoutes from './user.route';
 import postRoutes from './post.route';
@@ -14,12 +14,13 @@ import socialLoginRoutes from './social_login.route';
 import tableRoutes from './tables.route';
 import faqRoutes from './faq.route';
 import ruleRoutes from './rule.route';
+import uploadRoutes from './upload.route';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
 /** GET /health-check - Check service health */
 router.get('/health-check', (req, res) =>
-  res.send('OK')
+    res.send('OK')
 );
 
 // mount user routes at /users
@@ -31,7 +32,7 @@ router.use('/logout', requireAuth, logoutRoutes);
 
 router.use('/sc2', requireAuth, sc2Routes);
 
-router.use('/projects', requireAuth, projectRoutes);
+router.use('/projects', projectRoutes);
 
 router.use('/posts', postRoutes);
 
@@ -48,5 +49,7 @@ router.use('/auth', socialLoginRoutes);
 router.use('/faq', faqRoutes);
 
 router.use('/rules', ruleRoutes)
+
+router.use('/upload', requireAuth, uploadRoutes);
 
 export default router;
