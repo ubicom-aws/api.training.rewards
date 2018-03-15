@@ -44,6 +44,7 @@
     "boilerplate"
   ],
   "dependencies": {
+    "aws-sdk": "^2.209.0",
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "bs58": "^4.0.1",
@@ -56,6 +57,7 @@
     "dotenv": "^4.0.0",
     "dsteem": "^0.8.6",
     "express": "^4.16.2",
+    "express-fileupload": "^0.4.0",
     "express-jwt": "^5.3.0",
     "express-validation": "^1.0.2",
     "express-winston": "^2.4.0",
@@ -68,11 +70,13 @@
     "nodemailer": "^4.4.1",
     "querystring": "^0.2.0",
     "ramda": "^0.25.0",
+    "s3": "^4.4.0",
     "sc2-sdk": "^0.0.5",
     "secure-random": "^1.1.1",
     "speakingurl": "^14.0.1",
     "steem": "^0.6.4",
     "superagent": "^3.8.1",
+    "unique-slug": "^2.0.0",
     "winston": "^2.4.0"
   },
   "devDependencies": {

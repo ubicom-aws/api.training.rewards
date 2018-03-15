@@ -10,6 +10,7 @@ import * as expressValidation from 'express-validation';
 import * as helmet from 'helmet';
 import * as util from 'util';
 import * as dsteem from 'dsteem'
+import * as fileUpload from 'express-fileupload'
 
 import winstonInstance from './winston';
 import routes from '../server/routes/index.route';
@@ -19,8 +20,11 @@ import config from './config';
 export const client = process.env.REG_TESTNET === 'false' ? new dsteem.Client('https://api.steemit.com') : dsteem.Client.testnet()
 //export const client = dsteem.Client.testnet() // For now the testnet
 
+
+
 const app = express();
 
+app.use(fileUpload());
 // parse body params and attache them to req.body
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

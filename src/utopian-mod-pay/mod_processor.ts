@@ -1,5 +1,6 @@
-import { CategoryValue, formatCat, RUNTIME_NOW } from './util';
+import { CategoryValue, MAX_POINTS } from './constants';
 import Moderator from '../server/models/moderator.model';
+import { formatCat, RUNTIME_NOW } from './util';
 import Post from '../server/models/post.model';
 import * as util from 'util';
 
@@ -64,7 +65,7 @@ export class ModeratorStats {
   getComment() {
     const rewards = this.rewards.toFixed(2);
     const exceeded = this.maxRewardsReached ?
-'With my hard work, I have reached the maximum 130 point limit for this week!' : '';
+`With my hard work, I have reached the maximum ${MAX_POINTS} point limit for this week!` : '';
     return util.format(this.comment, rewards, exceeded);
   }
 

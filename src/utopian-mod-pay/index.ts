@@ -1,5 +1,12 @@
+import {
+  CategoryValue,
+  POST_MODERATION_THRESHOLD,
+  CATEGORY_VALUE,
+  POINT_VALUE,
+  MAX_POINTS
+} from './constants';
 import steemAPI, { getContent, getDiscussionsByBlog } from '../server/steemAPI';
-import { CategoryValue, formatCat, getRoundedDate, RUNTIME_NOW } from './util';
+import { formatCat, getRoundedDate, RUNTIME_NOW } from './util';
 import { ModeratorStats, CommentOpts } from './mod_processor';
 import Moderator from '../server/models/moderator.model';
 import User from '../server/models/user.model';
@@ -20,95 +27,6 @@ let POSTER_ACCOUNT: string;
 
 let UTOPIAN_TOKEN = process.env.UTOPIAN_TOKEN;
 let UTOPIAN_ACCOUNT: string;
-
-// Point value is in relation to 1 SBD
-const POST_MODERATION_THRESHOLD = 1;
-const POINT_VALUE = 1;
-const MAX_POINTS = 150;
-
-// Earnings multiplier
-const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
-  ideas: {
-    reviewed: 0.75,
-    flagged: 0.75
-  },
-  development: {
-    reviewed: 2,
-    flagged: 2
-  },
-  translations: {
-    reviewed: 1.25,
-    flagged: 1.25
-  },
-  graphics: {
-    reviewed: 1,
-    flagged: 1
-  },
-  documentation: {
-    reviewed: 0.75,
-    flagged: 0.75
-  },
-  copywriting: {
-    reviewed: 0.75,
-    flagged: 0.75
-  },
-  tutorials: {
-    reviewed: 1,
-    flagged: 1
-  },
-  analysis: {
-    reviewed: 1.25,
-    flagged: 1.25
-  },
-  social: {
-    reviewed: 1,
-    flagged: 1
-  },
-  blog: {
-    reviewed: 0.75,
-    flagged: 0.75
-  },
-  'video-tutorials': {
-    reviewed: 1.25,
-    flagged: 1.25
-  },
-  'bug-hunting': {
-    reviewed: 1,
-    flagged: 1
-  },
-  'task-ideas': {
-    reviewed: 0.50,
-    flagged: 0.50
-  },
-  'task-development': {
-    reviewed: 0.50,
-    flagged: 0.50
-  },
-  'task-bug-hunting': {
-    reviewed: 0.50,
-    flagged: 0.50
-  },
-  'task-translations': {
-    reviewed: 0.50,
-    flagged: 0.50
-  },
-  'task-graphics': {
-    reviewed: 0.50,
-    flagged: 0.50
-  },
-  'task-documentation': {
-    reviewed: 0.50,
-    flagged: 0.50
-  },
-  'task-analysis': {
-    reviewed: 0.50,
-    flagged: 0.50
-  },
-  'task-social': {
-    reviewed: 0.50,
-    flagged: 0.50
-  }
-};
 
 (mongoose as any).Promise = Promise;
 mongoose.connect(config.mongo, {
