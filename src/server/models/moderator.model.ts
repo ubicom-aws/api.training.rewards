@@ -89,7 +89,7 @@ ModeratorSchema.statics = {
         '$eq': true,
       },
     })
-      .sort({ "total_paid_rewards_steem": -1 })
+      .sort({ "total_moderated": -1 })
       .exec();
   },
   listAll() {
