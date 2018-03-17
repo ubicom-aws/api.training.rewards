@@ -27,6 +27,8 @@ const test = process.env.TEST === 'true' || false;
 const discord_webhook_id = process.env.DISCORD_WEBHOOK_ID;
 const discord_webhook_token = process.env.DISCORD_WEBHOOK_TOKEN;
 
+let post_discord = true; //set this to false in case you dont want to post the log to discord
+
 const now = new Date();
 const MAX_VOTE_EVER = 30;
 const MAX_USABLE_POOL = 1000;
@@ -353,6 +355,7 @@ async function checkVotingPower(account, limitPower) {
 
                     if (votingPower < limitPower && !forced) {
                         console.log("info", "Voting power is to low to start voting. Voting power is at: " + (votingPower / 100).toFixed(2) + "%");
+                        post_discord = false;
                         exit();
                     }
 
@@ -361,6 +364,7 @@ async function checkVotingPower(account, limitPower) {
                     }, 4000);
                 } else {
                     console.log("error", "An error occured while fetching the voting power", err);
+                    post_discord = false;
                     exit();
                 }
 
@@ -386,6 +390,7 @@ async function prepareSteemConnect() {
             .end((err, res) => {
                 if (!res.body.access_token) {
                     console.log("error", "Could not get access token", res);
+                    post_discord = false;
                     exit();
                 }
                 if (res.body.access_token) {
@@ -404,6 +409,7 @@ async function updatePost(author, permlink) {
                 .post((err, res) => {
                     if (err) {
                         console.log("error", "Failed to update post in utopians database", err);
+                        post_discord = false;
                         exit();
                     } else {
                         resolve(true);
@@ -476,6 +482,8 @@ async function getTotalVote(posts) {
         }, function (err) {
             if (err) {
                 console.log("error", "An error occured while trying to calculate the total vote");
+                post_discord = false;
+                exit();
             } else {
                 resolve(total_vote);
             }
@@ -767,7 +775,7 @@ async function exit() {
 
 async function postLogToDiscord(link) {
     return new Promise((resolve, reject) => {
-        if (discord_webhook_id && discord_webhook_token) {
+        if (discord_webhook_id && discord_webhook_token && post_discord) {
             let title = "Voting Log";
             let description = "I just finish my voting round and here is what I did: " + link
             if (test) {
