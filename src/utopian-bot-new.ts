@@ -12,6 +12,8 @@ import {createCommentPermlink} from "./server/steemitHelpers";
 import {uploadBotLog} from "./server/helpers/s3";
 import * as path from "path";
 import * as random from "randomstring";
+import * as Discordie from "discordie";
+import * as fs from "fs";
 
 (mongoose as any).Promise = Promise;
 
@@ -22,15 +24,20 @@ const refreshToken = process.env.REFRESH_TOKEN;
 const secret = process.env.CLIENT_SECRET;
 const forced = process.env.FORCED === 'true' || false;
 const test = process.env.TEST === 'true' || false;
+const discord_webhook_id = process.env.DISCORD_WEBHOOK_ID;
+const discord_webhook_token = process.env.DISCORD_WEBHOOK_TOKEN;
+
 const now = new Date();
 const MAX_VOTE_EVER = 30;
 const MAX_USABLE_POOL = 1000;
 const DIFFICULTY_MULTIPLIER = 3;
+const client = new Discordie({autoReconnect: true});
+const Events = Discordie.Events;
 
 let console = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)(),
-        new (winston.transports.File)({ filename: 'bot.log' })
+        new (winston.transports.File)({filename: 'bot.log'})
     ]
 });
 
@@ -72,7 +79,7 @@ let categories_pool = {
     },
     "development": {
         "total_vote_weight": 0,
-        "max_vote":12,
+        "max_vote": 12,
         "min_vote": 5,
         "difficulty": 2.5 * DIFFICULTY_MULTIPLIER
     },
@@ -324,6 +331,12 @@ if (test) {
     console.log("info", "THIS IS A DRY RUN. NO POSTS WILL BE VOTED OR COMMENTED");
     console.log("info", "");
 }
+
+if (fs.existsSync('bot.log')) {
+    console.log("info","Delete old log file from previous run")
+    fs.unlinkSync('bot.log');
+}
+
 
 async function checkVotingPower(account, limitPower) {
 
@@ -706,36 +719,85 @@ async function finishPost(post) {
 
 async function exit() {
     let prefix = random.generate().toLocaleLowerCase();
-   if (!test) {
-       Stats.get().then(stats => {
-           stats.bot_is_voting = false;
-           stats.save().then(() => {
-               uploadBotLog(prefix).then(() => {
-                   console.log("info","The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
-                   conn.close();
-                   process.exit(0);
-               }).catch((err) => {
-                   console.log("error","Failed to upload bot log!",err);
-                   conn.close();
-                   process.exit(0);
-               });
-           });
-       }).catch((err) => {
-           console.log("error","Failed to save stats!",err);
-           conn.close();
-           process.exit(0);
-       });
-   } else {
-       uploadBotLog(prefix).then(() => {
-           console.log("info","The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
-           conn.close();
-           process.exit(0);
-       }).catch((err) => {
-           console.log("error","Failed to upload bot log!",err);
-           conn.close();
-           process.exit(0);
-       });
-   }
+    if (!test) {
+        Stats.get().then(stats => {
+            stats.bot_is_voting = false;
+            stats.save().then(() => {
+                uploadBotLog(prefix).then(() => {
+                    console.log("info", "The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
+                    postLogToDiscord("https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log").then(() => {
+                        console.log("info","Log file was posted to discord")
+                        conn.close();
+                        process.exit(0);
+                    }).catch((err) => {
+                        console.log("error","Failed to post log file to discord", err);
+                        conn.close();
+                        process.exit(0);
+                    })
+                }).catch((err) => {
+                    console.log("error", "Failed to upload bot log!", err);
+                    conn.close();
+                    process.exit(0);
+                });
+            });
+        }).catch((err) => {
+            console.log("error", "Failed to save stats!", err);
+            conn.close();
+            process.exit(0);
+        });
+    } else {
+        uploadBotLog(prefix).then(() => {
+            console.log("info", "The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
+            postLogToDiscord("https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log").then(() => {
+                console.log("info","Log file was posted to discord")
+                conn.close();
+                process.exit(0);
+            }).catch((err) => {
+                console.log("error","Failed to post log file to discord", err);
+                conn.close();
+                process.exit(0);
+            })
+        }).catch((err) => {
+            console.log("error", "Failed to upload bot log!", err);
+            conn.close();
+            process.exit(0);
+        });
+    }
+}
+
+async function postLogToDiscord(link) {
+    return new Promise((resolve, reject) => {
+        if (discord_webhook_id && discord_webhook_token) {
+            let title = "Voting Log";
+            let description = "I just finish my voting round and here is what I did: " + link
+            if (test) {
+                title = "TEST " + title
+                description = "I just finished my test round. I just calculated votes but did not actually voted or commented any post. Here is my log: " + link
+            }
+            client.Webhooks.execute(discord_webhook_id, discord_webhook_token, {
+                username: 'utopian-io',
+                avatar_url: 'https://cdn.utopian.io/assets/images/utopian-logo-medium-black.png',
+                tts: false,
+                embeds: [{
+                    color: 0xdb343c,
+                    thumbnail: {
+                        url: 'https://cdn.utopian.io/assets/images/utopian-logo-big.png'
+                    },
+                    author: {name: '@utopian-io'},
+                    title: title,
+                    description: description,
+                    url: link,
+                    footer: {text: "This message was genrated by @utopian-io"}
+                }]
+            }).then(function () {
+                resolve(true);
+            }).catch((err) => {
+                reject(err);
+            });
+        } else {
+            resolve(true);
+        }
+    })
 }
 
 async function run() {
