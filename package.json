@@ -71,6 +71,7 @@
     "nodemailer": "^4.4.1",
     "querystring": "^0.2.0",
     "ramda": "^0.25.0",
+    "randomstring": "^1.1.5",
     "s3": "^4.4.0",
     "sc2-sdk": "^0.0.5",
     "secure-random": "^1.1.1",

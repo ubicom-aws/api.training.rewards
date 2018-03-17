@@ -1,13 +1,17 @@
 import config from './config/config';
 import * as mongoose from "mongoose";
-import * as console from "winston";
+import * as winston from "winston";
 import steemAPI, {formatter} from "./server/steemAPI";
 import * as request from 'superagent';
 import Stats from "./server/models/stats.model";
 import * as SteemConnect from 'sc2-sdk';
 import Post from "./server/models/post.model";
 import * as async from "async";
+import * as s3 from "s3";
 import {createCommentPermlink} from "./server/steemitHelpers";
+import {uploadBotLog} from "./server/helpers/s3";
+import * as path from "path";
+import * as random from "randomstring";
 
 (mongoose as any).Promise = Promise;
 
@@ -17,10 +21,18 @@ const botAccount = process.env.BOT;
 const refreshToken = process.env.REFRESH_TOKEN;
 const secret = process.env.CLIENT_SECRET;
 const forced = process.env.FORCED === 'true' || false;
+const test = process.env.TEST === 'true' || false;
 const now = new Date();
 const MAX_VOTE_EVER = 30;
 const MAX_USABLE_POOL = 1000;
 const DIFFICULTY_MULTIPLIER = 3;
+
+let console = new (winston.Logger)({
+    transports: [
+        new (winston.transports.Console)(),
+        new (winston.transports.File)({ filename: 'bot.log' })
+    ]
+});
 
 if (!botAccount) {
     console.log("error", "Not bot account was set");
@@ -60,62 +72,62 @@ let categories_pool = {
     },
     "development": {
         "total_vote_weight": 0,
-        "max_vote": MAX_VOTE_EVER,
-        "min_vote": 30,
+        "max_vote":12,
+        "min_vote": 5,
         "difficulty": 2.5 * DIFFICULTY_MULTIPLIER
     },
     "bug-hunting": {
         "total_vote_weight": 0,
-        "max_vote": 5,
-        "min_vote": 2,
+        "max_vote": 7,
+        "min_vote": 3,
         "difficulty": DIFFICULTY_MULTIPLIER
     },
     "translations": {
         "total_vote_weight": 0,
-        "max_vote": 10,
-        "min_vote": 7,
+        "max_vote": 5,
+        "min_vote": 1,
         "difficulty": 1.4 * DIFFICULTY_MULTIPLIER
     },
     "graphics": {
         "total_vote_weight": 0,
-        "max_vote": MAX_VOTE_EVER,
-        "min_vote": 7.5,
+        "max_vote": 10,
+        "min_vote": 1.5,
         "difficulty": 1.7 * DIFFICULTY_MULTIPLIER
     },
     "analysis": {
         "total_vote_weight": 0,
-        "max_vote": 20,
-        "min_vote": 8,
+        "max_vote": 12,
+        "min_vote": 4,
         "difficulty": 1.6 * DIFFICULTY_MULTIPLIER
     },
     "social": {
         "total_vote_weight": 0,
-        "max_vote": 10,
-        "min_vote": 5,
+        "max_vote": 7,
+        "min_vote": 1,
         "difficulty": 1.5 * DIFFICULTY_MULTIPLIER
     },
     "documentation": {
         "total_vote_weight": 0,
-        "max_vote": 20,
-        "min_vote": 5,
+        "max_vote": 8,
+        "min_vote": 3,
         "difficulty": 1.5 * DIFFICULTY_MULTIPLIER
     },
     "tutorials": {
         "total_vote_weight": 0,
-        "max_vote": 15,
-        "min_vote": 7,
+        "max_vote": 12,
+        "min_vote": 3,
         "difficulty": 1.9 * DIFFICULTY_MULTIPLIER
     },
     "video-tutorials": {
         "total_vote_weight": 0,
-        "max_vote": 15,
-        "min_vote": 8,
+        "max_vote": 12,
+        "min_vote": 4,
         "difficulty": 1.7 * DIFFICULTY_MULTIPLIER
     },
     "copywriting": {
         "total_vote_weight": 0,
-        "max_vote": 15,
-        "min_vote": 5,
+        "max_vote": 9,
+        "min_vote": 3,
         "difficulty": 1.55 * DIFFICULTY_MULTIPLIER
     },
     "blog": {
@@ -307,30 +319,42 @@ console.log("info", "STARTING UTOPIAN BOT");
 console.log("info", "Bot Account: " + botAccount);
 console.log("info", "Checking Voting Power");
 
+if (test) {
+    console.log("info", "");
+    console.log("info", "THIS IS A DRY RUN. NO POSTS WILL BE VOTED OR COMMENTED");
+    console.log("info", "");
+}
+
 async function checkVotingPower(account, limitPower) {
+
     return new Promise((resolve, reject) => {
-        steemAPI.getAccounts([account], function (err, accounts) {
-            if (!err) {
-                const botStatus = accounts[0];
+        if (test) {
+            resolve(10000);
+        } else {
+            steemAPI.getAccounts([account], function (err, accounts) {
+                if (!err) {
+                    const botStatus = accounts[0];
 
-                const secondsago = (new Date().getTime() - new Date(botStatus.last_vote_time + "Z").getTime()) / 1000;
-                const votingPower = botStatus.voting_power + (10000 * secondsago / 432000);
+                    const secondsago = (new Date().getTime() - new Date(botStatus.last_vote_time + "Z").getTime()) / 1000;
+                    const votingPower = botStatus.voting_power + (10000 * secondsago / 432000);
 
-                if (votingPower < limitPower && !forced) {
-                    console.log("info", "Voting power is to low to start voting. Voting power is at: " + (votingPower / 100).toFixed(2) + "%");
+                    if (votingPower < limitPower && !forced) {
+                        console.log("info", "Voting power is to low to start voting. Voting power is at: " + (votingPower / 100).toFixed(2) + "%");
+                        exit();
+                    }
+
+                    setTimeout(() => {
+                        resolve(votingPower)
+                    }, 4000);
+                } else {
+                    console.log("error", "An error occured while fetching the voting power", err);
                     exit();
                 }
 
-                setTimeout(() => {
-                    resolve(votingPower)
-                }, 4000);
-            } else {
-                console.log("error", "An error occured while fetching the voting power", err);
-                exit();
-            }
+            });
+        }
+    });
 
-        });
-    })
 }
 
 async function getStats() {
@@ -419,6 +443,12 @@ function calculateFinalVote(post, categories_pool) {
     let category = post.category;
     let diff = categories_pool[category].max_vote - categories_pool[category].min_vote;
     let finalVote = diff * (post.json_metadata.score / 100) + categories_pool[category].min_vote;
+
+    finalVote * categories_pool[category].difficulty;
+    if (finalVote > categories_pool[category].max_vote) {
+        finalVote = categories_pool[category].max_vote;
+    }
+
     return finalVote;
 
 }
@@ -613,70 +643,99 @@ async function finishPost(post) {
     commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
     commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
-    console.log('info', 'Category: ' + post.category + ' Vote: ' + Math.round(finalVote.toFixed(2) * 100));
+    console.log('info', 'Category: ' + post.category + ' Vote: ' + finalVote.toFixed(2) + '%');
 
-    SteemConnect.vote(botAccount, post.author, post.permlink, Math.round(finalVote.toFixed(2) * 100))
-        .then(() => {
-            SteemConnect.comment(
-                post.author,
-                post.permlink,
-                botAccount,
-                createCommentPermlink(post.author, post.permlink),
-                '',
-                commentBody,
-                jsonMetadata,
-            ).then(() => {
-                console.log("info", "Post commented successfully");
-                console.log("info", 'Post processed');
-            }).catch(e => {
-                if (e.error_description == undefined) {
-                    console.log("info", "Post commented successfully");
-                } else {
-                    console.log("error", "Failed to post comment! Need cusotm comment.", e);
-                    exit();
-                }
-                console.log("info", 'Post processed');
-            });
-        }).catch(e => {
-        // I think there is a problem with sdk. Always gets in the catch
-        if (e.error_description == undefined) {
-            console.log("info", "Post successfully voted");
-            SteemConnect.comment(
-                post.author,
-                post.permlink,
-                botAccount,
-                createCommentPermlink(post.author, post.permlink),
-                '',
-                commentBody,
-                jsonMetadata,
-            ).then(() => {
-                console.log("info", "Post commented successfully");
-                console.log("info", 'Post processed');
-            }).catch(e => {
-                if (e.error_description == undefined) {
-                    updatePost(post.author, post.permlink);
+    if (!test) {
+        SteemConnect.vote(botAccount, post.author, post.permlink, Math.round(finalVote.toFixed(2) * 100))
+            .then(() => {
+                SteemConnect.comment(
+                    post.author,
+                    post.permlink,
+                    botAccount,
+                    createCommentPermlink(post.author, post.permlink),
+                    '',
+                    commentBody,
+                    jsonMetadata,
+                ).then(() => {
                     console.log("info", "Post commented successfully");
                     console.log("info", 'Post processed');
-                } else {
-                    console.log("error", "Failed to post comment! Need cusotm comment.", e);
-                    exit();
-                }
-            });
-        } else {
-            console.log("error", "Failed to vote! Need manual vote!", e)
-            exit();
-        }
-    });
+                }).catch(e => {
+                    if (e.error_description == undefined) {
+                        console.log("info", "Post commented successfully");
+                    } else {
+                        console.log("error", "Failed to post comment! Need cusotm comment.", e);
+                        exit();
+                    }
+                    console.log("info", 'Post processed');
+                });
+            }).catch(e => {
+            // I think there is a problem with sdk. Always gets in the catch
+            if (e.error_description == undefined) {
+                console.log("info", "Post successfully voted");
+                SteemConnect.comment(
+                    post.author,
+                    post.permlink,
+                    botAccount,
+                    createCommentPermlink(post.author, post.permlink),
+                    '',
+                    commentBody,
+                    jsonMetadata,
+                ).then(() => {
+                    console.log("info", "Post commented successfully");
+                    console.log("info", 'Post processed');
+                }).catch(e => {
+                    if (e.error_description == undefined) {
+                        updatePost(post.author, post.permlink);
+                        console.log("info", "Post commented successfully");
+                        console.log("info", 'Post processed');
+                    } else {
+                        console.log("error", "Failed to post comment! Need cusotm comment.", e);
+                        exit();
+                    }
+                });
+            } else {
+                console.log("error", "Failed to vote! Need manual vote!", e)
+                exit();
+            }
+        });
+    } else {
+        console.log("info", "Post wasnt voted and commented because this is a test run.");
+        console.log("info", 'Post processed');
+    }
 }
 
 async function exit() {
-    Stats.get().then(stats => {
-        stats.bot_is_voting = false;
-        stats.save().then(() => {
-            conn.close();
-            process.exit(0);
-        });
-    });
+    let prefix = random.generate().toLocaleLowerCase();
+   if (!test) {
+       Stats.get().then(stats => {
+           stats.bot_is_voting = false;
+           stats.save().then(() => {
+               uploadBotLog(prefix).then(() => {
+                   console.log("info","The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
+                   conn.close();
+                   process.exit(0);
+               }).catch((err) => {
+                   console.log("error","Failed to upload bot log!",err);
+                   conn.close();
+                   process.exit(0);
+               });
+           });
+       }).catch((err) => {
+           console.log("error","Failed to save stats!",err);
+           conn.close();
+           process.exit(0);
+       });
+   } else {
+       uploadBotLog(prefix).then(() => {
+           console.log("info","The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
+           conn.close();
+           process.exit(0);
+       }).catch((err) => {
+           console.log("error","Failed to upload bot log!",err);
+           conn.close();
+           process.exit(0);
+       });
+   }
 }
 
 async function run() {
@@ -690,7 +749,7 @@ async function run() {
 
     console.log("info", "Retreived Stats. Check if Bot is voting.");
 
-    if (stats.bot_is_voting === true) {
+    if (stats.bot_is_voting === true && !test) {
         console.log("info", "The bot is already voting.");
         exit();
     } else {
@@ -709,8 +768,13 @@ async function run() {
 
         let posts: any = await preparePosts(await getPosts(), categories);
 
+        let interval = 60000;
+        if (test) {
+            interval = 1000;
+        }
+
         for (let i = 0; i <= posts.length - 1; i++) {
-            let timeout = 60000 * i;
+            let timeout = interval * i;
             setTimeout(() => {
                 finishPost(posts[i])
             }, timeout);
@@ -718,7 +782,7 @@ async function run() {
         setTimeout(() => {
             console.log("info", "I'm done!");
             exit()
-        }, (posts.length + 1) * 60000);
+        }, (posts.length + 1) * interval);
 
     }
 }
@@ -726,3 +790,4 @@ async function run() {
 conn.once('open', () => {
     run();
 });
+
