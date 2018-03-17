@@ -10,7 +10,6 @@ import * as async from "async";
 import {createCommentPermlink} from "./server/steemitHelpers";
 
 (mongoose as any).Promise = Promise;
-// mongoose.connect(config.mongo);
 
 const conn = mongoose.connection;
 const paidRewardsDate = '1969-12-31T23:59:59';
