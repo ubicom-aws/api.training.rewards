@@ -1,6 +1,7 @@
 import * as s3 from 's3';
 import * as AWS from 'aws-sdk';
 import * as Promise from 'bluebird';
+import * as path from 'path';
 
 let bucket = "utopian-cdn";
 
@@ -78,7 +79,6 @@ export function uploadProjectFile(filepath, filename, projectId, mimetype, type)
     })
 }
 
-
 export function deleteUserFile(username, filename) {
     console.log(filename)
     return new Promise((resolve, reject) => {
@@ -139,4 +139,28 @@ export function deleteProjectFile(projectId, type, filename) {
         });
 
     });
+}
+
+export function uploadBotLog(slug) {
+    return new Promise((resolve, reject) => {
+        let params = {
+            localFile: 'bot.log',
+
+            s3Params: {
+                Bucket: bucket,
+                Key: "bot-logs/" +slug + '-bot.log',
+                ACL: "public-read",
+                ContentType: "text/plain"
+            },
+        };
+        let uploader = client.uploadFile(params);
+        uploader.on('error', function (err) {
+            console.log(err);
+            reject(err);
+        });
+
+        uploader.on('end', function (data) {
+            resolve(data);
+        });
+    })
 }
