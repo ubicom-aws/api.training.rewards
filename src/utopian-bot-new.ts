@@ -613,7 +613,7 @@ async function finishPost(post) {
     commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
     commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
-    console.log('info', 'Category: ' + post.category + ' Vote: ' +  Math.round(finalVote.toFixed(2) * 100));
+    console.log('info', 'Category: ' + post.category + ' Vote: ' + Math.round(finalVote.toFixed(2) * 100));
 
     SteemConnect.vote(botAccount, post.author, post.permlink, Math.round(finalVote.toFixed(2) * 100))
         .then(() => {
@@ -654,7 +654,7 @@ async function finishPost(post) {
                 console.log("info", 'Post processed');
             }).catch(e => {
                 if (e.error_description == undefined) {
-                    updatePost(post.author,post.permlink);
+                    updatePost(post.author, post.permlink);
                     console.log("info", "Post commented successfully");
                     console.log("info", 'Post processed');
                 } else {
@@ -672,7 +672,7 @@ async function finishPost(post) {
 async function exit() {
     Stats.get().then(stats => {
         stats.bot_is_voting = false;
-        stats.save().then(()=>{
+        stats.save().then(() => {
             conn.close();
             process.exit(0);
         });
