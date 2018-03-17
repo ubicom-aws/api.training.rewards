@@ -9,7 +9,6 @@ import Post from "./server/models/post.model";
 import * as async from "async";
 import {createCommentPermlink} from "./server/steemitHelpers";
 
-
 (mongoose as any).Promise = Promise;
 // mongoose.connect(config.mongo);
 
@@ -38,7 +37,6 @@ if (!secret) {
     console.log("error", "Not app secret was set");
     exit();
 }
-
 
 mongoose.connect(config.mongo);
 
@@ -730,4 +728,3 @@ async function run() {
 conn.once('open', () => {
     run();
 });
-
