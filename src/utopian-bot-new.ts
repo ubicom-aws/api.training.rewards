@@ -1,6 +1,6 @@
 import config from './config/config';
 import * as mongoose from "mongoose";
-// import * as console from "winston";
+import * as console from "winston";
 import steemAPI, {formatter} from "./server/steemAPI";
 import * as request from 'superagent';
 import Stats from "./server/models/stats.model";
@@ -318,7 +318,7 @@ async function checkVotingPower(account, limitPower) {
                 const votingPower = botStatus.voting_power + (10000 * secondsago / 432000);
 
                 if (votingPower < limitPower && !forced) {
-                    console.log("info", "Voting power is to low to start voting");
+                    console.log("info", "Voting power is to low to start voting. Voting power is at: " + (votingPower / 100).toFixed(2) + "%");
                     exit();
                 }
 
@@ -673,16 +673,15 @@ async function finishPost(post) {
 async function exit() {
     Stats.get().then(stats => {
         stats.bot_is_voting = false;
-        stats.save();
-       setTimeout(() => {
-           conn.close();
-           process.exit(0);
-       }, 10000)
+        stats.save().then(()=>{
+            conn.close();
+            process.exit(0);
+        });
     });
 }
 
 async function run() {
-    await checkVotingPower(botAccount, 8000);
+    await checkVotingPower(botAccount, 10000);
 
     console.log("info", "Voting Power is at 100% - Begin Voting Process");
     console.log("info", "Get Stats...");
