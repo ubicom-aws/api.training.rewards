@@ -616,9 +616,9 @@ async function finishPost(post) {
     commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
     commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
-    console.log('info', 'Category: ' + post.category + ' Vote: ' + finalVote);
+    console.log('info', 'Category: ' + post.category + ' Vote: ' +  Math.round(finalVote.toFixed(2) * 100));
 
-    SteemConnect.vote(botAccount, post.author, post.permlink, finalVote.toFixed(2) * 100)
+    SteemConnect.vote(botAccount, post.author, post.permlink, Math.round(finalVote.toFixed(2) * 100))
         .then(() => {
             SteemConnect.comment(
                 post.author,
@@ -629,12 +629,14 @@ async function finishPost(post) {
                 commentBody,
                 jsonMetadata,
             ).then(() => {
-
+                console.log("info", "Post commented successfully");
+                console.log("info", 'Post processed');
             }).catch(e => {
                 if (e.error_description == undefined) {
                     console.log("info", "Post commented successfully");
                 } else {
                     console.log("error", "Failed to post comment! Need cusotm comment.", e);
+                    exit();
                 }
                 console.log("info", 'Post processed');
             });
@@ -659,11 +661,13 @@ async function finishPost(post) {
                     console.log("info", "Post commented successfully");
                     console.log("info", 'Post processed');
                 } else {
-                    console.log("error", "Failed to post comment! Need", e);
+                    console.log("error", "Failed to post comment! Need cusotm comment.", e);
+                    exit();
                 }
             });
         } else {
             console.log("error", "Failed to vote! Need manual vote!", e)
+            exit();
         }
     });
 }
@@ -672,8 +676,10 @@ async function exit() {
     Stats.get().then(stats => {
         stats.bot_is_voting = false;
         stats.save();
-        conn.close();
-        process.exit(0);
+       setTimeout(() => {
+           conn.close();
+           process.exit(0);
+       }, 10000)
     });
 }
 
@@ -691,34 +697,34 @@ async function run() {
     if (stats.bot_is_voting === true) {
         console.log("info", "The bot is already voting.");
         exit();
-    }
+    } else {
+        console.log("info", "The bot isnt voting. Proceed with voting procedure");
 
-    console.log("info", "The bot isnt voting. Proceed with voting procedure");
+        Stats.get().then(stats => {
+            stats.bot_is_voting = true;
+            stats.save();
+        });
 
-    Stats.get().then(stats => {
-        stats.bot_is_voting = true;
-        stats.save();
-    });
+        console.log("info", "Pepare SteemConnect");
 
-    console.log("info", "Pepare SteemConnect");
+        await prepareSteemConnect();
 
-    await prepareSteemConnect();
+        console.log("info", "Get Posts...")
 
-    console.log("info", "Get Posts...")
+        let posts: any = await preparePosts(await getPosts(), categories);
 
-    let posts: any = await preparePosts(await getPosts(), categories);
-
-    for (let i = 0; i <= posts.length - 1; i++) {
-        let timeout = 60000 * i;
+        for (let i = 0; i <= posts.length - 1; i++) {
+            let timeout = 60000 * i;
+            setTimeout(() => {
+                finishPost(posts[i])
+            }, timeout);
+        }
         setTimeout(() => {
-            finishPost(posts[i])
-        }, timeout);
-    }
-    setTimeout(() => {
-        console.log("info", "I'm done!");
-        exit()
-    }, (posts.length + 1) * 60000);
+            console.log("info", "I'm done!");
+            exit()
+        }, (posts.length + 1) * 60000);
 
+    }
 }
 
 conn.once('open', () => {
