@@ -463,11 +463,6 @@ function calculateFinalVote(post, categories_pool) {
     let diff = categories_pool[category].max_vote - categories_pool[category].min_vote;
     let finalVote = diff * (post.json_metadata.score / 100) + categories_pool[category].min_vote;
 
-    finalVote = finalVote * categories_pool[category].difficulty;
-    if (finalVote > categories_pool[category].max_vote) {
-        finalVote = categories_pool[category].max_vote;
-    }
-
     return finalVote;
 
 }
