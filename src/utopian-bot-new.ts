@@ -335,7 +335,7 @@ if (test) {
 }
 
 if (fs.existsSync('bot.log')) {
-    console.log("info","Delete old log file from previous run")
+    console.log("info", "Delete old log file from previous run")
     fs.unlinkSync('bot.log');
 }
 
@@ -731,22 +731,27 @@ async function exit() {
         Stats.get().then(stats => {
             stats.bot_is_voting = false;
             stats.save().then(() => {
-                uploadBotLog(prefix).then(() => {
-                    console.log("info", "The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
-                    postLogToDiscord("https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log").then(() => {
-                        console.log("info","Log file was posted to discord")
-                        conn.close();
-                        process.exit(0);
-                    }).catch((err) => {
-                        console.log("error","Failed to post log file to discord", err);
-                        conn.close();
-                        process.exit(0);
-                    })
-                }).catch((err) => {
-                    console.log("error", "Failed to upload bot log!", err);
+                if (!post_discord) {
                     conn.close();
                     process.exit(0);
-                });
+                } else {
+                    uploadBotLog(prefix).then(() => {
+                        console.log("info", "The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
+                        postLogToDiscord("https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log").then(() => {
+                            console.log("info", "Log file was posted to discord")
+                            conn.close();
+                            process.exit(0);
+                        }).catch((err) => {
+                            console.log("error", "Failed to post log file to discord", err);
+                            conn.close();
+                            process.exit(0);
+                        })
+                    }).catch((err) => {
+                        console.log("error", "Failed to upload bot log!", err);
+                        conn.close();
+                        process.exit(0);
+                    });
+                }
             });
         }).catch((err) => {
             console.log("error", "Failed to save stats!", err);
@@ -754,22 +759,27 @@ async function exit() {
             process.exit(0);
         });
     } else {
-        uploadBotLog(prefix).then(() => {
-            console.log("info", "The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
-            postLogToDiscord("https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log").then(() => {
-                console.log("info","Log file was posted to discord")
-                conn.close();
-                process.exit(0);
-            }).catch((err) => {
-                console.log("error","Failed to post log file to discord", err);
-                conn.close();
-                process.exit(0);
-            })
-        }).catch((err) => {
-            console.log("error", "Failed to upload bot log!", err);
-            conn.close();
-            process.exit(0);
-        });
+       if (!post_discord) {
+           uploadBotLog(prefix).then(() => {
+               console.log("info", "The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
+               postLogToDiscord("https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log").then(() => {
+                   console.log("info", "Log file was posted to discord")
+                   conn.close();
+                   process.exit(0);
+               }).catch((err) => {
+                   console.log("error", "Failed to post log file to discord", err);
+                   conn.close();
+                   process.exit(0);
+               })
+           }).catch((err) => {
+               console.log("error", "Failed to upload bot log!", err);
+               conn.close();
+               process.exit(0);
+           });
+       } else {
+           conn.close();
+           process.exit(0);
+       }
     }
 }
 
