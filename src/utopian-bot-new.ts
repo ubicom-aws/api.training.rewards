@@ -89,7 +89,7 @@ let categories_pool = {
     "development": {
         "total_vote_weight": 0,
         "max_vote": MAX_VOTE_EVER,
-        "min_vote": 30,
+        "min_vote": 5,
         "difficulty": 2.5 * DIFFICULTY_MULTIPLIER
     },
     "bug-hunting": {
