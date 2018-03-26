@@ -5,6 +5,9 @@ import paramValidation from '../../config/param-validation';
 
 const router = express.Router();
 
+router.route('/post')
+    .post(uploadCtrl.uploadPostImage);
+
 router.route('/user')
     .post(uploadCtrl.uploadUserFile)
     .delete(uploadCtrl.deleteUserFile);

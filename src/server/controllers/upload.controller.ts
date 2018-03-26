@@ -73,6 +73,31 @@ function uploadProjectFile(req, res, next) {
     });
 }
 
+
+function uploadPostImage(req, res) {
+    if (!req.files || !req.files.files)
+        return res.status(400).json({error: 'No files were uploaded.'});
+
+    if (!mimeTypes.includes(req.files.file.mimetype))
+        return res.status(415).json({error: 'Unsupported MimeType', mimetypes: mimeTypes});
+
+    let upload = req.files.file;
+    let tmp_file = path.resolve('./uploads/' + slug());
+
+    upload.mv(tmp_file, function (err) {
+        if (err)
+            return res.status(500).json(err);
+
+        s3.uploadPostImage(tmp_file, upload.name, upload.mimetype).then((data) => {
+            fs.unlinkSync(tmp_file);
+            res.json(data);
+        }).catch((err) => {
+            fs.unlinkSync(tmp_file);
+            res.status(500).json(err);
+        })
+    });
+}
+
 function deleteProjectFile(req, res, next) {
     let {project, type, filename} = req.body;
     s3.deleteProjectFile(project, type, filename).then((data) => {
@@ -82,4 +107,4 @@ function deleteProjectFile(req, res, next) {
     })
 }
 
-export default {uploadUserFile, deleteUserFile, uploadProjectFile, deleteProjectFile}
+export default {uploadUserFile, deleteUserFile, uploadProjectFile, deleteProjectFile, uploadPostImage}
