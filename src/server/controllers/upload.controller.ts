@@ -78,10 +78,10 @@ function uploadPostImage(req, res) {
     if (!req.files || !req.files.files)
         return res.status(400).json({error: 'No files were uploaded.'});
 
-    if (!mimeTypes.includes(req.files.file.mimetype))
+    if (!mimeTypes.includes(req.files.files.mimetype))
         return res.status(415).json({error: 'Unsupported MimeType', mimetypes: mimeTypes});
 
-    let upload = req.files.file;
+    let upload = req.files.files;
     let tmp_file = path.resolve('./uploads/' + slug());
 
     upload.mv(tmp_file, function (err) {

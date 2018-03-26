@@ -50,6 +50,6 @@ router.use('/faq', faqRoutes);
 
 router.use('/rules', ruleRoutes)
 
-router.use('/upload', requireAuth, uploadRoutes);
+router.use('/upload', uploadRoutes);
 
 export default router;
