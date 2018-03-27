@@ -35,6 +35,8 @@ app.use(methodOverride());
 // secure apps by setting various HTTP headers
 app.use(helmet());
 
+app.use(cors());
+
 let whitelistOrigin = ['https://api.utopian.io' ,'https://join.utopian.io', 'https://utopian.io', 'http://localhost:4040', 'https://localhost:4040'];
 let whitelistHosts = ['api.utopian.io','join.utopian.io', 'utopian.io', 'localhost:4040'];
 app.use((req, res, next) => {
