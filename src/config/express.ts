@@ -43,7 +43,7 @@ app.use((req, res, next) => {
     let origin: any = req.headers.origin;
     if (origin) {
         if (whitelistOrigin.indexOf(origin) !== -1) {
-            console.log("Whitelist Origin: " + origin);
+            console.log("info","Whitelist Origin: " + origin);
             next();
         } else {
             next(new Error('Not allowed by CORS'))
@@ -52,7 +52,7 @@ app.use((req, res, next) => {
         let host: any = req.headers.host;
         if (host) {
             if (whitelistHosts.indexOf(host) !== -1) {
-                console.log("Whitelist Host: " + host);
+                console.log("info","Whitelist Host: " + host);
                 next();
             } else {
                 next(new Error('You are not allowed to access our API'))
