@@ -42,7 +42,6 @@ let whitelistHosts = ['api.utopian.io','join.utopian.io', 'utopian.io', 'localho
 app.use((req, res, next) => {
     let origin: any = req.headers.origin;
     if (origin) {
-        console.log(origin);
         if (whitelistOrigin.indexOf(origin) !== -1) {
             console.log("Whitelist Origin: " + origin);
             next();
@@ -101,12 +100,12 @@ app.use((req, res, next) => {
 
 // error handler, send stacktrace only during development
 app.use((err, req: express.Request, res, next) => {
-    if (err.status !== httpStatus.NOT_FOUND) {
-        winstonInstance.error('Error processing HTTP request',
-            '\nError: ', err.message, err.stack,
-            '\nRequest URL: ', req.originalUrl,
-            '\nRequest body: ', req.body);
-    }
+    // if (err.status !== httpStatus.NOT_FOUND) {
+    //     winstonInstance.error('Error processing HTTP request',
+    //         '\nError: ', err.message, err.stack,
+    //         '\nRequest URL: ', req.originalUrl,
+    //         '\nRequest body: ', req.body);
+    // }
     res.status(err.status).json({
         message: err.isPublic ? err.message : httpStatus[err.status],
         stack: config.env === 'development' ? err.stack : {}
