@@ -7,7 +7,6 @@ import Stats from "./server/models/stats.model";
 import * as SteemConnect from 'sc2-sdk';
 import Post from "./server/models/post.model";
 import * as async from "async";
-import * as s3 from "s3";
 import {createCommentPermlink} from "./server/steemitHelpers";
 import {uploadBotLog} from "./server/helpers/s3";
 import * as path from "path";

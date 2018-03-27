@@ -25,20 +25,29 @@ function avatar(req, res, next) {
                 data = JSON.parse(account.json_metadata);
                 if (data.profile && data.profile.profile_image) {
                     Jimp.read(data.profile.profile_image, function (err, avatar) {
-                        avatar.quality(100).getBuffer(Jimp.MIME_PNG, function (err, buffer) {
-                            if (err) {
-                                Jimp.read(avatar_default, function (err, avatar) {
-                                    avatar.quality(100).getBuffer(Jimp.MIME_PNG, function (err, buffer) {
-                                        res.set("Content-Type", Jimp.MIME_PNG);
-                                        res.send(buffer);
+                        try {
+                            avatar.quality(100).getBuffer(Jimp.MIME_PNG, function (err, buffer) {
+                                if (err) {
+                                    Jimp.read(avatar_default, function (err, avatar) {
+                                        avatar.quality(100).getBuffer(Jimp.MIME_PNG, function (err, buffer) {
+                                            res.set("Content-Type", Jimp.MIME_PNG);
+                                            res.send(buffer);
+                                        });
                                     });
-                                });
-                            } else {
-                                res.set("Content-Type", Jimp.MIME_PNG);
-                                res.send(buffer);
-                            }
+                                } else {
+                                    res.set("Content-Type", Jimp.MIME_PNG);
+                                    res.send(buffer);
+                                }
 
-                        });
+                            });
+                        } catch (e) {
+                            Jimp.read(avatar_default, function (err, avatar) {
+                                avatar.quality(100).getBuffer(Jimp.MIME_PNG, function (err, buffer) {
+                                    res.set("Content-Type", Jimp.MIME_PNG);
+                                    res.send(buffer);
+                                });
+                            });
+                        }
                     });
                 } else {
                     Jimp.read(avatar_default, function (err, avatar) {
