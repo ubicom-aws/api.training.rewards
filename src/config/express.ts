@@ -35,11 +35,12 @@ app.use(methodOverride());
 // secure apps by setting various HTTP headers
 app.use(helmet());
 
-let whitelistOrigin = ['https://join.utopian.io', 'https://utopian.io', 'http://localhost:4040', 'https://localhost:4040'];
-let whitelistHosts = ['join.utopian.io', 'utopian.io', 'localhost:4040'];
+let whitelistOrigin = ['https://api.utopian.io' ,'https://join.utopian.io', 'https://utopian.io', 'http://localhost:4040', 'https://localhost:4040'];
+let whitelistHosts = ['api.utopian.io','join.utopian.io', 'utopian.io', 'localhost:4040'];
 app.use((req, res, next) => {
     let origin: any = req.headers.origin;
     if (origin) {
+        console.log(origin);
         if (whitelistOrigin.indexOf(origin) !== -1) {
             console.log("Whitelist Origin: " + origin);
             next();
@@ -48,6 +49,7 @@ app.use((req, res, next) => {
         }
     } else {
         let host: any = req.headers.host;
+        console.log(host);
         if (host) {
             if (whitelistHosts.indexOf(host) !== -1) {
                 console.log("Whitelist Host: " + host);
