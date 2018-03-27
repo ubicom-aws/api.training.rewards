@@ -210,7 +210,6 @@ function get(req, res) {
 
 function getGithubRepos(user, callback) {
     var result = new Array();
-    console.log("getting github repos:", user);
     if (!user || !user.github || !user.github.token) {
         return callback(result);
     }

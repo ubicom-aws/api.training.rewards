@@ -50,7 +50,6 @@ app.use((req, res, next) => {
         }
     } else {
         let host: any = req.headers.host;
-        console.log(host);
         if (host) {
             if (whitelistHosts.indexOf(host) !== -1) {
                 console.log("Whitelist Host: " + host);
