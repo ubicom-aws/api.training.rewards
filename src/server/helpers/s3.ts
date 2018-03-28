@@ -55,7 +55,7 @@ export function uploadPostImage(filepath, filename, mimetype) {
     filename = random.generate({
         length: 36,
         charset: 'hex'
-    }) + filename;
+    }) + filename.replace(/ /g, "_");
     return new Promise((resolve, reject) => {
         let params = {
             localFile: filepath,
