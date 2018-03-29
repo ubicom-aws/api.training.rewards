@@ -37,32 +37,6 @@ app.use(helmet());
 
 app.use(cors());
 
-let whitelistOrigin = ['https://api.utopian.io' ,'https://join.utopian.io', 'https://utopian.io', 'http://localhost:4040', 'https://localhost:4040'];
-let whitelistHosts = ['api.utopian.io','join.utopian.io', 'utopian.io', 'localhost:4040'];
-app.use((req, res, next) => {
-    let origin: any = req.headers.origin;
-    if (origin) {
-        if (whitelistOrigin.indexOf(origin) !== -1) {
-            console.log("info","Whitelist Origin: " + origin);
-            next();
-        } else {
-            next(new Error('Not allowed by CORS'))
-        }
-    } else {
-        let host: any = req.headers.host;
-        if (host) {
-            if (whitelistHosts.indexOf(host) !== -1) {
-                console.log("info","Whitelist Host: " + host);
-                next();
-            } else {
-                next(new Error('You are not allowed to access our API'))
-            }
-        } else {
-            next();
-        }
-    }
-});
-
 // enable basic logging
 expressWinston.requestWhitelist.push('body');
 expressWinston.responseWhitelist.push('body');
@@ -80,8 +54,6 @@ app.use('/api', routes);
 // if error is not an instanceOf APIError, convert it.
 app.use((err, req, res, next) => {
     if (err instanceof expressValidation.ValidationError) {
-        console.log(err);
-        throw new Error("die");
         // validation error contains errors which is an array of error each containing message[]
         const unifiedErrorMessage = err.errors.map(error => error.messages.join('. ')).join(' and ');
         const error = new APIError(unifiedErrorMessage, err.status, true);
