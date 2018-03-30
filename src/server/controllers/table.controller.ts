@@ -25,11 +25,11 @@ function list(req, res, next) {
 
 function getModeratorRow (moderator, host) {
 
-  return '<td><center><img src="'+host+'/api/users/' + moderator.account + '/avatar?round=true&size=50" style="border-radius:50%;"><br /><a target="_blank" href="//utopian.io/@' + moderator.account + '">@' + moderator.account + '</a></center></td>'
+  return '<td><center><img src="https://steemitimages.com/u/'+moderator.account+'/avatar" style="border-radius:50%;" width="50px" height="50px"><br /><a target="_blank" href="//utopian.io/@' + moderator.account + '">@' + moderator.account + '</a></center></td>'
 }
 
 function getSponsorRow (sponsor, host) {
-  let row = '<td><center><img src="'+host+'/api/users/' + sponsor.account + '/avatar?round=true&size=50" style="border-radius:50%;"><br /><a target="_blank" href="//utopian.io/@' + sponsor.account + '">@' + sponsor.account + '</a>'
+  let row = '<td><center><img src="https://steemitimages.com/u/'+sponsor.account+'/avatar" style="border-radius:50%;" width="50px" height="50px"><br /><a target="_blank" href="//utopian.io/@' + sponsor.account + '">@' + sponsor.account + '</a>'
   if (sponsor.is_witness) {
     row = row + ' - <a target="_blank" href="//v2.steemconnect.com/sign/account-witness-vote?witness=' + sponsor.account + '&approve=1">Vote Witness</a>'
   }

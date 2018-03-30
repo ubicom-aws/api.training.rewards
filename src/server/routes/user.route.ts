@@ -22,6 +22,9 @@ router.route('/:userId/approvePrivacy')
 router.route('/:user/avatar')
   .get(validate(paramValidation.avatarUser), userCtrl.avatar);
 
+router.route('/:user/cover')
+  .get(validate(paramValidation.avatarUser), userCtrl.cover);
+
 router.route('/:userId/repos')
   .get(userCtrl.getRepos);
 
