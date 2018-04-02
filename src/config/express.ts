@@ -41,9 +41,10 @@ let origins = ["https://utopian.io", "https://join.utopian.io", "https://utopian
 
 app.use((req, res, next) => {
     let error = new Error("Unauthorized");
+    console.log(req.headers)
     if (req.headers) {
         let request_origin: any = req.headers.origin;
-        console.log(request_origin);
+
         if (origins.includes(request_origin)) {
             res.header("Access-Control-Allow-Origin", request_origin);
             next();
