@@ -35,7 +35,7 @@ app.use(methodOverride());
 // secure apps by setting various HTTP headers
 app.use(helmet());
 
-// app.use(cors());
+app.use(cors());
 
 let origins = ["https://utopian.io", "https://join.utopian.io", "https://utopian.team","https://utopian.reviews","http://postfix.utopian.io", "http://localhost:4040", "https://localhost:4040", "http://localhost:3000", "https://localhost:3000",];
 
@@ -46,7 +46,7 @@ app.use((req, res, next) => {
         let request_origin: any = req.headers.origin;
 
         if (origins.includes(request_origin)) {
-            res.header("Access-Control-Allow-Origin", request_origin);
+            // res.header("Access-Control-Allow-Origin", request_origin);
             next();
         } else {
             next(error);
