@@ -282,20 +282,22 @@ async function list(req, res, next) {
      filterBy: active | review | any,
      status: pending | flagged | any
      */
-    let {limit=20, skip=0, from, to, type = 'all', filterBy = 'any', status = 'any', author = null, moderator = null, bySimilarity = null} = req.query;
+    let {limit=20, skip=0, from, to, sort = "desc", project = null, type = 'all', filterBy = 'any', status = 'any', author = null, moderator = null, bySimilarity = null} = req.query;
     const cashoutTime = '1969-12-31T23:59:59';
 
     if (!from) {
         from = (new Date());
+    } else {
+        from = new Date(from);
     }
     if (!to) {
         let d = new Date();
         d.setDate(d.getDate() - 7);
         to = d;
+    } else {
+        to = new Date(to);
     }
 
-
-    let sort: any = {'json_metadata.score': -1};
     let select: any = {}
 
     let query: any = {};
@@ -404,24 +406,36 @@ async function list(req, res, next) {
             author
         };
     }
+
+    if (project !== null) {
+        console.log(project);
+        query = {
+            ...query,
+            'json_metadata.repository.id': {$eq:parseInt(project)}
+        };
+    }
+
     let aggregateQuery: any[] = [
         {
             $match: {
                 'created': {
-                    $lt: from.toISOString(),
-                    $gte: to.toISOString()
+                    $lt: to.toISOString(),
+                    $gte: from.toISOString()
                 }
             }
         }
     ];
 
     if (Object.keys(query).length > 0 && query.constructor === Object) {
-        aggregateQuery.push(query);
+        aggregateQuery.push({$match:query});
     }
 
     let data = await Post.aggregate(aggregateQuery);
-    console.log(data);
     data.sort((a: any, b: any) => b["json_metadata"]["score"] - a["json_metadata"]["score"]);
+
+    if (sort !== "desc") {
+        data = data.reverse();
+    }
 
     let result = {
         total: data.length,
