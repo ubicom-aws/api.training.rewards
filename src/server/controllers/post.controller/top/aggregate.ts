@@ -38,3 +38,15 @@ export function aggregateGroup() {
     { $sort: { count: -1 } }
   ];
 }
+
+export function aggregatePostList(startDate: Date, endDate: Date) {
+    const matcher: any = {
+        $match: {
+            'created': {
+                $lt: endDate.toISOString(),
+                $gte: startDate.toISOString()
+            }
+        }
+    };
+    return matcher;
+}
