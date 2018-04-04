@@ -287,14 +287,14 @@ async function list(req, res, next) {
 
 
     if (!from) {
-        from = (new Date());
+        let d = new Date();
+        d.setDate(d.getDate() - 7);
+        from = d;
     } else {
         from = new Date(from);
     }
     if (!to) {
-        let d = new Date();
-        d.setDate(d.getDate() - 7);
-        to = d;
+        to = new Date();
     } else {
         to = new Date(to);
     }
@@ -448,7 +448,7 @@ async function list(req, res, next) {
         }
     });
 
-    let total:any = await Post.aggregate(countQuery);
+    let total: any = await Post.aggregate(countQuery);
 
     aggregateQuery.push({$limit: limit});
 
