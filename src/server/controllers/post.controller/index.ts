@@ -282,7 +282,7 @@ async function list(req, res, next) {
      filterBy: active | review | any,
      status: pending | flagged | any
      */
-    let {limit, skip, from, to, type = 'all', filterBy = 'any', status = 'any', author = null, moderator = null, bySimilarity = null} = req.query;
+    let {limit=20, skip=0, from, to, type = 'all', filterBy = 'any', status = 'any', author = null, moderator = null, bySimilarity = null} = req.query;
     const cashoutTime = '1969-12-31T23:59:59';
 
     if (!from) {
@@ -408,22 +408,29 @@ async function list(req, res, next) {
         {
             $match: {
                 'created': {
-                    $lt: to.toISOString(),
-                    $gte: from.toISOString()
+                    $lt: from.toISOString(),
+                    $gte: to.toISOString()
                 }
             }
         }
     ];
 
-    if (Object.keys(query).length === 0 && query.constructor === Object) {
+    if (Object.keys(query).length > 0 && query.constructor === Object) {
         aggregateQuery.push(query);
     }
 
     let data = await Post.aggregate(aggregateQuery);
     console.log(data);
-    //data.sort((a: any, b: any) => b["json_metadata"]["score"] - a["json_metadata"]["score"]);
-    //if (data.length > limit) data.length = limit;
-    res.json(data);
+    data.sort((a: any, b: any) => b["json_metadata"]["score"] - a["json_metadata"]["score"]);
+
+    let result = {
+        total: data.length,
+        data: data
+    };
+
+    result.data = result.data.slice(skip, skip + limit);
+
+    res.json(result);
 
 
     // Post.countAll({query})
