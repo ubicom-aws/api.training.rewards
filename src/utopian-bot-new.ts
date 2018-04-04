@@ -7,7 +7,6 @@ import Stats from "./server/models/stats.model";
 import * as SteemConnect from 'sc2-sdk';
 import Post from "./server/models/post.model";
 import * as async from "async";
-import * as s3 from "s3";
 import {createCommentPermlink} from "./server/steemitHelpers";
 import {uploadBotLog} from "./server/helpers/s3";
 import * as path from "path";
@@ -62,6 +61,7 @@ mongoose.connect(config.mongo);
 
 const query = {
     'json_metadata.moderator.reviewed': true,
+    'json_metadata.score': { $ne : null },
     author: {$ne: botAccount},
     'active_votes.voter': {$ne: botAccount},
     created: {
@@ -79,71 +79,77 @@ let categories_pool = {
         "max_vote": 4,
         "min_vote": 1.5,
     },
+    "sub-projects": {
+        "total_vote_weight": 0,
+        "max_vote": MAX_VOTE_EVER,
+        "min_vote": 8,
+        "difficulty": 2 * DIFFICULTY_MULTIPLIER
+    },
     "development": {
         "total_vote_weight": 0,
-        "max_vote": 12,
+        "max_vote": MAX_VOTE_EVER,
         "min_vote": 5,
         "difficulty": 2.5 * DIFFICULTY_MULTIPLIER
     },
     "bug-hunting": {
         "total_vote_weight": 0,
-        "max_vote": 7,
-        "min_vote": 3,
-        "difficulty": DIFFICULTY_MULTIPLIER
+        "max_vote": 5,
+        "min_vote": 2,
+        "difficulty": 1 * DIFFICULTY_MULTIPLIER
     },
     "translations": {
         "total_vote_weight": 0,
-        "max_vote": 5,
-        "min_vote": 1,
+        "max_vote": 12,
+        "min_vote": 7,
         "difficulty": 1.4 * DIFFICULTY_MULTIPLIER
     },
     "graphics": {
         "total_vote_weight": 0,
-        "max_vote": 10,
-        "min_vote": 1.5,
+        "max_vote": MAX_VOTE_EVER,
+        "min_vote": 7.5,
         "difficulty": 1.7 * DIFFICULTY_MULTIPLIER
     },
     "analysis": {
         "total_vote_weight": 0,
-        "max_vote": 12,
-        "min_vote": 4,
+        "max_vote": 20,
+        "min_vote": 8,
         "difficulty": 1.6 * DIFFICULTY_MULTIPLIER
     },
     "social": {
         "total_vote_weight": 0,
-        "max_vote": 7,
-        "min_vote": 1,
+        "max_vote": 20,
+        "min_vote": 5,
         "difficulty": 1.5 * DIFFICULTY_MULTIPLIER
     },
     "documentation": {
         "total_vote_weight": 0,
-        "max_vote": 8,
-        "min_vote": 3,
+        "max_vote": 20,
+        "min_vote": 5,
         "difficulty": 1.5 * DIFFICULTY_MULTIPLIER
     },
     "tutorials": {
         "total_vote_weight": 0,
-        "max_vote": 12,
-        "min_vote": 3,
+        "max_vote": 15,
+        "min_vote": 7,
         "difficulty": 1.9 * DIFFICULTY_MULTIPLIER
     },
     "video-tutorials": {
         "total_vote_weight": 0,
-        "max_vote": 12,
-        "min_vote": 4,
+        "max_vote": 15,
+        "min_vote": 8,
         "difficulty": 1.7 * DIFFICULTY_MULTIPLIER
     },
     "copywriting": {
         "total_vote_weight": 0,
-        "max_vote": 9,
-        "min_vote": 3,
+        "max_vote": 15,
+        "min_vote": 5,
         "difficulty": 1.55 * DIFFICULTY_MULTIPLIER
     },
     "blog": {
         "total_vote_weight": 0,
         "max_vote": 5,
         "min_vote": 2,
-        "difficulty": DIFFICULTY_MULTIPLIER
+        "difficulty": 1 * DIFFICULTY_MULTIPLIER
     },
     "tasks-requests": {
         "total_vote_weight": 0,
@@ -467,25 +473,6 @@ function calculateFinalVote(post, categories_pool) {
 
 }
 
-async function getTotalVote(posts) {
-    return new Promise((resolve, reject) => {
-        let total_vote = 0;
-
-        async.each(posts, (post, callback) => {
-            total_vote = calculateFinalVote(post, categories_pool);
-            callback();
-        }, function (err) {
-            if (err) {
-                console.log("error", "An error occured while trying to calculate the total vote");
-                post_discord = false;
-                exit();
-            } else {
-                resolve(total_vote);
-            }
-        });
-    })
-}
-
 async function preparePosts(posts, categories) {
 
     return new Promise((resolve, reject) => {
@@ -754,27 +741,27 @@ async function exit() {
             process.exit(0);
         });
     } else {
-       if (!post_discord) {
-           uploadBotLog(prefix).then(() => {
-               console.log("info", "The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
-               postLogToDiscord("https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log").then(() => {
-                   console.log("info", "Log file was posted to discord")
-                   conn.close();
-                   process.exit(0);
-               }).catch((err) => {
-                   console.log("error", "Failed to post log file to discord", err);
-                   conn.close();
-                   process.exit(0);
-               })
-           }).catch((err) => {
-               console.log("error", "Failed to upload bot log!", err);
-               conn.close();
-               process.exit(0);
-           });
-       } else {
-           conn.close();
-           process.exit(0);
-       }
+        if (post_discord) {
+            uploadBotLog(prefix).then(() => {
+                console.log("info", "The log file was uploaded to: https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log")
+                postLogToDiscord("https://cdn.utopian.io/bot-logs/" + prefix + "-bot.log").then(() => {
+                    console.log("info", "Log file was posted to discord")
+                    conn.close();
+                    process.exit(0);
+                }).catch((err) => {
+                    console.log("error", "Failed to post log file to discord", err);
+                    conn.close();
+                    process.exit(0);
+                })
+            }).catch((err) => {
+                console.log("error", "Failed to upload bot log!", err);
+                conn.close();
+                process.exit(0);
+            });
+        } else {
+            conn.close();
+            process.exit(0);
+        }
     }
 }
 
@@ -800,7 +787,7 @@ async function postLogToDiscord(link) {
                     title: title,
                     description: description,
                     url: link,
-                    footer: {text: "This message was genrated by @utopian-io"}
+                    footer: {text: "This message was generated by @utopian-io"}
                 }]
             }).then(function () {
                 resolve(true);
@@ -826,6 +813,7 @@ async function run() {
 
     if (stats.bot_is_voting === true && !test) {
         console.log("info", "The bot is already voting.");
+        post_discord = false;
         exit();
     } else {
         console.log("info", "The bot isnt voting. Proceed with voting procedure");
@@ -844,6 +832,7 @@ async function run() {
         let posts: any = await preparePosts(await getPosts(), categories);
 
         let interval = 60000;
+
         if (test) {
             interval = 1000;
         }
