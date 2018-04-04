@@ -282,8 +282,9 @@ async function list(req, res, next) {
      filterBy: active | review | any,
      status: pending | flagged | any
      */
-    let {limit=20, skip=0, from, to, sort = "desc", project = null, type = 'all', filterBy = 'any', status = 'any', author = null, moderator = null, bySimilarity = null} = req.query;
+    let {limit = 20, skip = 0, from, to, sort = "desc", project = null, type = 'all', filterBy = 'any', status = 'any', author = null, moderator = null, bySimilarity = null} = req.query;
     const cashoutTime = '1969-12-31T23:59:59';
+
 
     if (!from) {
         from = (new Date());
@@ -411,7 +412,7 @@ async function list(req, res, next) {
         console.log(project);
         query = {
             ...query,
-            'json_metadata.repository.id': {$eq:parseInt(project)}
+            'json_metadata.repository.id': {$eq: parseInt(project)}
         };
     }
 
@@ -427,37 +428,40 @@ async function list(req, res, next) {
     ];
 
     if (Object.keys(query).length > 0 && query.constructor === Object) {
-        aggregateQuery.push({$match:query});
+        aggregateQuery.push({$match: query});
     }
-
-    let data = await Post.aggregate(aggregateQuery);
-    data.sort((a: any, b: any) => b["json_metadata"]["score"] - a["json_metadata"]["score"]);
 
     if (sort !== "desc") {
-        data = data.reverse();
+        aggregateQuery.push({$sort: {'json_metadata.score': 1}});
+    } else {
+        aggregateQuery.push({$sort: {'json_metadata.score': -1}});
     }
 
+    let countQuery = aggregateQuery;
+    countQuery.push({
+        $group: {
+            _id: '0',
+            count: {$sum: 1},
+            posts: {
+                $addToSet: '$$ROOT'
+            }
+        }
+    });
+
+    let total:any = await Post.aggregate(countQuery);
+
+    aggregateQuery.push({$limit: limit});
+
+    aggregateQuery.push({$skip: skip});
+
+    let data = await Post.aggregate(aggregateQuery);
+
     let result = {
-        total: data.length,
+        total: total.count,
         data: data
     };
 
-    result.data = result.data.slice(skip, skip + limit);
-
     res.json(result);
-
-
-    // Post.countAll({query})
-    //     .then(count => {
-    //         Post.list({limit, skip, query, sort, select})
-    //             .then((posts: any[]) => res.json({
-    //                 total: count,
-    //                 results: posts.map(postMapper)
-    //             }))
-    //             .catch(e => next(e));
-    //
-    //     })
-    //     .catch(e => next(e));
 }
 
 function getBoolean(val?: string | boolean): boolean {
