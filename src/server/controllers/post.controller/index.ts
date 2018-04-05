@@ -450,9 +450,16 @@ async function list(req, res, next) {
 
     let total: any = await Post.aggregate(countQuery);
 
-    aggregateQuery.push({$limit: parseInt(limit)});
+    if (limit !== parseInt(limit)) {
+        limit = parseInt(limit);
+    }
+    if (skip !== parseInt(skip)) {
+        skip = parseInt(skip);
+    }
 
-    aggregateQuery.push({$skip: parseInt(skip)});
+    aggregateQuery.push({$limit: limit});
+
+    aggregateQuery.push({$skip: skip});
 
     let data = await Post.aggregate(aggregateQuery);
 
