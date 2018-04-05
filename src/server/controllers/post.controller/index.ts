@@ -437,8 +437,9 @@ async function list(req, res, next) {
         aggregateQuery.push({$sort: {'json_metadata.score': -1}});
     }
 
-    let countQuery = aggregateQuery;
-    countQuery.push({
+    limit = parseInt(limit);
+    skip = parseInt(skip);
+    aggregateQuery.push({
         $group: {
             _id: '0',
             count: {$sum: 1},
@@ -446,29 +447,17 @@ async function list(req, res, next) {
                 $addToSet: '$$ROOT'
             }
         }
+    }, {
+        $project:
+            {
+                _id : 0,
+                count: '$count',
+                posts: { $slice: [ '$posts', skip, skip + limit] }
+            }
     });
 
-    let total: any = await Post.aggregate(countQuery);
-
-    if (limit !== parseInt(limit)) {
-        limit = parseInt(limit);
-    }
-    if (skip !== parseInt(skip)) {
-        skip = parseInt(skip);
-    }
-
-    aggregateQuery.push({$limit: limit});
-
-    aggregateQuery.push({$skip: skip});
-
-    let data = await Post.aggregate(aggregateQuery);
-
-    let result = {
-        total: total.count,
-        data: data
-    };
-
-    res.json(result);
+    const data = await Post.aggregate(aggregateQuery);
+    res.json(data);
 }
 
 function getBoolean(val?: string | boolean): boolean {
