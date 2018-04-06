@@ -47,6 +47,7 @@ async function create(req, res, next) {
       const dbPost = await Post.get(author, permlink);
       return sendPost(res, dbPost);
     } catch (e) {
+      console.log(e);
       if (!(e instanceof APIError && e.status === HttpStatus.NOT_FOUND)) {
         return next(e);
       }
