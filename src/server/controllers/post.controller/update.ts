@@ -107,9 +107,9 @@ export async function validateNewPost(post: any,
   // New posts can't have questionaire score filled.
   if (checkModerated && meta.score) return false;
 
-  if (post.beneficiaries.length() !== 1) return false;
-
-  if (post.beneficiaries[0].account !== "utopian.pay" || post.beneficiaries[0].weight < 1500) return false;
+  // if (post.beneficiaries.length() !== 1) return false;
+  //
+  // if (post.beneficiaries[0].account !== "utopian.pay" || post.beneficiaries[0].weight < 1500) return false;
 
   return true;
 }
