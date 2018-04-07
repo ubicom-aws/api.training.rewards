@@ -24,31 +24,13 @@ router.get('/health-check', (req, res) =>
 );
 
 // mount user routes at /users
-router.use('/users', userRoutes);
+// router.use('/users', userRoutes);
 
 router.use('/login', loginRoutes);
 
 router.use('/logout', requireAuth, logoutRoutes);
 
 router.use('/sc2', requireAuth, sc2Routes);
-
-router.use('/projects', projectRoutes);
-
-router.use('/posts', postRoutes);
-
-router.use('/stats', statsRoutes);
-
-router.use('/sponsors', sponsorRoutes);
-
-router.use('/moderators', moderatorRoutes);
-
-router.use('/tables', tableRoutes);
-
-router.use('/auth', socialLoginRoutes);
-
-router.use('/faq', faqRoutes);
-
-router.use('/rules', ruleRoutes)
 
 router.use('/upload', uploadRoutes);
 
