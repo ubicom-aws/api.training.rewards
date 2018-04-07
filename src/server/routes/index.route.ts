@@ -1,5 +1,5 @@
 import * as express from 'express';
-import {requireAuth} from './middleware';
+import {requireAuth, requireAPIKey, requireValidOrigin} from './middleware';
 
 import userRoutes from './user.route';
 import postRoutes from './post.route';
@@ -15,23 +15,44 @@ import tableRoutes from './tables.route';
 import faqRoutes from './faq.route';
 import ruleRoutes from './rule.route';
 import uploadRoutes from './upload.route';
+import apikeyRoutes from './key.route';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
 /** GET /health-check - Check service health */
 router.get('/health-check', (req, res) =>
-    res.send('OK')
+    res.json({status:'OK'})
 );
 
 // mount user routes at /users
-// router.use('/users', userRoutes);
+router.use('/users', requireAPIKey, userRoutes);
 
 router.use('/login', loginRoutes);
 
 router.use('/logout', requireAuth, logoutRoutes);
 
-router.use('/sc2', requireAuth, sc2Routes);
+router.use('/sc2', requireAuth, requireAPIKey, sc2Routes);
 
-router.use('/upload', uploadRoutes);
+router.use('/projects', requireAPIKey, projectRoutes);
+
+router.use('/posts', requireAPIKey, postRoutes);
+
+router.use('/stats', requireAPIKey, statsRoutes);
+
+router.use('/sponsors', requireAPIKey, sponsorRoutes);
+
+router.use('/moderators', requireAPIKey, moderatorRoutes);
+
+router.use('/tables', requireAPIKey, tableRoutes);
+
+router.use('/auth', requireAPIKey, socialLoginRoutes);
+
+router.use('/faq', requireAPIKey, faqRoutes);
+
+router.use('/rules', requireAPIKey, ruleRoutes)
+
+router.use('/upload', requireAPIKey, uploadRoutes);
+
+router.use('/apikey', apikeyRoutes);
 
 export default router;
