@@ -442,8 +442,8 @@ async function list(req, res, next) {
     aggregateQuery.push({
         $group: {
             _id: '0',
-            count: {$sum: 1},
-            posts: {
+            total: {$sum: 1},
+            results: {
                 $addToSet: '$$ROOT'
             }
         }
@@ -451,13 +451,13 @@ async function list(req, res, next) {
         $project:
             {
                 _id : 0,
-                count: '$count',
-                posts: { $slice: [ '$posts', skip, skip + limit] }
+                total: '$total',
+                results: { $slice: [ '$results', skip, skip + limit] }
             }
     });
 
     const data = await Post.aggregate(aggregateQuery);
-    res.json(data);
+    res.json(data[0]);
 }
 
 function getBoolean(val?: string | boolean): boolean {
