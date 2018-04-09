@@ -10,7 +10,6 @@ import {top} from './top';
 import {moderator} from './moderator';
 import questionnaire from './questionnaire';
 import * as R from 'ramda';
-import {aggregateGroup, aggregateMatch, aggregatePostList} from "./top/aggregate";
 
 function postMapper(post) {
     post.pending = false;
@@ -237,29 +236,29 @@ async function update(req, res, next) {
                 post.json_metadata.moderator.flagged = false;
             }
 
-            try {
-                const user = await User.get(post.author);
-                await sc2.send('/broadcast', {
-                    user,
-                    data: {
-                        operations: [[
-                            'comment',
-                            {
-                                parent_author: post.parent_author,
-                                parent_permlink: post.parent_permlink,
-                                author: post.author,
-                                permlink: post.permlink,
-                                title: post.title,
-                                body: post.body,
-                                json_metadata: JSON.stringify(post.json_metadata),
-                            }
-                        ]]
-                    }
-                });
-            } catch (e) {
-                console.log('FAILED TO UPDATE POST DURING REVIEW', e);
-            }
-        }
+      try {
+        const user = await User.get(post.author);
+        await sc2.send('/broadcast', {
+          user,
+          data: {
+            operations: [[
+              'comment',
+              {
+                parent_author: post.parent_author,
+                parent_permlink: post.parent_permlink,
+                author: post.author,
+                permlink: post.permlink,
+                title: post.title,
+                body: post.body,
+                json_metadata: JSON.stringify(post.json_metadata),
+              }
+            ]]
+          }
+        });
+      } catch (e) {
+        console.log('FAILED TO UPDATE POST DURING REVIEW', e);
+      }
+    }
 
         try {
             // don't modify json_metadata.moderator when operation is inline edit of category, repo, or tags

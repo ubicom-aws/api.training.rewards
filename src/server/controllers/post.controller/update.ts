@@ -4,6 +4,7 @@ import User from '../../models/user.model';
 import Post from '../../models/post.model';
 import * as request from 'superagent';
 import questionnaire from './questionnaire';
+import * as R from 'ramda';
 
 const validTypes = [
   'tutorials',
@@ -110,6 +111,9 @@ export async function validateNewPost(post: any,
 
   // New posts can't be staff picked
   if (checkModerated && meta.staff_pick) return false;
+
+  const beneficiary = R.find(R.propEq('account', 'utopian.pay'))(post.beneficiaries);
+  if (!beneficiary || beneficiary.weight < 1500) return false;
 
   return true;
 }
