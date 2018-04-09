@@ -37,6 +37,23 @@ app.use(helmet());
 
 app.use(cors());
 
+// let origins = ["https://utopian.io", "https://join.utopian.io", "https://utopian.team","https://utopian.reviews","http://postfix.utopian.io", "http://localhost:4040", "https://localhost:4040", "http://localhost:3000", "https://localhost:3000","tcp://utopian-bot"];
+//
+// app.use((req, res, next) => {
+//     let error = new Error("Unauthorized");
+//     if (req.headers) {
+//         let request_origin: any = req.headers.origin;
+//         if (origins.includes(request_origin)) {
+//             next();
+//         } else {
+//             next(error);
+//         }
+//     }
+//     else {
+//         next(error);
+//     }
+// });
+
 // enable basic logging
 expressWinston.requestWhitelist.push('body');
 expressWinston.responseWhitelist.push('body');
