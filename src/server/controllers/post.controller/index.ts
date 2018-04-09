@@ -354,7 +354,7 @@ function getPostById(req, res, next) {
     }
 }
 
-async function list(req, res, next) {
+function list(req, res, next) {
     /*
      section : author | project | all
      type: ideas | code | graphics | social | all
@@ -362,31 +362,32 @@ async function list(req, res, next) {
      filterBy: active | review | any,
      status: pending | flagged | any
      */
-    let {limit = 20, skip = 0, from, to, sort = "desc", project = null, type = 'all', filterBy = 'any', status = 'any', author = null, moderator = null, bySimilarity = null} = req.query;
+    const { limit, skip, section = 'all', type = 'all', sortBy = 'created', filterBy = 'any', status = 'any', projectId = null, platform = null, author = null, moderator = 'any', bySimilarity = null } = req.query;
     const cashoutTime = '1969-12-31T23:59:59';
 
-
-    if (!from) {
-        let d = new Date();
-        d.setDate(d.getDate() - 7);
-        from = d;
-    } else {
-        from = new Date(from);
-    }
-    if (!to) {
-        to = new Date();
-    } else {
-        to = new Date(to);
-    }
-
+    let sort: any = { created: -1 };
     let select: any = {}
 
     let query: any = {};
 
-    if (moderator !== null) {
+    if (moderator !== 'any' && filterBy !== 'review') {
         query = {
             ...query,
             'json_metadata.moderator.account': moderator,
+        }
+    } else {
+        query = {
+            ...query,
+            'json_metadata.moderator.flagged': {
+                $ne: true
+            },
+        }
+    }
+
+    if (section !== 'author' && status !== 'flagged' && moderator === 'any') {
+        query = {
+            ...query,
+            'json_metadata.moderator.reviewed': true,
         }
     }
 
@@ -414,7 +415,11 @@ async function list(req, res, next) {
             }
     }
 
-    if (filterBy === 'review' && moderator !== null) {
+    if (sortBy === 'votes') {
+        sort = { net_votes : -1 };
+    }
+
+    if (filterBy === 'review') {
         query = {
             ...query,
             'json_metadata.moderator.reviewed': {$ne: true},
@@ -422,6 +427,7 @@ async function list(req, res, next) {
                 $ne: moderator,
             }
         }
+        sort = { created: 1 }
     }
 
     if (status === 'pending') {
@@ -444,6 +450,7 @@ async function list(req, res, next) {
             'json_metadata.moderator.reviewed': true,
         }
     }
+
 
     if (filterBy === 'active') {
         query = {
@@ -475,69 +482,38 @@ async function list(req, res, next) {
             query = {
                 ...query,
                 'json_metadata.type': {
-                    $regex: (/task-/i)
+                    $regex : (/task-/i)
                 }
             };
         }
     }
 
-    if (author !== null) {
+    if (section === 'project') {
+        query = {
+            ...query,
+            'json_metadata.repository.id': +projectId,
+            'json_metadata.platform': platform,
+        };
+    }
+
+    if (section === 'author') {
         query = {
             ...query,
             author
         };
     }
 
-    if (project !== null) {
-        console.log(project);
-        query = {
-            ...query,
-            'json_metadata.repository.id': {$eq: parseInt(project)}
-        };
-    }
+    Post.countAll({ query })
+        .then(count => {
+            Post.list({ limit, skip, query, sort, select })
+                .then((posts: any[]) => res.json({
+                    total: count,
+                    results: posts.map(postMapper)
+                }))
+                .catch(e => next(e));
 
-    let aggregateQuery: any[] = [
-        {
-            $match: {
-                'created': {
-                    $lt: to.toISOString(),
-                    $gte: from.toISOString()
-                }
-            }
-        }
-    ];
-
-    if (Object.keys(query).length > 0 && query.constructor === Object) {
-        aggregateQuery.push({$match: query});
-    }
-
-    if (sort !== "desc") {
-        aggregateQuery.push({$sort: {'json_metadata.score': 1}});
-    } else {
-        aggregateQuery.push({$sort: {'json_metadata.score': -1}});
-    }
-
-    limit = parseInt(limit);
-    skip = parseInt(skip);
-    aggregateQuery.push({
-        $group: {
-            _id: '0',
-            count: {$sum: 1},
-            posts: {
-                $addToSet: '$$ROOT'
-            }
-        }
-    }, {
-        $project:
-            {
-                _id : 0,
-                count: '$count',
-                posts: { $slice: [ '$posts', skip, skip + limit] }
-            }
-    });
-
-    const data = await Post.aggregate(aggregateQuery);
-    res.json(data);
+        })
+        .catch(e => next(e));
 }
 
 function getBoolean(val?: string | boolean): boolean {

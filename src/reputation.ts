@@ -156,8 +156,9 @@ async function processReputation(user: any, score: any, topScore: number): Promi
         ];
 
         const scoreImpact = (score / topScore) * 100;
-        const levelImpact = Math.ceil((scoreImpact * levels.length) / 100);
-        let level = levelImpact >= 0 ? levels[levelImpact].name : levels[0].name;
+        let levelImpact = Math.ceil((scoreImpact * levels.length) / 100);
+        levelImpact = !levelImpact || levelImpact < 0 ? 0 : levelImpact > levels.length - 1 ? levels.length - 1 : levelImpact;
+        let level = levels[levelImpact].name;
         let influence = levelImpact >= 0 ? levels[levelImpact].influence : levels[0].influence;
         const isModerator = await Moderator.get(user.account);
         const isSupervisor = isModerator && isModerator.supermoderator === true || false;
@@ -216,7 +217,7 @@ async function processReputation(user: any, score: any, topScore: number): Promi
                 }
                 if (delegatedSP >= 100000 && levelImpact < 9) {
                     level = levels[9].name;
-                    influence = levels[8].influence;
+                    influence = levels[9].influence;
                 }
             }
         }
