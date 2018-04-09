@@ -14,9 +14,7 @@ const SponsorSchema = new mongoose.Schema({
   json_metadata: {
     required: false,
   },
-  total_paid_rewards: Number,
   total_paid_rewards_steem: Number,
-  should_receive_rewards: Number,
   percentage_total_vesting_shares: Number,
   vesting_shares: {
     type: Number,
@@ -24,9 +22,9 @@ const SponsorSchema = new mongoose.Schema({
   },
   opted_out: Boolean,
   is_witness: Boolean,
-  projects: {
-    type: Array,
-    required: false,
+  level: {
+    type: String,
+    default: "Standard",
   },
 });
 

@@ -5,29 +5,106 @@ import { getContent } from '../../steemAPI';
 import Post from '../../models/post.model';
 import User from '../../models/user.model';
 import * as HttpStatus from 'http-status';
-import * as request from 'superagent';
 import * as sc2 from '../../sc2';
 import { top } from './top';
 import {moderator} from './moderator';
+import questionnaire from './questionnaire';
+import * as R from 'ramda';
 
 function postMapper(post) {
   post.pending = false;
   post.reviewed = false;
   post.flagged = false;
 
+  // Enable backwards compatibility for the front end
   if (post.json_metadata.moderator) {
-    // Enable backwards compatibility for the front end
     const mod = post.json_metadata.moderator;
     post.moderator = mod.account || undefined;
     post.pending = mod.pending || false;
     post.reviewed = mod.reviewed || false;
     post.flagged = mod.flagged || false;
   }
-
-  post.questions = post.json_metadata.questions || [];
-  post.score = post.json_metadata.score || 0;
+  post.json_metadata.config = post.json_metadata.config || questionnaire[post.json_metadata.type];
 
   return post;
+}
+
+function processAnswers (receivedQuestions, metaQuestions, userData, owner) {
+  const answers = metaQuestions.answers || Array();
+  receivedQuestions.forEach((question, qIndex) => {
+    answers.push({
+      question_id: question.question_id,
+      answer_id: question.answer_id,
+      user: userData.account,
+      influence: !owner || userData.influence > 60 ? userData.influence : 60, // owners start by same influence as mods
+    });
+  });
+  return answers;
+}
+
+function sumAnswersInfluence (answers) {
+  let answersInfluence = 0;
+  answers.forEach(answer => answersInfluence = answersInfluence + answer.influence);
+  return answersInfluence;
+}
+
+function processScore (mostScored, configQuestions) {
+  let score = 0;
+  mostScored.forEach(question => {
+    const questionConfig = R.find(R.propEq('question_id', question.question_id))(configQuestions);
+    const answerConfig = R.find(R.propEq('answer_id', question.answer_id))(questionConfig.answers);
+    score = score + answerConfig.value;
+  });
+  return score;
+}
+
+async function processQuestions (metaData, user, owner, receivedQuestions):Promise<any> {
+  const metaQuestions = metaData.questions && metaData.questions.most_rated ?
+      metaData.questions :
+      {voters : Array(), answers: Array(), total_influence: 0, most_rated: Array()};
+  const configQuestions = metaData.config.questions;
+  const userData = await User.get(user);
+  const influence = userData.influence;
+  const receivedAnswers = processAnswers(receivedQuestions, metaQuestions, userData, owner);
+  let mostRated = Array();
+
+  configQuestions.forEach((question, qIndex) => {
+    question.answers.forEach((answer, aIndex) => {
+      const answers = R.filter(R.whereEq({'answer_id': answer.answer_id, 'question_id': question.question_id}))(receivedAnswers) || [];
+      let summedInfluence = sumAnswersInfluence(answers);
+
+      const currentTop = R.find(R.propEq('question_id', question.question_id))(mostRated);
+       const addTopScored = {
+         question_id: question.question_id,
+         answer_id: answer.answer_id,
+         influence: summedInfluence,
+         voters: R.pluck('user')(answers),
+       };
+      if (!currentTop) {
+        mostRated.push(addTopScored)
+      }
+      if (currentTop && currentTop.influence < summedInfluence) {
+        mostRated = mostRated.map(scored => {
+          if (scored.question_id === question.question_id) {
+            return addTopScored
+          }
+          return scored;
+        })
+      }
+      if (configQuestions.length - 1 === qIndex && question.answers.length - 1 === aIndex) {
+        metaQuestions.most_rated = mostRated;
+      }
+    })
+  });
+
+  metaQuestions.voters.push(user);
+  metaQuestions.answers = receivedAnswers;
+
+  metaData.questions = metaQuestions;
+  metaData.total_influence = metaQuestions.total_influence + influence;
+  metaData.score = processScore(mostRated, configQuestions);
+
+  return metaData;
 }
 
 function sendPost(res, post) {
@@ -72,18 +149,27 @@ async function update(req, res, next) {
   const author = req.params.author;
   const permlink = req.params.permlink;
   const flagged = getBoolean(req.body.flagged);
-  const reserved = getBoolean(req.body.reserved);
   const moderator = req.body.moderator || null;
+  const user = req.body.user || null;
   const pending = getBoolean(req.body.pending);
   const reviewed = getBoolean(req.body.reviewed);
+  const staff_pick = getBoolean(req.body.staff_pick);
   const contribType = req.body.type || null;
   const repo = req.body.repository || null;
   const tags = req.body.tags || null;
   const questions = req.body.questions || [];
-  const score = req.body.score ? parseFloat(req.body.score) : 0;
+  const owner = req.body.owner || false;
 
   try {
     const post = await getUpdatedPost(author, permlink);
+    // allow users to set questions, unless they are the same as the author
+    if (user && questions.length) {
+      if (user === post.author) {
+        res.status(HttpStatus.UNAUTHORIZED);
+        return res.json({"message":"Unauthorized"});
+      }
+      post.json_metadata = await processQuestions(post.json_metadata, user, owner, questions);
+    }
     if (moderator) {
       if (!post.json_metadata.moderator) {
         post.json_metadata.moderator = {};
@@ -99,8 +185,7 @@ async function update(req, res, next) {
       if (repo) post.json_metadata.repository = repo;
       if (tags) post.json_metadata.tags = tags;
       if (moderator) post.json_metadata.moderator.account = moderator;
-      if (questions) post.json_metadata.questions = questions;
-      if (score) post.json_metadata.score = score;
+      if (staff_pick) post.json_metadata.staff_pick = true;
 
       if (reviewed) {
         post.json_metadata.moderator.time = new Date().toISOString();
@@ -108,7 +193,8 @@ async function update(req, res, next) {
         post.json_metadata.moderator.pending = false;
         post.json_metadata.moderator.flagged = false;
 
-        if (post.json_metadata.type === 'bug-hunting' && !post.json_metadata.issue) {
+        // temporary remove until projects are capable to set what they want in their github issues
+        /*if (post.json_metadata.type === 'bug-hunting' && !post.json_metadata.issue) {
           try {
             const user = await User.get(post.author);
             if (user.github && user.github.account) {
@@ -133,20 +219,20 @@ async function update(req, res, next) {
           } catch (e) {
             console.log("ERROR REVIEWING GITHUB", e);
           }
-        }
+        }*/
       } else if (flagged) {
         post.json_metadata.moderator.time = new Date().toISOString();
         post.json_metadata.moderator.flagged = true;
         post.json_metadata.moderator.reviewed = false;
         post.json_metadata.moderator.pending = false;
       } else if (pending) {
+        if (post.json_metadata.moderator.pending === true) {
+          res.status(HttpStatus.FORBIDDEN);
+          return res.json({"message": "This contribution has been reserved already"});
+        }
+
         post.json_metadata.moderator.time = new Date().toISOString();
         post.json_metadata.moderator.pending = true;
-        post.json_metadata.moderator.reviewed = false;
-        post.json_metadata.moderator.flagged = false;
-      } else if (reserved) {
-        post.json_metadata.moderator.time = new Date().toISOString();
-        post.json_metadata.moderator.pending = false;
         post.json_metadata.moderator.reviewed = false;
         post.json_metadata.moderator.flagged = false;
       }
@@ -178,11 +264,11 @@ async function update(req, res, next) {
     try {
       // don't modify json_metadata.moderator when operation is inline edit of category, repo, or tags
       if (questions) post.markModified('json_metadata.questions');
-      if (score) post.markModified('json_metadata.score');
       if (contribType) post.markModified('json_metadata.type');
       if (repo) post.markModified('json_metadata.repository');
       if (tags) post.markModified('json_metadata.tags');
       if (moderator) post.markModified('json_metadata.moderator');
+      if (staff_pick) post.markModified('json_metadata.staff_pick');
 
       const savedPost = await post.save();
       sendPost(res, savedPost);

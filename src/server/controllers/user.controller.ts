@@ -198,6 +198,8 @@ function get(req, res) {
         repos: user.repos ? (user.repos) : undefined,
         tos: user.tos,
         privacy: user.privacy,
+        reputation: user.reputation,
+        influence: user.influence,
         github: user.github ? {
             login: user.github.login,
             account: user.github.account,

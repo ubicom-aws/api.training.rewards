@@ -20,6 +20,8 @@
     "utopian-pay": "node ./dist/utopian-pay.js $TEST $WIF",
     "utopian-mods-pay": "node ./dist/utopian-mod-pay/index.js $TEST $DO_UPVOTE $POSTER_TOKEN $UTOPIAN_TOKEN",
     "updater-posts": "node ./dist/updater-posts.js",
+    "reset-pending": "node ./dist/reset-pending.js",
+    "reputation": "node ./dist/reputation.js",
     "utopian-bot": "node ./dist/utopian-bot-new.js",
     "stats-categories": "node ./dist/stats-categories.js",
     "stats-moderators-shares": "node ./dist/stats-moderators-shares.js",

@@ -3,14 +3,13 @@ import { getContent } from '../../steemAPI';
 import User from '../../models/user.model';
 import Post from '../../models/post.model';
 import * as request from 'superagent';
+import questionnaire from './questionnaire';
 
 const validTypes = [
-  'sub-projects',
   'tutorials',
   'video-tutorials',
   'copywriting',
   'blog',
-
   'task-ideas',
   'ideas',
   'task-development',
@@ -18,7 +17,7 @@ const validTypes = [
   'task-bug-hunting',
   'bug-hunting',
   'task-translations',
-  // 'translations',
+  'translations',
   'task-analysis',
   'analysis',
   'task-graphics',
@@ -50,6 +49,8 @@ export function updatePost(post: any, updatedPost: any): any {
   updatedPost.json_metadata.moderator = post.json_metadata.moderator;
   updatedPost.json_metadata.questions = post.json_metadata.questions;
   updatedPost.json_metadata.score = post.json_metadata.score;
+  updatedPost.json_metadata.staff_pick = post.json_metadata.staff_pick;
+  updatedPost.json_metadata.config = post.json_metadata.config || questionnaire[post.json_metadata.type]
 
   Object.assign(post, updatedPost);
   return post;
@@ -106,6 +107,9 @@ export async function validateNewPost(post: any,
 
   // New posts can't have questionaire score filled.
   if (checkModerated && meta.score) return false;
+
+  // New posts can't be staff picked
+  if (checkModerated && meta.staff_pick) return false;
 
   return true;
 }

@@ -70,7 +70,23 @@ const UserSchema = new mongoose.Schema({
     date: Date,
     ip: String,
   }],
-  last_passwords: [] // last 4 digits of the last passwords for recovery reasons
+  last_passwords: [], // last 4 digits of the last passwords for recovery reasons
+  reputation: {
+    type: String,
+    default: 'Newbie',
+  },
+  score: {
+    type: Number,
+    default: 0,
+  },
+  influence: {
+    type: Number,
+    default: 0,
+  },
+  honor: {
+    type: Boolean,
+    default: 0,
+  }
 });
 
 UserSchema.index({
