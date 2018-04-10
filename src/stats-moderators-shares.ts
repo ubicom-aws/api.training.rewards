@@ -18,7 +18,6 @@ conn.once('open', function () {
             const calcShare = () => {
                 Moderator.listBeneficiaries().then(moderators => {
                     moderators.forEach((moderator, indexMods) => {
-                        moderator.percentage_total_rewards_moderators = (moderator.total_moderated / stats_total_moderated) * 100;
 
                         moderator.save().then(() => {
                             if (indexMods + 1 === moderators.length) {
@@ -42,8 +41,6 @@ conn.once('open', function () {
                     };
 
                     Post.count(query).then(currentModerated => {
-                        console.log(currentModerated);
-                        console.log(moderator.account);
                         stats_total_moderated = stats_total_moderated + currentModerated;
                         moderator.total_moderated = currentModerated;
 

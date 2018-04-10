@@ -17,21 +17,11 @@ const ModeratorSchema = new mongoose.Schema({
     type: Boolean,
     required: false
   },
-  referrer: {
-    type: String,
-    required: false
-  },
-  apprentice: {
-    type: Boolean,
-    required: false
-  },
   opted_out: {
     type: Boolean,
     required: false
   },
-  total_paid_rewards_steem: Number,
   total_moderated: Number,
-  percentage_total_rewards_moderators: Number,
 });
 
 export interface ModeratorSchemaDoc extends mongoose.Document {
