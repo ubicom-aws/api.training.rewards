@@ -43,7 +43,7 @@ router.use('/sponsors', requireAPIKey, sponsorRoutes);
 
 router.use('/moderators', requireAPIKey, moderatorRoutes);
 
-router.use('/tables', requireAPIKey, tableRoutes);
+router.use('/tables', tableRoutes);
 
 router.use('/auth', requireAPIKey, socialLoginRoutes);
 
@@ -51,7 +51,7 @@ router.use('/faq', requireAPIKey, faqRoutes);
 
 router.use('/rules', requireAPIKey, ruleRoutes)
 
-router.use('/upload', requireAPIKey, uploadRoutes);
+router.use('/upload', uploadRoutes);
 
 router.use('/apikey', apikeyRoutes);
 
