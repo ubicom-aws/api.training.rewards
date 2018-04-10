@@ -42,6 +42,13 @@ async function processPost(post: any, index: number): Promise<void> {
     post.reviewed = false;
     post.flagged = false;
     post.moderator = undefined;
+
+    post.markModified('json_metadata.moderator');
+    post.markModified('pending');
+    post.markModified('reviewed');
+    post.markModified('flagged');
+    post.markModified('moderator');
+
     try {
       await post.save();
       console.log(`POST UPDATED SUCCESSFULLY\n`);

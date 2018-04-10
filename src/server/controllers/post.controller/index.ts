@@ -55,7 +55,7 @@ function processScore (mostScored, configQuestions) {
         const answerConfig = R.find(R.propEq('answer_id', question.answer_id))(questionConfig.answers);
         score = score + answerConfig.value;
     });
-    return score;
+    return score <= 0 ? 0 : score >= 100 ? 100 : score;
 }
 
 async function processQuestions (metaData, user, owner, receivedQuestions):Promise<any> {
@@ -101,7 +101,7 @@ async function processQuestions (metaData, user, owner, receivedQuestions):Promi
     metaQuestions.answers = receivedAnswers;
 
     metaData.questions = metaQuestions;
-    metaData.total_influence = metaQuestions.total_influence + influence;
+    metaData.total_influence = (metaData.total_influence || 0) + influence;
     metaData.score = processScore(mostRated, configQuestions);
 
     return metaData;
@@ -180,7 +180,14 @@ async function update(req, res, next) {
                 return res.json({"message": "Unauthorized"});
             }
 
-            if (contribType) post.json_metadata.type = contribType;
+            if (contribType) {
+                post.json_metadata.type = contribType;
+                post.json_metadata.config = questionnaire[contribType];
+                post.json_metadata.questions = null;
+                post.json_metadata.score = null;
+                post.json_metadata.total_influence = null;
+            }
+
             if (repo) post.json_metadata.repository = repo;
             if (tags) post.json_metadata.tags = tags;
             if (moderator) post.json_metadata.moderator.account = moderator;
@@ -236,34 +243,44 @@ async function update(req, res, next) {
                 post.json_metadata.moderator.flagged = false;
             }
 
-      try {
-        const user = await User.get(post.author);
-        await sc2.send('/broadcast', {
-          user,
-          data: {
-            operations: [[
-              'comment',
-              {
-                parent_author: post.parent_author,
-                parent_permlink: post.parent_permlink,
-                author: post.author,
-                permlink: post.permlink,
-                title: post.title,
-                body: post.body,
-                json_metadata: JSON.stringify(post.json_metadata),
-              }
-            ]]
-          }
-        });
-      } catch (e) {
-        console.log('FAILED TO UPDATE POST DURING REVIEW', e);
-      }
-    }
+            try {
+                const user = await User.get(post.author);
+                await sc2.send('/broadcast', {
+                    user,
+                    data: {
+                        operations: [[
+                            'comment',
+                            {
+                                parent_author: post.parent_author,
+                                parent_permlink: post.parent_permlink,
+                                author: post.author,
+                                permlink: post.permlink,
+                                title: post.title,
+                                body: post.body,
+                                json_metadata: JSON.stringify(post.json_metadata),
+                            }
+                        ]]
+                    }
+                });
+            } catch (e) {
+                console.log('FAILED TO UPDATE POST DURING REVIEW', e);
+            }
+        }
 
         try {
             // don't modify json_metadata.moderator when operation is inline edit of category, repo, or tags
-            if (questions) post.markModified('json_metadata.questions');
-            if (contribType) post.markModified('json_metadata.type');
+            if (questions) {
+                post.markModified('json_metadata.questions');
+                post.markModified('json_metadata.score');
+                post.markModified('json_metadata.total_influence');
+            }
+            if (contribType) {
+                post.markModified('json_metadata.type');
+                post.markModified('json_metadata.config');
+                post.markModified('json_metadata.questions');
+                post.markModified('json_metadata.score');
+                post.markModified('json_metadata.total_influence');
+            }
             if (repo) post.markModified('json_metadata.repository');
             if (tags) post.markModified('json_metadata.tags');
             if (moderator) post.markModified('json_metadata.moderator');

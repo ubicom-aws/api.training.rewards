@@ -7,27 +7,27 @@ export default {
 				{
 					answer: "Biblic.",
 					answer_id: 1,
-					value: 20,
+					value: 10,
 				},
 				{
 					answer: "Large.",
 					answer_id: 2,
-					value: 15,
+					value: 8,
 				},
 				{
 					answer: "Medium.",
 					answer_id: 3,
-					value: 10,
+					value: 4,
 				},
 				{
 					answer: "Small.",
 					answer_id: 4,
-					value: 5,
+					value: 2,
 				},
 				{
 					answer: "Very Small.",
 					answer_id: 5,
-					value: 5,
+					value: 0,
 				}],
 		},
 		{
@@ -57,7 +57,7 @@ export default {
 				{
 					answer: "Very Small.",
 					answer_id: 5,
-					value: 5,
+					value: 0,
 				}],
 		},
 		{
@@ -67,17 +67,17 @@ export default {
 				{
 					answer: "Yes, it is well structured and easy to follow.",
 					answer_id: 1,
-					value: 20,
+					value: 10,
 				},
 				{
 					answer: "It has a good structure but some parts are hard to follow.",
 					answer_id: 2,
-					value: 15,
+					value: 5,
 				},
 				{
 					answer: "Quite hard to follow.",
 					answer_id: 3,
-					value: 10,
+					value: 2,
 				},
 				{
 					answer: "No, it is almost impossible to follow.",
@@ -92,12 +92,12 @@ export default {
 				{
 					answer: "Yes.",
 					answer_id: 1,
-					value: 20,
+					value: 10,
 				},
 				{
 					answer: "No, but it is detailed enough.",
 					answer_id: 2,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "No.",

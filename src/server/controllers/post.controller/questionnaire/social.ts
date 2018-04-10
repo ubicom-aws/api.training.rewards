@@ -7,7 +7,7 @@ export default {
 				{
 					answer: "Yes.",
 					answer_id: 1,
-					value: 20,
+					value: 10,
 				},
 				{
 					answer: "No.",
@@ -22,7 +22,7 @@ export default {
 				{
 					answer: "Yes.",
 					answer_id: 1,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "No.",
@@ -37,7 +37,7 @@ export default {
 				{
 					answer: "Yes.",
 					answer_id: 1,
-					value: 20,
+					value: 10,
 				},
 				{
 					answer: "No.",
@@ -88,7 +88,7 @@ export default {
 				{
 					answer: "Yes.",
 					answer_id: 1,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "No.",

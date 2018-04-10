@@ -12,12 +12,12 @@ export default {
 				{
 					answer: "Major",
 					answer_id: 2,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "Minor",
 					answer_id: 3,
-					value: 5,
+					value: 2,
 				},
 				{
 					answer: "Trivial",
@@ -38,7 +38,7 @@ export default {
 				{
 					answer: "No, needed some more clarification.",
 					answer_id: 2,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "Not at all.",
@@ -54,12 +54,12 @@ export default {
 				{
 					answer: "Yes, accurate and to the point.",
 					answer_id: 1,
-					value: 20,
+					value: 10,
 				},
 				{
 					answer: "No, only steps to reproduce were given.",
 					answer_id: 2,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "No.",

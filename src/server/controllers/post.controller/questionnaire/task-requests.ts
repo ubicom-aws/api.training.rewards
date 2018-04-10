@@ -7,12 +7,12 @@ export default {
 			{
 				answer: "Yes, with great details.",
 				answer_id: 1,
-				value: 20,
+				value: 10,
 			},
 			{
 				answer: "Yes, but not much information.",
 				answer_id: 2,
-				value: 10,
+				value: 5,
 			},
 			{
 				answer: "No",
@@ -27,12 +27,12 @@ export default {
 			{
 				answer: "Yes, with great details.",
 				answer_id: 1,
-				value: 20,
+				value: 10,
 			},
 			{
 				answer: "Yes, but not much information.",
 				answer_id: 2,
-				value: 10,
+				value: 5,
 			},
 			{
 				answer: "No.",
@@ -47,12 +47,12 @@ export default {
 			{
 				answer: "Yes, considerably enough time to complete the task.",
 				answer_id: 1,
-				value: 10,
+				value: 5,
 			},
 			{
 				answer: "Yes, but too short.",
 				answer_id: 2,
-				value: 5,
+				value: 2,
 			},
 			{
 				answer: "No.",
@@ -68,7 +68,7 @@ export default {
 				{
 					answer: "Yes.",
 					answer_id: 1,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "No.",

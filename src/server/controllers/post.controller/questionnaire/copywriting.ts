@@ -37,17 +37,17 @@ export default {
 				{
 					answer: "Polished and well-written.",
 					answer_id: 1,
-					value: 20,
+					value: 10,
 				},
 				{
 					answer: "Good, but has room for improvement.",
 					answer_id: 2,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "Has a few errors that need to be corrected or lacks consistency of style.",
 					answer_id: 3,
-					value: 5,
+					value: 2,
 				},
 				{
 					answer: "It’s quite bad.",
@@ -62,12 +62,12 @@ export default {
 				{
 					answer: "Highly relevant and valuable.",
 					answer_id: 1,
-					value: 20,
+					value: 10,
 				},
 				{
 					answer: "Relevant but offers little unique value",
 					answer_id: 2,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "Does not adequately meet the project’s needs.",
@@ -82,7 +82,7 @@ export default {
 				{
 					answer: "Yes, the content is now being used by the Project Owner.",
 					answer_id: 1,
-					value: 20,
+					value: 10,
 				},
 				{
 					answer: "No, the content has not been used yet.",

@@ -7,7 +7,7 @@ export default {
 				{
 					answer: "Project introduction.",
 					answer_id: 1,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "Project promotion.",
@@ -22,7 +22,7 @@ export default {
 				{
 					answer: "Project Generic News.",
 					answer_id: 4,
-					value: 5,
+					value: 2,
 				},
 				{
 					answer: "None of the above.",
@@ -37,22 +37,22 @@ export default {
 				{
 					answer: "More than 1,250 words.",
 					answer_id: 1,
-					value: 30,
+					value: 20,
 				},
 				{
 					answer: "1,000-1,250 words.",
 					answer_id: 2,
-					value: 20,
+					value: 15,
 				},
 				{
 					answer: "750-1,000 words.",
 					answer_id: 3,
-					value: 15,
+					value: 10,
 				},
 				{
 					answer: "500-750 words.",
 					answer_id: 4,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "Less than 500 words.",
@@ -67,17 +67,17 @@ export default {
 				{
 					answer: "The blog post is well written with coherent structure.",
 					answer_id: 1,
-					value: 20,
+					value: 10,
 				},
 				{
 					answer: "The post contains some mistakes in the structure.",
 					answer_id: 2,
-					value: 15,
+					value: 5,
 				},
 				{
 					answer: "The post would benefit from some reworking.",
 					answer_id: 3,
-					value: 5,
+					value: 2,
 				},
 				{
 					answer: "Structure isn't coherent at all.",
@@ -92,7 +92,7 @@ export default {
 				{
 					answer: "The post is part of an ongoing series.",
 					answer_id: 1,
-					value: 20,
+					value: 15,
 				},
 				{
 					answer: "It the first post of a series. ",

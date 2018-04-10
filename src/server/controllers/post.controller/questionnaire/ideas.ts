@@ -7,7 +7,7 @@ export default {
 				{
 					answer: "Yes, technically detailed.",
 					answer_id: 1,
-					value: 30,
+					value: 20,
 				},
 				{
 					answer: "Yes, but not technically detailed.",
@@ -32,7 +32,7 @@ export default {
 				{
 					answer: "No.",
 					answer_id: 2,
-					value: 20,
+					value: 10,
 				},
 			],
 		},
@@ -43,7 +43,7 @@ export default {
 				{
 					answer: "Very complete.",
 					answer_id: 1,
-					value: 30,
+					value: 20,
 				},
 				{
 					answer: "Not very complete but enough to gather additional information.",

@@ -7,12 +7,12 @@ export default {
 				{
 					answer: "Very high - the amount of work is very high.",
 					answer_id: 1,
-					value: 30,
+					value: 20,
 				},
 				{
 					answer: "High - the amount of work is high",
 					answer_id: 2,
-					value: 20,
+					value: 15,
 				},
 				{
 					answer: "Average - the amount of work is average",
@@ -38,12 +38,12 @@ export default {
 				{
 					answer: "Very high - the code follows all the best practices and/or is the opposite of trivial.",
 					answer_id: 1,
-					value: 30,
+					value: 20,
 				},
 				{
 					answer: "High - the code follows nearly all the best practices and/or is not trivial at all. ",
 					answer_id: 2,
-					value: 20,
+					value: 15,
 				},
 				{
 					answer: "Average - the code follows most the best practices and/or some parts of it are trivial.",
@@ -69,22 +69,22 @@ export default {
 				{
 					answer: "Very high - the project has a unique value, will (potentially) also be useful to a lot of people and has the potential to keep growing.",
 					answer_id: 1,
-					value: 20,
+					value: 10,
 				},
 				{
 					answer: "High - the project isn't really unique but it is well maintained.",
 					answer_id: 2,
-					value: 15,
+					value: 8,
 				},
 				{
 					answer: "Average - the project is limited or not very well maintained.",
 					answer_id: 3,
-					value: 10,
+					value: 4,
 				},
 				{
 					answer: "Low - quality of the project overall is low.",
 					answer_id: 4,
-					value: 5,
+					value: 2,
 				},
 				{
 					answer: "Very low - quality of the project overall is very low and not well maintained.",

@@ -7,12 +7,12 @@ export default {
 			{
 				answer: "3-5 substantial concepts covered in the tutorial.",
 				answer_id: 1,
-				value: 20,
+				value: 10,
 			},
 			{
 				answer: "Less than 3 or more than 5 substantial concepts covered in the tutorial.",
 				answer_id: 2,
-				value: 10,
+				value: 5,
 			},
 			{
 				answer: "No substantial or recognisable concepts.",
@@ -27,12 +27,12 @@ export default {
 			{
 				answer: "Thorough text and images for concepts covered.",
 				answer_id: 1,
-				value: 20,
+				value: 10,
 			},
 			{
 				answer: "Minimal text and images.",
 				answer_id: 2,
-				value: 10,
+				value: 5,
 			},
 			{
 				answer: "No or very little text and images.",
@@ -47,7 +47,7 @@ export default {
 			{
 				answer: "Yes",
 				answer_id: 1,
-				value: 15,
+				value: 10,
 			},
 			{
 				answer: "No",
@@ -62,7 +62,7 @@ export default {
 			{
 				answer: "Yes.",
 				answer_id: 1,
-				value: 15,
+				value: 10,
 			},
 			{
 				answer: "Yes, but first entry in the series.",

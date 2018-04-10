@@ -7,17 +7,17 @@ export default {
 				{
 					answer: "It is formal, informative and well written with clear content.",
 					answer_id: 1,
-					value: 5,
+					value: 10,
 				},
 				{
 					answer: "It is informative with clear content but not formal enough.",
 					answer_id: 2,
-					value: 4,
+					value: 5,
 				},
 				{
 					answer: "The contribution could be more informative or contains unrelated information, formality and clarity of the content are good enough.",
 					answer_id: 3,
-					value: 3,
+					value: 4,
 				},
 				{
 					answer: "Not all sections were clear enough but overall holds value for the project.",

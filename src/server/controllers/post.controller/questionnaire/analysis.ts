@@ -7,17 +7,17 @@ export default {
 				{
 					answer: "All or most of the relevant metrics were covered.",
 					answer_id: 1,
-					value: 15,
+					value: 10,
 				},
 				{
 					answer: "Only selected metrics were chosen; including more might have provided additional insights.",
 					answer_id: 2,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "Only a single or narrow aspect was chosen.",
 					answer_id: 3,
-					value: 5,
+					value: 2,
 				},
 				{
 					answer: "No.",
@@ -32,17 +32,17 @@ export default {
 				{
 					answer: "Gathering the data required complex queries and post-processing",
 					answer_id: 1,
-					value: 15,
+					value: 10,
 				},
 				{
 					answer: "The method of extracting data required transformation.",
 					answer_id: 2,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "No additional data transformation was needed.",
 					answer_id: 3,
-					value: 5,
+					value: 2,
 				},
 				{
 					answer: "Script generated / one click data extraction.",
@@ -57,16 +57,16 @@ export default {
 				{
 					answer: "Visualizations were presented beyond expectation - a visualization such as an infographic was given to quickly understand the result of the analysis.",
 					answer_id: 1,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "Appropriate and sufficient visualization were used to understand the results.",
 					answer_id: 2,
-					value: 8,
+					value: 4,
 				},
 				{
 					answer: "Had visualizations but most were irrelevant to the objective.",
-					answer_id: 3,
+					answer_id: 2,
 					value: 5,
 				},
 				{
@@ -82,17 +82,17 @@ export default {
 				{
 					answer: "Results of analysis were sorted accordingly and the writing style made the findings easily understandable.",
 					answer_id: 1,
-					value: 15,
+					value: 10,
 				},
 				{
 					answer: "There were some connections in-between results, but all throughout the analysis.",
 					answer_id: 2,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "Results were presented but the results were not narrated effectively.",
 					answer_id: 3,
-					value: 5,
+					value: 2,
 				},
 				{
 					answer: "Bad.",
@@ -107,17 +107,17 @@ export default {
 				{
 					answer: "All queries or data gathering methods and all data processing scripts were included.",
 					answer_id: 1,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "The core query or data gathering method was included and the data processing steps were described.",
 					answer_id: 2,
-					value: 8,
+					value: 4,
 				},
 				{
 					answer: "Data gathering methods and processing steps were sketched.",
 					answer_id: 3,
-					value: 5,
+					value: 2,
 				},
 				{
 					answer: "No.",
@@ -132,17 +132,17 @@ export default {
 				{
 					answer: "Yes.",
 					answer_id: 1,
-					value: 15,
+					value: 10,
 				},
 				{
 					answer: "It’s similar to a previous contribution, but additional details/aspects were covered.",
 					answer_id: 2,
-					value: 10,
+					value: 5,
 				},
 				{
 					answer: "It’s following-up or it’s similar to a previous contribution about a different time range or aspect of the project.",
 					answer_id: 3,
-					value: 5,
+					value: 2,
 				},
 				{
 					answer: "Brings nothing new.",

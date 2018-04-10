@@ -7,17 +7,17 @@ export default {
                 {
                     answer: "Yes, fully.",
                     answer_id: 1,
-                    value: 20,
+                    value: 10,
                 },
                 {
                     answer: "Third party assets were used. The assets were edited accordingly.",
                     answer_id: 2,
-                    value: 15,
+                    value: 5,
                 },
                 {
                     answer: "Third party assets were used and edits kept to the minimum.",
                     answer_id: 3,
-                    value: 10,
+                    value: 2,
                 },
                 {
                     answer: "Mainly third party assets were used and no additional edits were implemented.",
@@ -32,12 +32,12 @@ export default {
                 {
                     answer: "Yes.",
                     answer_id: 1,
-                    value: 20,
+                    value: 10,
                 },
                 {
                     answer: "Partially.",
                     answer_id: 2,
-                    value: 10,
+                    value: 5,
                 },
                 {
                     answer: "No.",
@@ -67,12 +67,12 @@ export default {
                 {
                     answer: "Yes",
                     answer_id: 1,
-                    value: 20,
+                    value: 10,
                 },
                 {
                     answer: "Partially.",
                     answer_id: 2,
-                    value: 10,
+                    value: 5,
                 },
                 {
                     answer: "No",
