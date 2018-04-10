@@ -50,6 +50,7 @@ export function updatePost(post: any, updatedPost: any): any {
   updatedPost.json_metadata.moderator = post.json_metadata.moderator;
   updatedPost.json_metadata.questions = post.json_metadata.questions;
   updatedPost.json_metadata.score = post.json_metadata.score;
+  updatedPost.json_metadata.total_influence = post.json_metadata.total_influence;
   updatedPost.json_metadata.staff_pick = post.json_metadata.staff_pick;
   updatedPost.json_metadata.config = post.json_metadata.config || questionnaire[post.json_metadata.type]
 
