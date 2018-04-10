@@ -1,4 +1,4 @@
-import { CategoryValue, MAX_POINTS } from './constants';
+import { CategoryValue } from './constants';
 import Moderator from '../server/models/moderator.model';
 import { formatCat, RUNTIME_NOW } from './util';
 import Post from '../server/models/post.model';
@@ -52,7 +52,7 @@ export class ModeratorStats {
             beneficiaries: [
               {
                 account: 'utopian.pay',
-                weight: 2500
+                weight: 1500
               }
             ]
           }]]
@@ -65,7 +65,7 @@ export class ModeratorStats {
   getComment() {
     const rewards = this.rewards.toFixed(2);
     const exceeded = this.maxRewardsReached ?
-`With my hard work, I have reached the maximum ${MAX_POINTS} point limit for this week!` : '';
+`With my hard work, I have reached the maximum point limit for this week!` : '';
     return util.format(this.comment, rewards, exceeded);
   }
 
@@ -121,9 +121,8 @@ I earned a total of %s points for this week. %s
 
 ## Position
 
-${!mod.referrer && !mod.supermoderator ? 'I am a Utopian moderator.': ''}\
-${mod.referrer && !mod.supermoderator ? 'I am a Utopian moderator supervised by @' + mod.referrer + '.' : ''}\
-${mod.supermoderator ? 'I am a Utopian supervisor.' : ''}\
+${!mod.supermoderator ? 'I am a Utopian Moderator.': ''}\
+${mod.supermoderator ? 'I am a Utopian Community Manager.' : ''}\
 
 ## Activity
 

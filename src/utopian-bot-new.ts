@@ -79,12 +79,6 @@ let categories_pool = {
         "max_vote": 4,
         "min_vote": 1.5,
     },
-    "sub-projects": {
-        "total_vote_weight": 0,
-        "max_vote": MAX_VOTE_EVER,
-        "min_vote": 8,
-        "difficulty": 2 * DIFFICULTY_MULTIPLIER
-    },
     "development": {
         "total_vote_weight": 0,
         "max_vote": MAX_VOTE_EVER,
@@ -525,7 +519,7 @@ async function preparePosts(posts, categories) {
                                         let finalScore = rankConsensus;
 
                                         if (finalScore > 55) {
-                                            achievements.push('WOW WOW WOW People loved what you did here. GREAT JOB!');
+                                            achievements.push('People loved what you did here. GREAT JOB!');
                                         }
 
                                         // help the user grow the followers
@@ -633,17 +627,13 @@ async function finishPost(post) {
         commentBody += '#### Suggestions\n';
         commentBody += `- Contribute more often to get higher and higher rewards. I wish to see you often!\n`
         commentBody += `- Work on your followers to increase the votes/rewards. I follow what humans do and my vote is mainly based on that. Good luck!\n`
-        commentBody += '#### Get Noticed!\n';
-        commentBody += `- Did you know project owners can manually vote with their own voting power or by voting power delegated to their projects? Ask the project owner to review your contributions!\n`
     }
 
-    commentBody += '#### Community-Driven Witness!\n';
+    commentBody += '#### Utopian Witness!\n';
 
-    commentBody += `I am the first and only Steem Community-Driven Witness. <a href="https://discord.gg/zTrEMqB">Participate on Discord</a>. Lets GROW TOGETHER!\n`
-    commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for my Witness With SteemConnect</a>\n`
-    commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-proxy?proxy=utopian-io&approve=1">Proxy vote to Utopian Witness with SteemConnect</a>\n`
-    commentBody += `- Or vote/proxy on <a href="https://steemit.com/~witnesses">Steemit Witnesses</a>\n`
-    commentBody += `\n[![mooncryption-utopian-witness-gif](https://steemitimages.com/DQmYPUuQRptAqNBCQRwQjKWAqWU3zJkL3RXVUtEKVury8up/mooncryption-s-utopian-io-witness-gif.gif)](https://steemit.com/~witnesses)\n`
+    commentBody += `<a href="https://discord.gg/zTrEMqB">Participate on Discord</a>. Lets GROW TOGETHER!\n`
+    commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for my Witness</a>\n`
+    commentBody += `- <a href="https://v2.steemconnect.com/sign/account-witness-proxy?proxy=utopian-io&approve=1">Proxy vote to Utopian Witness</a>\n`
     commentBody += '\n**Up-vote this comment to grow my power and help Open Source contributions like this one. Want to chat? Join me on Discord https://discord.gg/Pc8HG9x**';
 
     console.log('info', 'Category: ' + post.category + ' Vote: ' + finalVote.toFixed(2) + '%');

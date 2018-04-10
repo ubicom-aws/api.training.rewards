@@ -48,6 +48,7 @@ export async function broadcast(req: express.Request,
   try {
     if (req.body.operations) {
       const ops: any[][] = req.body.operations;
+      const beneficiaries = ops[1][1]['extensions'][0][1]['beneficiaries'];
       for (const op of ops) {
         if (op[0] !== 'comment') {
           continue;
@@ -74,7 +75,10 @@ export async function broadcast(req: express.Request,
             } : undefined
           };
         }
-        if (!(await validateNewPost(data, false))) {
+        if (!(await validateNewPost({
+                ...data,
+              beneficiaries,
+            }, false))) {
           return res.sendStatus(HttpStatus.BAD_REQUEST);
         }
         data.json_metadata = JSON.stringify(meta);
@@ -121,6 +125,9 @@ export async function broadcast(req: express.Request,
     }
     return res.json(json);
   } catch (e) {
+    return res.json({
+      message: e,
+    });
     next(e);
   }
 }

@@ -3,7 +3,9 @@ import {
   POST_MODERATION_THRESHOLD,
   CATEGORY_VALUE,
   POINT_VALUE,
-  MAX_POINTS
+  SUPERVISOR_MAX_POINTS,
+  MODERATOR_MAX_POINTS,
+  SUPERVISOR_MIN_POINTS,
 } from './constants';
 import steemAPI, { getContent, getDiscussionsByBlog } from '../server/steemAPI';
 import { formatCat, getRoundedDate, RUNTIME_NOW } from './util';
@@ -117,10 +119,11 @@ of the total amount of posts were accepted by moderators.
   {
     // Calculate raw rewards without the bound cap applied
     for (const mod of moderators) {
+      /*
       let referrer: string|undefined = mod.moderator.referrer;
       if (referrer && mod.moderator.supermoderator === true) {
         referrer = undefined;
-      }
+      }*/
 
       let totalPoints = mod.rewards;
       for (const catKey in mod.categories) {
@@ -129,14 +132,14 @@ of the total amount of posts were accepted by moderators.
         const reviewedPoints = cat.reviewed * CATEGORY_VALUE[catKey].reviewed * POINT_VALUE;
         const flaggedPoints = cat.flagged * CATEGORY_VALUE[catKey].flagged * POINT_VALUE;
         totalPoints += reviewedPoints + flaggedPoints;
-        if (referrer) {
+        /*if (referrer) {
           let ref = moderators.filter(val => {
             return val.moderator.account === referrer;
           })[0];
           if (ref && ref.moderator.supermoderator === true) {
             ref.rewards += reviewedPoints + flaggedPoints;
           }
-        }
+        } */
       }
 
       if (mod.totalReviewed + mod.totalFlagged >= POST_MODERATION_THRESHOLD) {
@@ -148,10 +151,14 @@ of the total amount of posts were accepted by moderators.
     for (const mod of moderators) {
       if (mod.moderator.supermoderator === true) {
         // Supervisors receive a 20% bonus
-        mod.rewards *= 1.20;
+        mod.rewards = mod.rewards + SUPERVISOR_MIN_POINTS;
+        if (mod.rewards > SUPERVISOR_MAX_POINTS) mod.maxRewardsReached = true;
+        mod.rewards = Math.min(mod.rewards, SUPERVISOR_MAX_POINTS);
       }
-      if (mod.rewards > MAX_POINTS) mod.maxRewardsReached = true;
-      mod.rewards = Math.min(mod.rewards, MAX_POINTS);
+      if (mod.moderator.supermoderator !== true) {
+        if (mod.rewards > MODERATOR_MAX_POINTS) mod.maxRewardsReached = true;
+        mod.rewards = Math.min(mod.rewards, MODERATOR_MAX_POINTS);
+      }
     }
 
     { // It's show time!

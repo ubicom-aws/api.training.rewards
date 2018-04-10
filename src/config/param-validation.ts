@@ -207,9 +207,9 @@ export default {
                 repository: Joi.number().integer().required(),
                 platform: Joi.string().valid('github').required(),
                 owner: Joi.string().required(),
-                allowed_types: Joi.array().items(Joi.string().valid('blog', 'social', 'analysis', 'tutorials', 'video-tutorials', 'copywriting', 'documentation', 'graphics', 'translations', 'bug-hunting', 'development', 'sub-projects', 'ideas')).required().min(1).unique(),
+                allowed_types: Joi.array().items(Joi.string().valid('blog', 'social', 'analysis', 'tutorials', 'video-tutorials', 'copywriting', 'documentation', 'graphics', 'translations', 'bug-hunting', 'development', 'ideas')).required().min(1).unique(),
                 notification_types: Joi.array().items(Joi.object().keys({
-                    type: Joi.string().valid('blog', 'social', 'analysis', 'tutorials', 'video-tutorials', 'copywriting', 'documentation', 'graphics', 'translations', 'bug-hunting', 'development', 'sub-projects', 'ideas').required(),
+                    type: Joi.string().valid('blog', 'social', 'analysis', 'tutorials', 'video-tutorials', 'copywriting', 'documentation', 'graphics', 'translations', 'bug-hunting', 'development', 'ideas').required(),
                     platform: Joi.string().valid('system', 'github').required()
                 })).required(),
                 name: Joi.string().required(),
@@ -235,9 +235,9 @@ export default {
                 id: Joi.string().required(),
                 repository: Joi.number().integer().required(),
                 platform: Joi.string().valid('github').required(),
-                allowed_types: Joi.array().items(Joi.string().valid('blog', 'social', 'analysis', 'tutorials', 'video-tutorials', 'copywriting', 'documentation', 'graphics', 'translations', 'bug-hunting', 'development', 'sub-projects', 'ideas')).required().min(1).unique(),
+                allowed_types: Joi.array().items(Joi.string().valid('blog', 'social', 'analysis', 'tutorials', 'video-tutorials', 'copywriting', 'documentation', 'graphics', 'translations', 'bug-hunting', 'development', 'ideas')).required().min(1).unique(),
                 notification_types: Joi.array().items(Joi.object().keys({
-                    type: Joi.string().valid('blog', 'social', 'analysis', 'tutorials', 'video-tutorials', 'copywriting', 'documentation', 'graphics', 'translations', 'bug-hunting', 'development', 'sub-projects', 'ideas').required(),
+                    type: Joi.string().valid('blog', 'social', 'analysis', 'tutorials', 'video-tutorials', 'copywriting', 'documentation', 'graphics', 'translations', 'bug-hunting', 'development', 'ideas').required(),
                     platform: Joi.string().valid('system', 'github').required()
                 })).required(),
                 name: Joi.string().required(),
