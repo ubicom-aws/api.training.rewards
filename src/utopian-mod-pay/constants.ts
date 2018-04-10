@@ -6,7 +6,9 @@ export interface CategoryValue {
 // Point value is in relation to 1 SBD
 export const POST_MODERATION_THRESHOLD = 1;
 export const POINT_VALUE = 1;
-export const MAX_POINTS = 150;
+export const SUPERVISOR_MAX_POINTS = 250;
+export const MODERATOR_MAX_POINTS = 150;
+export const SUPERVISOR_MIN_POINTS = 100;
 
 // Earnings multiplier
 export const CATEGORY_VALUE: { [key: string]: CategoryValue } = {

@@ -38,6 +38,10 @@ async function processPost(post: any, index: number): Promise<void> {
   console.log(`----NOW CHECKING POST ${post.permlink} by ${post.author} (post number: ${index})----\n`);
   try {
     post.json_metadata.moderator = {};
+    post.pending = false;
+    post.reviewed = false;
+    post.flagged = false;
+    post.moderator = undefined;
     try {
       await post.save();
       console.log(`POST UPDATED SUCCESSFULLY\n`);

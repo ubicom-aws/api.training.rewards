@@ -13,88 +13,129 @@ import blogQuestions from "./blog";
 import taskRequestQuestions from "./task-requests";
 import common from "./common";
 
-const QualitySlider = {
+const questionnaire = {
 	// Main cetegories
 	'ideas': {
-		...ideasQuestions,
-		...common
+		questions: [
+			...ideasQuestions.questions,
+			...common.questions,
+		]
 	},
 	'development': {
-		...developmentQuestions,
-		...common,
+		questions: [
+			...developmentQuestions.questions,
+			...common.questions,
+		]
 	}, // Done
 	'graphics': {
-		...graphicsQuestions,
-		...common,
+		questions: [
+			...graphicsQuestions.questions,
+			...common.questions,
+		]
 	}, // Done
 	'bug-hunting': {
-		...bughuntingQuestions,
-		...common,
+		questions: [
+			...bughuntingQuestions.questions,
+			...common.questions,
+		]
 	}, // Done
 	'translations': {
-		...translationsQuestions,
-		...common,
+		questions: [
+			...translationsQuestions.questions,
+			...common.questions,
+		]
 	}, // Done
 	'analysis': {
-		...analysisQuestions,
-		...common,
+		questions: [
+			...analysisQuestions.questions,
+			...common.questions,
+		]
 	}, // Done
 	'social': {
-		...socialQuestions,
-		...common,
+		questions: [
+			...socialQuestions.questions,
+			...common.questions,
+		]
 	}, // Done
 	'documentation': {
-		...documentationQuestions,
-		...common,
+		questions: [
+			...documentationQuestions.questions,
+			...common.questions,
+		]
 	}, // Done
 	'tutorials': {
-		...tutorialsQuestions,
-		...common,
+		questions: [
+			...tutorialsQuestions.questions,
+			...common.questions,
+		]
 	}, // Done
 	"video-tutorials": {
-		...videotutorialsQuestions,
-		...common,
+		questions: [
+			...videotutorialsQuestions.questions,
+			...common.questions,
+		]
 	}, // Done
 	'copywriting': {
-		...copywritingQuestions,
-		...common,
+		questions: [
+			...copywritingQuestions.questions,
+			...common.questions,
+		]
 	}, // Done
-	'blog': blogQuestions, // Done
-
-	// Task Requests // Done
+	'blog': {
+		questions: [
+			...blogQuestions.questions,
+			...common.questions,
+		]
+	},
 	'task-ideas': {
-		...taskRequestQuestions,
-		...common,
+		questions: [
+			...taskRequestQuestions.questions,
+			...common.questions,
+		]
 	},
 	'task-development': {
-		...taskRequestQuestions,
-		...common,
+		questions: [
+			...taskRequestQuestions.questions,
+			...common.questions,
+		]
 	},
 	'task-bug-hunting': {
-		...taskRequestQuestions,
-		...common,
+		questions: [
+			...taskRequestQuestions.questions,
+			...common.questions,
+		]
 	},
 	'task-documentation': {
-		...taskRequestQuestions,
-		...common,
+		questions: [
+			...taskRequestQuestions.questions,
+			...common.questions,
+		]
 	},
 	'task-translations': {
-		...taskRequestQuestions,
-		...common,
+		questions: [
+			...taskRequestQuestions.questions,
+			...common.questions,
+		]
 	},
 	'task-analysis': {
-		...taskRequestQuestions,
-		...common,
+		questions: [
+			...taskRequestQuestions.questions,
+			...common.questions,
+		]
 	},
 	'task-graphics': {
-		...taskRequestQuestions,
-		...common,
+		questions: [
+			...taskRequestQuestions.questions,
+			...common.questions,
+		]
 	},
 	'task-social': {
-		...taskRequestQuestions,
-		...common,
+		questions: [
+			...taskRequestQuestions.questions,
+			...common.questions,
+		]
 	},
 };
 
-export default QualitySlider;
+export default questionnaire;
 

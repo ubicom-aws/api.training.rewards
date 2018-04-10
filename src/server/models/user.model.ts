@@ -75,6 +75,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'Newbie',
   },
+  honor_reputation: {
+    type: Number,
+    default: 0,
+  },
   score: {
     type: Number,
     default: 0,
@@ -83,10 +87,6 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  honor: {
-    type: Boolean,
-    default: 0,
-  }
 });
 
 UserSchema.index({

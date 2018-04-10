@@ -20,7 +20,7 @@ const customScoreDivider = {
         "score_divider": 2,
     },
     "analysis": {
-        "score_divider": 1.5,
+        "score_divider": 1,
     },
     "documentation": {
         "score_divider": 1.5,
@@ -32,10 +32,10 @@ const customScoreDivider = {
         "score_divider": 2,
     },
     "video-tutorials": {
-        "score_divider": 2,
+        "score_divider": 1.5,
     },
     "copywriting": {
-        "score_divider": 2,
+        "score_divider": 1.5,
     },
 };
 
@@ -53,7 +53,7 @@ conn.once('open', async function() {
 
         console.log(`----NOW CHECKING USER ${user.account}`);
         const score = await processScore(user);
-            await processReputation(user, score, topScore);
+        await processReputation(user, score, topScore);
         index++;
         console.log(`---user number ${index}`)
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -78,25 +78,26 @@ async function processScore(user: any): Promise<void> {
 
         while ((post = await c.next()) !== null) {
             const postScore = post.json_metadata.score;
+            const divider = customScoreDivider[post.json_metadata.type] ?
+                customScoreDivider[post.json_metadata.type].score_divider :
+                defaultScoreDivider;
             // for contributions which did not have the score functionality
             if (postScore === undefined) {
                 if (post.json_metadata.moderator.reviewed === true) {
-                    score = 100 + score;
+                    score = (100 / divider) + score;
                 }
                 if (post.json_metadata.moderator.flagged === true) {
-                    score = score - 100;
+                    score = score - 100 / (divider);
                 }
             }
             // for contributions which have the score functionality
             if (postScore !== undefined) {
                 if (post.json_metadata.moderator.flagged === true) {
-                    score = score - 100; // penalisation for rejection
+                    score = score - (100 / divider); // penalisation for rejection
                 }
                 if (postScore >= 0 && post.json_metadata.moderator.reviewed === true) {
                     // using score set by the community
-                    score = score + (postScore / (customScoreDivider[post.json_metadata.type] ?
-                            customScoreDivider[post.json_metadata.type].score_divider :
-                            defaultScoreDivider));
+                    score = score + (postScore / divider);
                 }
             }
         }
@@ -156,17 +157,16 @@ async function processReputation(user: any, score: any, topScore: number): Promi
         ];
 
         const scoreImpact = (score / topScore) * 100;
-        let levelImpact = Math.ceil((scoreImpact * levels.length) / 100);
-        levelImpact = !levelImpact || levelImpact < 0 ? 0 : levelImpact > levels.length - 1 ? levels.length - 1 : levelImpact;
+        const levelImpact = Math.ceil((scoreImpact * (levels.length - 1)) / 100);
         let level = levels[levelImpact].name;
         let influence = levelImpact >= 0 ? levels[levelImpact].influence : levels[0].influence;
         const isModerator = await Moderator.get(user.account);
         const isSupervisor = isModerator && isModerator.supermoderator === true || false;
         const isSponsor = await Sponsor.get(user.account);
 
-        console.log("SCORE", score)
-        console.log("SCORE IMPACT", scoreImpact);
+        console.log("SCORE", score);
         console.log("LEVEL IMPACT", levelImpact);
+        console.log("SCORE IMPACT", scoreImpact);
 
 
         if (isModerator && levelImpact < 6) {
@@ -222,9 +222,9 @@ async function processReputation(user: any, score: any, topScore: number): Promi
             }
         }
 
-        if(user.honor && levelImpact < 8) {
-            level = levels[8].name;
-            influence = levels[8].influence;
+        if(user.honor_reputation && levelImpact < user.honor_reputation) {
+            level = levels[user.honor_reputation].name;
+            influence = levels[user.honor_reputation].influence;
         }
 
         user.reputation = level;

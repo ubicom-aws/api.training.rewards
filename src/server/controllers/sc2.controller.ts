@@ -125,6 +125,9 @@ export async function broadcast(req: express.Request,
     }
     return res.json(json);
   } catch (e) {
+    return res.json({
+      message: e,
+    });
     next(e);
   }
 }
