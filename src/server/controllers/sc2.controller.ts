@@ -48,11 +48,11 @@ export async function broadcast(req: express.Request,
   try {
     if (req.body.operations) {
       const ops: any[][] = req.body.operations;
-      const beneficiaries = ops[1][1]['extensions'][0][1]['beneficiaries'];
       for (const op of ops) {
         if (op[0] !== 'comment') {
           continue;
         }
+        const beneficiaries = ops[1][1]['extensions'][0][1]['beneficiaries'];
         const data = op[1];
         if (!data.json_metadata || data.parent_author) {
           continue;
