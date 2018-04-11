@@ -14,10 +14,10 @@ router.route('/:userId')
   .get(userCtrl.get);
 
 router.route('/:userId/approveTOS')
-  .get(userCtrl.approveTOS);
+  .get(requireAuth, userCtrl.approveTOS);
 
 router.route('/:userId/approvePrivacy')
-  .get(userCtrl.approvePrivacy);
+  .get(requireAuth, userCtrl.approvePrivacy);
 
 router.route('/:user/avatar')
   .get(validate(paramValidation.avatarUser), userCtrl.avatar);
@@ -33,16 +33,13 @@ router.route('/:userId/ban')
   .post(requireSupervisor, validate(paramValidation.banUser), userCtrl.ban);
 
 
-router.param('userId', (req, res, next, id) => {
-  requireAuth(req, res, async (e) => {
-    if (e) return next(e);
-    try {
-      (req as any).user = await User.get(id);
-      next();
-    } catch (e) {
-      next(e);
-    }
-  })
+router.param('userId', async (req, res, next, id) => {
+  try {
+    (req as any).user = await User.get(id);
+    next();
+  } catch (e) {
+    next(e);
+  }
 });
 
 export default router;

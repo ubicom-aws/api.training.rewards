@@ -52,7 +52,14 @@ export async function broadcast(req: express.Request,
         if (op[0] !== 'comment') {
           continue;
         }
-        const beneficiaries = ops[1][1]['extensions'][0][1]['beneficiaries'];
+        let beneficiaries = [];
+
+        try {
+          beneficiaries = ops[1][1]['extensions'][0][1]['beneficiaries'];
+        }catch(e) {
+          beneficiaries = [];
+        }
+
         const data = op[1];
         if (!data.json_metadata || data.parent_author) {
           continue;
@@ -125,6 +132,7 @@ export async function broadcast(req: express.Request,
     }
     return res.json(json);
   } catch (e) {
+    console.log(e)
     return res.status(e.response.status).json({
       message: e.response.text,
       status: e.response.status,

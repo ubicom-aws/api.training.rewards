@@ -62,6 +62,8 @@ export async function validateNewPost(post: any,
                                       checkRepo = true,
                                       checkModerated = true): Promise<boolean> {
   // make sure post is not a comment and it has the correct first category
+  const existingPost = await Post.get(post.author, post.permlink);
+
   if (post.parent_author !== '') return false;
   if (!(post.parent_permlink === 'utopian-io'
         || (isDev() && post.parent_permlink === 'test-category'))) return false;
@@ -113,8 +115,10 @@ export async function validateNewPost(post: any,
   // New posts can't be staff picked
   if (checkModerated && meta.staff_pick) return false;
 
-  const beneficiary = R.find(R.propEq('account', 'utopian.pay'))(post.beneficiaries);
-  if (!beneficiary || beneficiary.weight < 1500) return false;
+  if (!existingPost) {
+    const beneficiary = R.find(R.propEq('account', 'utopian.pay'))(post.beneficiaries);
+    if (!beneficiary || beneficiary.weight < 1500) return false;
+  }
 
   return true;
 }
