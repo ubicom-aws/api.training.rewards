@@ -62,7 +62,7 @@ export async function validateNewPost(post: any,
                                       checkRepo = true,
                                       checkModerated = true): Promise<boolean> {
   // make sure post is not a comment and it has the correct first category
-  const existingPost = await Post.get(post.author, post.permlink);
+  const existingPost = await Post.getOne(post.author, post.permlink);
 
   if (post.parent_author !== '') return false;
   if (!(post.parent_permlink === 'utopian-io'

@@ -233,14 +233,24 @@ export interface PostSchemaModel extends mongoose.Model<PostSchemaDoc> {
 PostSchema.statics = {
   get(author: string, permlink: string) {
     return this.findOne({ author, permlink })
-      .exec()
-      .then((post) => {
-        if (post) {
-          return post;
-        }
-        const err = new APIError('No such post exists!', httpStatus.NOT_FOUND);
-        return Promise.reject(err);
-      });
+        .exec()
+        .then((post) => {
+          if (post) {
+            return post;
+          }
+          const err = new APIError('No such post exists!', httpStatus.NOT_FOUND);
+          return Promise.reject(err);
+        });
+  },
+  getOne(author: string, permlink: string) {
+    return this.findOne({ author, permlink })
+        .exec()
+        .then((post) => {
+          if (post) {
+            return post;
+          }
+          return null;
+        });
   },
   countAll({ query = {} } = {}) {
     return this.count(query).exec();
