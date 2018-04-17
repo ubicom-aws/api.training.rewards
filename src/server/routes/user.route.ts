@@ -30,7 +30,7 @@ router.route('/:userId/repos')
 
 router.route('/:userId/ban')
   .get(userCtrl.getBan)
-  .post(requireSupervisor, validate(paramValidation.banUser), userCtrl.ban);
+  .post(requireAuth, requireSupervisor, validate(paramValidation.banUser), userCtrl.ban);
 
 
 router.param('userId', async (req, res, next, id) => {

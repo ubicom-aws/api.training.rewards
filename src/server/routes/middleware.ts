@@ -138,6 +138,7 @@ export function requireSupervisor(req: express.Request,
                                   res: express.Response,
                                   next: express.NextFunction) {
     const user = res.locals.user;
+
     if (!user) {
         res.status(HttpStatus.UNAUTHORIZED)
         return res.json({"message": "Unauthorized"})

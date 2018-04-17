@@ -47,6 +47,8 @@ export async function broadcast(req: express.Request,
                                 next: express.NextFunction) {
   try {
     if (req.body.operations) {
+      const type = req.body.type;
+
       const ops: any[][] = req.body.operations;
       for (const op of ops) {
         if (op[0] !== 'comment') {
@@ -54,10 +56,12 @@ export async function broadcast(req: express.Request,
         }
         let beneficiaries = [];
 
-        try {
-          beneficiaries = ops[1][1]['extensions'][0][1]['beneficiaries'];
-        }catch(e) {
-          beneficiaries = [];
+        if (type === 'post') {
+          try {
+            beneficiaries = ops[1][1]['extensions'][0][1]['beneficiaries'];
+          }catch(e) {
+            beneficiaries = [];
+          }
         }
 
         const data = op[1];
@@ -82,11 +86,13 @@ export async function broadcast(req: express.Request,
             } : undefined
           };
         }
-        if (!(await validateNewPost({
+        if (type === 'post') {
+          if (!(await validateNewPost({
                 ...data,
-              beneficiaries,
-            }, false))) {
-          return res.sendStatus(HttpStatus.BAD_REQUEST);
+                beneficiaries,
+              }, false))) {
+            return res.sendStatus(HttpStatus.BAD_REQUEST);
+          }
         }
         data.json_metadata = JSON.stringify(meta);
       }
