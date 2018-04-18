@@ -94,7 +94,7 @@ export function processPost (post) {
   commentBody += `We hope you will take the time to share your expertise and knowledge by rating contributions made by others on Utopian.io to help us reward the best contributions together.\n`;
   commentBody += '#### Utopian Witness!\n';
   commentBody += '<a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for Utopian Witness!</a> We are made of developers, system administrators, entrepreneurs, artists, content creators, thinkers. We embrace every nationality, mindset and belief.\n';
-  commentBody += '\n**Want to chat? Join us on Discord https://discord.gg/Pc8HG9x**';
+  commentBody += '\n**Want to chat? Join us on Discord https://discord.me/utopian-io**';
 
   postConfig.comment = commentBody;
 
