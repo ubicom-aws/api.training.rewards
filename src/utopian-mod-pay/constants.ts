@@ -7,89 +7,89 @@ export interface CategoryValue {
 export const POST_MODERATION_THRESHOLD = 1;
 export const POINT_VALUE = 1;
 export const SUPERVISOR_MAX_POINTS = 250;
-export const MODERATOR_MAX_POINTS = 150;
+export const MODERATOR_MAX_POINTS = 250;
 export const SUPERVISOR_MIN_POINTS = 100;
 
 // Earnings multiplier
 export const CATEGORY_VALUE: { [key: string]: CategoryValue } = {
   ideas: {
-    reviewed: 0.75,
-    flagged: 0.75
-  },
-  development: {
     reviewed: 2,
     flagged: 2
   },
+  development: {
+    reviewed: 4.25,
+    flagged: 4.25
+  },
   translations: {
-    reviewed: 1.25,
-    flagged: 1.25
+    reviewed: 4,
+    flagged: 4
   },
   graphics: {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 3,
+    flagged: 3
   },
   documentation: {
-    reviewed: 0.75,
-    flagged: 0.75
+    reviewed: 2.25,
+    flagged: 2.25
   },
   copywriting: {
-    reviewed: 0.75,
-    flagged: 0.75
+    reviewed: 2,
+    flagged: 2
   },
   tutorials: {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 4,
+    flagged: 4
   },
   analysis: {
-    reviewed: 1.25,
-    flagged: 1.25
+    reviewed: 3.25,
+    flagged: 3.25
   },
   social: {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 2,
+    flagged: 2
   },
   blog: {
-    reviewed: 0.75,
-    flagged: 0.75
+    reviewed: 2.25,
+    flagged: 2.25
   },
   'video-tutorials': {
-    reviewed: 1.25,
-    flagged: 1.25
+    reviewed: 4,
+    flagged: 4
   },
   'bug-hunting': {
-    reviewed: 1,
-    flagged: 1
+    reviewed: 3.25,
+    flagged: 3.25
   },
   'task-ideas': {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 1.25,
+    reviewed: 1.25,
   },
   'task-development': {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 1.25,
+    reviewed: 1.25,
   },
   'task-bug-hunting': {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 1.25,
+    reviewed: 1.25,
   },
   'task-translations': {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 1.25,
+    reviewed: 1.25,
   },
   'task-graphics': {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 1.25,
+    reviewed: 1.25,
   },
   'task-documentation': {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 1.25,
+    reviewed: 1.25,
   },
   'task-analysis': {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 1.25,
+    reviewed: 1.25,
   },
   'task-social': {
-    reviewed: 0.50,
-    flagged: 0.50
+    reviewed: 1.25,
+    reviewed: 1.25,
   }
 };
