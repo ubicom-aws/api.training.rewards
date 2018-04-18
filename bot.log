@@ -1,0 +1,19 @@
+{"level":"info","message":"STARTING UTOPIAN BOT","timestamp":"2018-04-18T11:49:07.815Z"}
+{"level":"info","message":"Bot Account: utopian-io","timestamp":"2018-04-18T11:49:07.816Z"}
+{"level":"info","message":"Delete old log file from previous run","timestamp":"2018-04-18T11:49:07.816Z"}
+{"level":"info","message":"Begin Voting Process.","timestamp":"2018-04-18T11:49:13.667Z"}
+{"level":"info","message":"Found 0 staff picks.","timestamp":"2018-04-18T11:49:14.157Z"}
+{"level":"info","message":"Found 2 more contributions.","timestamp":"2018-04-18T11:49:14.398Z"}
+{"level":"info","message":"Finished processing posts. Now voting. Total: 1","timestamp":"2018-04-18T11:49:15.368Z"}
+{"level":"info","message":"---Now voting author--- fego","timestamp":"2018-04-18T11:49:15.369Z"}
+{"level":"info","message":"Post permlink unable-to-play-a-music-file-on-the-vinyl-music-player-when-the-play-option-is-accessed-from-the-simple-file-manager-application","timestamp":"2018-04-18T11:49:15.369Z"}
+{"level":"info","message":"Post category bug-hunting","timestamp":"2018-04-18T11:49:15.369Z"}
+{"meta":0,"level":"info","message":"Post index","timestamp":"2018-04-18T11:49:15.369Z"}
+{"meta":0,"level":"info","message":"Voting power used so far","timestamp":"2018-04-18T11:49:15.370Z"}
+{"level":"info","message":"Post Tot Inflluence 100","timestamp":"2018-04-18T11:49:15.370Z"}
+{"level":"info","message":"Post Score 66","timestamp":"2018-04-18T11:49:15.370Z"}
+{"meta":false,"level":"info","message":"Is Staff Picked","timestamp":"2018-04-18T11:49:15.370Z"}
+{"level":"info","message":"Will Receive Vote 330","timestamp":"2018-04-18T11:49:15.370Z"}
+{"level":"info","message":"Post commented successfully.","timestamp":"2018-04-18T11:49:28.644Z"}
+{"level":"info","message":"Post processed.","timestamp":"2018-04-18T11:49:28.644Z"}
+{"level":"info","message":"All posts voted.","timestamp":"2018-04-18T11:49:28.644Z"}

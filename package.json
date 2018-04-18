@@ -22,7 +22,7 @@
     "updater-posts": "node ./dist/updater-posts.js",
     "reset-pending": "node ./dist/reset-pending.js",
     "reputation": "node ./dist/reputation.js",
-    "utopian-bot": "node ./dist/utopian-bot-new.js",
+    "utopian-bot": "node ./dist/utopian-bot/index.js $TEST $FORCED $BOT $REFRESH_TOKEN $CLIENT_SECRET",
     "stats-categories": "node ./dist/stats-categories.js",
     "stats-moderators-shares": "node ./dist/stats-moderators-shares.js",
     "stats-sponsors-shares": "node ./dist/stats-sponsors-shares.js",

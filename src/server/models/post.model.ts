@@ -226,6 +226,7 @@ export interface PostSchemaDoc extends mongoose.Document {
 
 export interface PostSchemaModel extends mongoose.Model<PostSchemaDoc> {
   get(author: string, permlink: string): any;
+  getOne(author: string, permlink: string): any;
   countAll(query: any): any;
   list(query?: any): any;
 }
