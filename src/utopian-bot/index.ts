@@ -54,7 +54,7 @@ const queryStaffPick = {
 const queryPosts = {
     'json_metadata.moderator.flagged': { $ne : true },
     'json_metadata.score': { $exists: true, $ne : null},
-    'json_metadata.total_influence': { $exists: true, $ne : null},
+    'json_metadata.total_influence': { $exists: true, $ne : null, $gte: 60},
     author: {$ne: botAccount},
     'active_votes.voter': {$ne: botAccount},
     created: {
