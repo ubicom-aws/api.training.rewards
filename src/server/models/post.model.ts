@@ -21,7 +21,6 @@ const PostSchema = new mongoose.Schema({
     },
     deleted: {
         type: Boolean,
-
     },
     allow_curation_rewards: {
         type: Boolean,
