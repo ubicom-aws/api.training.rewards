@@ -371,6 +371,7 @@ function getPostById(req, res, next) {
     }
 }
 
+// going to be deprecated
 function list(req, res, next) {
     /*
      section : author | project | all
