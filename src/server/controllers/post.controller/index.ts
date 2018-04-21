@@ -360,7 +360,7 @@ function getPostById(req, res, next) {
 
     if (postId === parseInt(postId, 10) || !isNaN(postId)) {
         const query = {
-            'id': postId,
+            id: postId,
         };
 
         Post.list({limit: 1, skip: 0, query}).then(post => {

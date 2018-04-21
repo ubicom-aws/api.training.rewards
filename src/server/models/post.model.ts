@@ -21,6 +21,7 @@ const PostSchema = new mongoose.Schema({
     },
     deleted: {
         type: Boolean,
+        default: false,
     },
     allow_curation_rewards: {
         type: Boolean,
@@ -239,7 +240,7 @@ export interface PostSchemaModel extends mongoose.Model<PostSchemaDoc> {
 
 PostSchema.statics = {
     get(author: string, permlink: string) {
-        return this.findOne({author, permlink})
+        return this.findOne({author, permlink, deleted: false})
             .exec()
             .then((post) => {
                 if (post) {
@@ -250,7 +251,7 @@ PostSchema.statics = {
             });
     },
     getOne(author: string, permlink: string) {
-        return this.findOne({author, permlink})
+        return this.findOne({author, permlink, deleted: false})
             .exec()
             .then((post) => {
                 if (post) {
@@ -263,7 +264,10 @@ PostSchema.statics = {
         return this.count(query).exec();
     },
     list({skip = 0, limit = 100, query = {}, sort = {created: -1}, select = {}} = {}) {
-        return this.find(query)
+        return this.find({
+            ...query,
+            deleted: false,
+        })
             .select(select)
             .sort(sort)
             .skip(+skip)
