@@ -80,7 +80,7 @@ export function processPost (post) {
   };
 
   if (staff_pick) {
-    postConfig.voting_power = MaxVote;
+    postConfig.voting_power = MaxVote * 100;
   }
 
   if (!staff_pick && score) {

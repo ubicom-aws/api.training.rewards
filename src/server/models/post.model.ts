@@ -262,7 +262,7 @@ PostSchema.statics = {
     countAll({query = {}} = {}) {
         return this.count(query).exec();
     },
-    list({skip = 0, limit = 50, query = {}, sort = {created: -1}, select = {}} = {}) {
+    list({skip = 0, limit = 100, query = {}, sort = {created: -1}, select = {}} = {}) {
         return this.find(query)
             .select(select)
             .sort(sort)

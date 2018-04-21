@@ -533,6 +533,220 @@ function list(req, res, next) {
         .catch(e => next(e));
 }
 
+async function browse(req, res, next) {
+    let {
+        limit = 40,
+        skip = 0,
+        from = null,
+        to = null,
+        sort = 'DESC',
+        sort_score = 'DESC',
+        score_from = null,
+        score_to = null,
+        influence_from = null,
+        influence_to = null,
+        tags = null,
+        type = 'all',
+        status = 'all',
+        search = null,
+        authors = null,
+        projects = null,
+        moderators = null,
+    } = req.query;
+
+    console.log(req.query);
+
+    if (limit > 100) limit = 100;
+
+    let query: any = {};
+    let select: any = {};
+    let sortQuery: any = {
+        'created': -1,
+    };
+
+    // filters
+
+    // type can be any category or task-[category]
+    if (type !== 'all') {
+        if (type !== 'tasks') {
+            query = {
+                ...query,
+                'json_metadata.type': type,
+            };
+        } else {
+            query = {
+                ...query,
+                'json_metadata.type': {
+                    $regex : (/task-/i)
+                }
+            };
+        }
+    }
+
+    if (status !== 'all') {
+        query = {
+            ...query,
+            'json_metadata.moderator': {
+                $exists: true,
+                $ne: null,
+            }
+        };
+
+        switch (status) {
+            case 'reviewed': {
+                query = {
+                    ...query,
+                    'json_metadata.moderator.reviewed': true,
+                };
+                break;
+            }
+            case 'flagged': {
+                query = {
+                    ...query,
+                    'json_metadata.moderator.flagged': true,
+                };
+                break;
+            }
+            case 'pending': {
+                query = {
+                    ...query,
+                    'json_metadata.moderator.pending': true,
+                };
+                break;
+            }
+        }
+    }
+
+    if (from && to) {
+        query = {
+            ...query,
+            'created': {
+                $gte: from,
+                $lte: to,
+            }
+        };
+    }
+
+    if (score_from && score_to) {
+        query = {
+            ...query,
+            'json_metadata.score': {
+                $exists: true,
+                $gte: score_from,
+                $lte: score_to,
+            }
+        };
+    }
+
+    if (influence_from && influence_to) {
+        query = {
+            ...query,
+            'json_metadata.total_influence': {
+                $exists: true,
+                $gte: influence_from,
+                $lte: influence_to,
+            }
+        };
+    }
+
+    if (tags) {
+        query = {
+            ...query,
+            'json_metadata.tags': {
+                $exists: true,
+                $in: tags.split(',') || [],
+            }
+        };
+    }
+
+    // owners filters
+
+    if (authors) {
+        query = {
+            ...query,
+            author: {
+                $in: authors.split(',') || []
+            }
+        };
+    }
+
+    if (projects) {
+        query = {
+            ...query,
+            'json_metadata.repository': {$exists: true},
+            'json_metadata.repository.id': {$in: projects.split(',').map(p => parseInt(p)) || []}
+        };
+    }
+
+    if (moderators) {
+        query = {
+            ...query,
+            'json_metadata.moderator': {$exists: true},
+            'json_metadata.moderator.account': {
+                $in: moderators.split(',') || []
+            },
+        };
+    }
+
+    // sorters
+
+    if (sort === 'ASC') {
+        sortQuery = {
+            'created': 1,
+        }
+    }
+
+    if (sort_score === 'ASC') {
+        sortQuery = {
+            ...sortQuery,
+            'json_metadata.score': 1,
+            'json_metadata.total_influence': 1
+        }
+    }
+
+    if (sort_score === 'DESC') {
+        sortQuery = {
+            ...sortQuery,
+            'json_metadata.score': -1,
+            'json_metadata.total_influence': -1
+        }
+    }
+
+    // search
+    if (search) {
+        select = {
+            "score": {
+                "$meta": "textScore"
+            }
+        }
+        sortQuery = {
+            "score": {
+                "$meta": "textScore"
+            }
+        }
+        query = {
+            ...query,
+            $text: {
+                $search: search
+            }
+        },
+            {
+                score: {
+                    $meta: "textScore"
+                }
+            }
+    }
+
+    console.log("QUERY", query)
+
+    Post.list({ limit, skip, query, sortQuery, select })
+        .then((posts: any[]) => res.json({
+            total: posts.length,
+            results: posts.map(postMapper)
+        }))
+        .catch(e => next(e));
+}
+
 function getBoolean(val?: string | boolean): boolean {
     return val === true || val === 'true';
 }
@@ -544,6 +758,7 @@ export default {
     create,
     update,
     list,
+    browse,
     top,
     moderator
 };
