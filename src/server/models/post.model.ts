@@ -240,7 +240,7 @@ export interface PostSchemaModel extends mongoose.Model<PostSchemaDoc> {
 
 PostSchema.statics = {
     get(author: string, permlink: string) {
-        return this.findOne({author, permlink, deleted: false})
+        return this.findOne({author, permlink, deleted: {$ne: true}})
             .exec()
             .then((post) => {
                 if (post) {
@@ -251,7 +251,7 @@ PostSchema.statics = {
             });
     },
     getOne(author: string, permlink: string) {
-        return this.findOne({author, permlink, deleted: false})
+        return this.findOne({author, permlink, deleted: {$ne: true}})
             .exec()
             .then((post) => {
                 if (post) {
