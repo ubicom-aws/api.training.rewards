@@ -116,6 +116,68 @@ function get(req, res, next) {
         .then(post => sendPost(res, post)).catch(e => next(e));
 }
 
+async function preCreate(req, res) {
+    const author = req.body.author;
+    const permlink = req.body.permlink;
+    const body = req.body.body;
+    const title = req.body.title;
+    const category = 'utopian-io';
+    const parent_author = '';
+    const parent_permlink = 'utopian-io';
+    const created = (new Date()).toJSON().split('.')[0];
+    const url = '/utopian-io/@' + author + '/' + permlink
+    const reviewed = false;
+    const replies = [];
+    const beneficiaries = [];
+    const active_votes = [];
+    const tags = req.body.tags;
+    const depth = 0;
+    const children = 0;
+    const cashout_time = '1969-12-31T23:59:59';
+    const json_metadata = {
+        type: req.body.type,
+        platform: 'github',
+        repository: {
+            full_name: req.body.repository.full_name,
+            id: req.body.repository.id,
+            owner: {
+                login: req.body.repository.owner.login
+            },
+            name: req.body.repository.name
+        },
+        tags: tags,
+        format: "markdown",
+        app: "utopian/1.0.0",
+        community: "utopian",
+        moderator: {}
+    };
+
+    const updatedPost = {
+        author,
+        permlink,
+        cashout_time,
+        depth,
+        body,
+        title,
+        category,
+        children,
+        parent_author,
+        parent_permlink,
+        created,
+        url,
+        reviewed,
+        replies,
+        beneficiaries,
+        active_votes,
+        json_metadata
+    };
+
+    const post = new Post(updatedPost);
+    await post.save();
+    res.json(postMapper(post))
+
+}
+
 async function create(req, res, next) {
     const author = req.body.author;
     const permlink = req.body.permlink;
@@ -545,5 +607,6 @@ export default {
     update,
     list,
     top,
-    moderator
+    moderator,
+    preCreate
 };
