@@ -21,7 +21,7 @@ export default {
 				},
 				{
 					answer: "The post is really hard to read and the content is barely understandable.",
-					answer_id: 'task-1-a-3',
+					answer_id: 'task-1-a-4',
 					value: 0,
 				},
 			],

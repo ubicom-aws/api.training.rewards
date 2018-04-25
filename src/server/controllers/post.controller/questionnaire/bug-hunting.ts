@@ -16,12 +16,12 @@ export default {
 				},
 				{
 					answer: "Minor",
-					answer_id: 'bug-1-a-2',
+					answer_id: 'bug-1-a-3',
 					value: 29,
 				},
 				{
 					answer: "Trivial",
-					answer_id: 'bug-1-a-3',
+					answer_id: 'bug-1-a-4',
 					value: 0,
 				}
 			],
