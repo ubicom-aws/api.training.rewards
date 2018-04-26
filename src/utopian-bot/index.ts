@@ -119,7 +119,6 @@ function logVote (postToVote, usedVotingPower, index)  {
 async function run() {
     const votingPower = await checkVotingPower(botAccount);
     const stats: any = await getStats();
-    const SC: any = await prepareSteemConnect();
     const processedPosts = Array();
 
     if (!botAccount) {
@@ -137,7 +136,7 @@ async function run() {
         exit();
     }
 
-    if (!votingPower || !stats || !SC) {
+    if (!votingPower || !stats) {
         console.log("info", "Something went wrong. Retrying.");
         run();
     }
@@ -157,6 +156,13 @@ async function run() {
             stats.bot_is_voting = true;
             stats.save();
         });
+    }
+
+    const SC: any = await prepareSteemConnect();
+
+    if (!SC) {
+        console.log("info", "Something went wrong. Retrying.");
+        run();
     }
 
     console.log("info", "Begin Voting Process.");
