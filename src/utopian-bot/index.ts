@@ -123,32 +123,39 @@ async function run() {
 
     if (!botAccount) {
         console.log("error", "No bot account was set.");
-        exit();
+        return exit();
     }
 
     if (!refreshToken) {
         console.log("error", "No refresh token was set.");
-        exit();
+        return exit();
     }
 
     if (!secret) {
         console.log("error", "No app secret was set.");
-        exit();
+        return exit();
     }
 
     if (!votingPower || !stats) {
         console.log("info", "Something went wrong. Retrying.");
-        run();
+        return run();
     }
 
     if (votingPower < 99 && !forced && !test) {
         console.log("info", "Voting power not enough. Can't vote.");
-        exit();
+        return exit();
     }
 
     if (stats.bot_is_voting === true && !test) {
         console.log("info", "Bot is already voting.");
-        exit();
+        return exit();
+    }
+
+    const SC: any = await prepareSteemConnect();
+
+    if (!SC) {
+        console.log("info", "Something went wrong. Retrying.");
+        return run();
     }
 
     if (!test) {
@@ -156,13 +163,6 @@ async function run() {
             stats.bot_is_voting = true;
             stats.save();
         });
-    }
-
-    const SC: any = await prepareSteemConnect();
-
-    if (!SC) {
-        console.log("info", "Something went wrong. Retrying.");
-        run();
     }
 
     console.log("info", "Begin Voting Process.");
