@@ -153,6 +153,8 @@ async function run() {
 
     const SC: any = await prepareSteemConnect();
 
+    console.log("info", votingPower);
+
     if (!SC) {
         console.log("info", "Something went wrong. Retrying.");
         return run();
