@@ -79,11 +79,11 @@ if (fs.existsSync('bot.log')) {
     fs.unlinkSync('bot.log');
 }
 
-async function exit() {
+async function exit(isVoting = false) {
     let prefix = random.generate().toLocaleLowerCase();
     if (!test) {
         Stats.get().then(stats => {
-            stats.bot_is_voting = false;
+            stats.bot_is_voting = isVoting;
             stats.save().then(() => {
                 uploadBotLog(prefix).then(() => {
                     conn.close();
@@ -141,14 +141,14 @@ async function run() {
         return run();
     }
 
-    if (votingPower < 99 && !forced && !test) {
+    if (votingPower < 9900 && !forced && !test) {
         console.log("info", "Voting power not enough. Can't vote.");
         return exit();
     }
 
     if (stats.bot_is_voting === true && !test) {
         console.log("info", "Bot is already voting.");
-        return exit();
+        return exit(true);
     }
 
     const SC: any = await prepareSteemConnect();
