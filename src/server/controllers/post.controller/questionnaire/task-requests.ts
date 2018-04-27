@@ -10,14 +10,14 @@ export default {
 					value: 10,
 				},
 				{
-					answer: "The post is of very good quality.",
+					answer: "The post is of decent quality, but not spectacular in any way.",
 					answer_id: 'task-1-a-2',
 					value: 8,
 				},
 				{
 					answer: "The post is poorly written and/or formatted, but readable.",
 					answer_id: 'task-1-a-3',
-					value: 8,
+					value: 3,
 				},
 				{
 					answer: "The post is really hard to read and the content is barely understandable.",

@@ -79,11 +79,11 @@ if (fs.existsSync('bot.log')) {
     fs.unlinkSync('bot.log');
 }
 
-async function exit(isVoting = false) {
+async function exit(skipStats = false) {
     let prefix = random.generate().toLocaleLowerCase();
-    if (!test) {
+    if (!test && !skipStats) {
         Stats.get().then(stats => {
-            stats.bot_is_voting = isVoting;
+            stats.bot_is_voting = false;
             stats.save().then(() => {
                 uploadBotLog(prefix).then(() => {
                     conn.close();
@@ -98,7 +98,7 @@ async function exit(isVoting = false) {
         });
     }
 
-    if (test) {
+    if (test || skipStats) {
         conn.close();
         process.exit(0);
     }
