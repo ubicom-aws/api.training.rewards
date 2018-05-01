@@ -91,7 +91,7 @@ export function processPost (post) {
   }
 
 
-  let commentBody = `#### Hey @${post.author}!\n`;
+  let commentBody = `#### Hey @${post.author}\n`;
   commentBody += `We're already looking forward to your next ${processedType === 'tasks-requests' ? 'task' : 'contribution'}!\n`;
   commentBody += `##### Decentralised Rewards\n`;
   commentBody += `Share your expertise and knowledge by rating contributions made by others on Utopian.io to help us reward the best contributions together.\n`;

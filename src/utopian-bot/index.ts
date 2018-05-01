@@ -216,6 +216,7 @@ async function run() {
                 SteemConnect.vote(botAccount, postToVote.author, postToVote.permlink, votingPower)
                     .then(() => {
                         const commentPermlink = createCommentPermlink(postToVote.author, postToVote.permlink);
+
                         usedVotingPower = usedVotingPower + votingPower;
 
                         SteemConnect.comment(
@@ -229,7 +230,7 @@ async function run() {
                         ).then(() => {
                             console.log("info", "Post commented successfully.");
 
-                            SteemConnect.vote(botAccount, botAccount, commentPermlink, 5)
+                            SteemConnect.vote(botAccount, botAccount, commentPermlink, 10)
                                 .then(() => {
                                     console.log("info", 'Post processed.');
 
