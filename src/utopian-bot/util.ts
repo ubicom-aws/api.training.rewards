@@ -90,11 +90,12 @@ export function processPost (post) {
     postConfig.voting_power = Math.round(scoreImpact.toFixed(2) * 100);
   }
 
-  let commentBody = `### Hey @${post.author}! Thank you for the great work you've done!\n`;
-  commentBody += `We're already looking forward to your next contribution!\n`;
-  commentBody += `#### Fully Decentralized Rewards\n`;
-  commentBody += `We hope you will take the time to share your expertise and knowledge by rating contributions made by others on Utopian.io to help us reward the best contributions together.\n`;
-  commentBody += '#### Utopian Witness!\n';
+
+  let commentBody = `#### Hey @${post.author}!\n`;
+  commentBody += `We're already looking forward to your next ${processedType === 'tasks-requests' ? 'task' : 'contribution'}!\n`;
+  commentBody += `##### Decentralised Rewards\n`;
+  commentBody += `Share your expertise and knowledge by rating contributions made by others on Utopian.io to help us reward the best contributions together.\n`;
+  commentBody += '##### Utopian Witness!\n';
   commentBody += '<a href="https://v2.steemconnect.com/sign/account-witness-vote?witness=utopian-io&approve=1">Vote for Utopian Witness!</a> We are made of developers, system administrators, entrepreneurs, artists, content creators, thinkers. We embrace every nationality, mindset and belief.\n';
   commentBody += '\n**Want to chat? Join us on Discord https://discord.me/utopian-io**';
 

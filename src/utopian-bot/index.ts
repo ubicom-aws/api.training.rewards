@@ -214,35 +214,47 @@ async function run() {
                 logVote(postToVote, usedVotingPower, index);
 
                 SteemConnect.vote(botAccount, postToVote.author, postToVote.permlink, votingPower)
-                .then(() => {
-                    usedVotingPower = usedVotingPower + votingPower;
+                    .then(() => {
+                        const commentPermlink = createCommentPermlink(postToVote.author, postToVote.permlink);
+                        usedVotingPower = usedVotingPower + votingPower;
 
-                    SteemConnect.comment(
-                        postToVote.author,
-                        postToVote.permlink,
-                        botAccount,
-                        createCommentPermlink(postToVote.author, postToVote.permlink),
-                        '',
-                        postToVote.comment,
-                        postToVote.json_metadata,
-                    ).then(() => {
-                        console.log("info", "Post commented successfully.");
-                        console.log("info", 'Post processed.');
+                        SteemConnect.comment(
+                            postToVote.author,
+                            postToVote.permlink,
+                            botAccount,
+                            commentPermlink,
+                            '',
+                            postToVote.comment,
+                            postToVote.json_metadata,
+                        ).then(() => {
+                            console.log("info", "Post commented successfully.");
 
-                        if (index === processedPosts.length - 1) {
-                            console.log("info", "All posts voted.");
-                            exit();
-                        }
+                            SteemConnect.vote(botAccount, botAccount, commentPermlink, 5)
+                                .then(() => {
+                                    console.log("info", 'Post processed.');
 
+                                    if (index === processedPosts.length - 1) {
+                                        console.log("info", "All posts voted.");
+                                        exit();
+                                    }
+                                })
+                                .catch(e => {
+                                    console.log("error", "Failed to vote bot comment!", e);
+
+                                    if (index === processedPosts.length - 1) {
+                                        console.log("info", "All posts voted.");
+                                        exit();
+                                    }
+                                });
+                        }).catch(e => {
+                            console.log("error", "Failed to post comment!", e);
+
+                            if (index === processedPosts.length - 1) {
+                                console.log("info", "All posts voted.");
+                                exit();
+                            }
+                        });
                     }).catch(e => {
-                        console.log("error", "Failed to post comment!", e);
-
-                        if (index === processedPosts.length - 1) {
-                            console.log("info", "All posts voted.");
-                            exit();
-                        }
-                    });
-                }).catch(e => {
                     console.log("error", "Failed to vote!", e);
 
                     if (index === processedPosts.length - 1) {
