@@ -73,17 +73,17 @@ async function run() {
   { // Generate global post
     const totalReviewed: number = moderators.reduce((prev, cur) => {
       return typeof(prev) === 'number'
-              ? prev + cur.totalReviewed
-              : prev.totalReviewed + cur.totalReviewed as any;
+          ? prev + cur.totalReviewed
+          : prev.totalReviewed + cur.totalReviewed as any;
     }) as any;
     const totalFlagged: number = moderators.reduce((prev, cur) => {
       return typeof(prev) === 'number'
-              ? prev + cur.totalFlagged
-              : prev.totalFlagged + cur.totalFlagged as any;
+          ? prev + cur.totalFlagged
+          : prev.totalFlagged + cur.totalFlagged as any;
     }) as any;
 
     mainPost =
-`\
+        `\
 ![utopian-post-banner.png](https://res.cloudinary.com/hpiynhbhq/image/upload/v1516449865/t0gmipslwoa6htmribn7.png)\
 
 This is an automated weekly reward post for moderators from @utopian-io. Each \
@@ -112,7 +112,7 @@ of the total amount of posts were accepted by moderators.
 
     for (const key in cats) {
       mainPost +=
-`
+          `
 ### ${formatCat(key)} Category
 - ${cats[key].reviewed} post${cats[key].reviewed === 1 ? '' : 's'} reviewed
 - ${cats[key].flagged} post${cats[key].flagged === 1 ? '' : 's'} flagged
@@ -124,10 +124,10 @@ of the total amount of posts were accepted by moderators.
     // Calculate raw rewards without the bound cap applied
     for (const mod of moderators) {
       /*
-      let referrer: string|undefined = mod.moderator.referrer;
-      if (referrer && mod.moderator.supermoderator === true) {
-        referrer = undefined;
-      }*/
+       let referrer: string|undefined = mod.moderator.referrer;
+       if (referrer && mod.moderator.supermoderator === true) {
+       referrer = undefined;
+       }*/
 
       let totalPoints = mod.rewards;
       for (const catKey in mod.categories) {
@@ -137,13 +137,13 @@ of the total amount of posts were accepted by moderators.
         const flaggedPoints = cat.flagged * CATEGORY_VALUE[catKey].flagged * POINT_VALUE;
         totalPoints += reviewedPoints + flaggedPoints;
         /*if (referrer) {
-          let ref = moderators.filter(val => {
-            return val.moderator.account === referrer;
-          })[0];
-          if (ref && ref.moderator.supermoderator === true) {
-            ref.rewards += reviewedPoints + flaggedPoints;
-          }
-        } */
+         let ref = moderators.filter(val => {
+         return val.moderator.account === referrer;
+         })[0];
+         if (ref && ref.moderator.supermoderator === true) {
+         ref.rewards += reviewedPoints + flaggedPoints;
+         }
+         } */
       }
 
       if (mod.totalReviewed + mod.totalFlagged >= POST_MODERATION_THRESHOLD) {
@@ -255,8 +255,8 @@ of the total amount of posts were accepted by moderators.
 }
 
 async function broadcast(mod: ModeratorStats,
-                          account: Account,
-                          opts: CommentOpts) {
+                         account: Account,
+                         opts: CommentOpts) {
   const content = await getContent(mod.moderator.account, opts.permlink);
   let commentExists = content.author && content.permlink;
 
