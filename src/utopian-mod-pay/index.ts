@@ -210,7 +210,7 @@ of the total amount of posts were accepted by moderators.
           {
             author: POSTER_ACCOUNT,
             permlink,
-            allow_curation_rewards: false,
+            allow_curation_rewards: true,
             allow_votes: true,
             max_accepted_payout: '0.000 SBD',
             percent_steem_dollars : 10000

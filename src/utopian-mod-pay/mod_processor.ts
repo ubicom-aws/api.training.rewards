@@ -44,7 +44,7 @@ export class ModeratorStats {
         {
           author: this.moderator.account,
           permlink: opts.permlink,
-          allow_curation_rewards: false,
+          allow_curation_rewards: true,
           allow_votes: true,
           percent_steem_dollars: 10000,
           max_accepted_payout: '1000000.000 SBD',
