@@ -338,10 +338,10 @@ async function edit(req, res, next) {
         post.json_metadata = params.json_metadata;
 
         if (post.json_metadata.type !== params.json_metadata.type) {
-            post.json_metadata.config = questionnaire[params.json_metadata.type];
-            post.json_metadata.questions = null;
-            post.json_metadata.score = null;
-            post.json_metadata.total_influence = null;
+            post.json_metadata.config = params.json_metadata.config = questionnaire[params.json_metadata.type];
+            post.json_metadata.questions = params.json_metadata.questions = null;
+            post.json_metadata.score = params.json_metadata.score = null;
+            post.json_metadata.total_influence = params.json_metadata.total_influence = null;
         }
 
         if (!(await validateNewPost(post, true, false))) {
