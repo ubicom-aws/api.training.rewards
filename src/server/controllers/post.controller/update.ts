@@ -48,12 +48,21 @@ export function updatePost(post: any, updatedPost: any): any {
   if (!updatedPost.json_metadata.issue && post.json_metadata.issue) updatedPost.json_metadata.issue = post.json_metadata.issue;
   if (updatedPost.json_metadata.type) updatedPost.json_metadata.type = updatedPost.json_metadata.type.replace("announcement-", "task-");
   updatedPost.json_metadata.moderator = post.json_metadata.moderator;
-  updatedPost.json_metadata.questions = post.json_metadata.questions;
-  updatedPost.json_metadata.score = post.json_metadata.score;
-  updatedPost.json_metadata.total_influence = post.json_metadata.total_influence;
+
+  if (post.json_metadata.type !== updatedPost.json_metadata.type) {
+    updatedPost.json_metadata.config = questionnaire[updatedPost.json_metadata.type]
+    updatedPost.json_metadata.questions = null;
+    updatedPost.json_metadata.score = null;
+    updatedPost.json_metadata.total_influence = null;
+  } else {
+    updatedPost.json_metadata.config = post.json_metadata.config || questionnaire[post.json_metadata.type]
+    updatedPost.json_metadata.questions = post.json_metadata.questions;
+    updatedPost.json_metadata.score = post.json_metadata.score;
+    updatedPost.json_metadata.total_influence = post.json_metadata.total_influence;
+  }
+
   updatedPost.json_metadata.staff_pick = post.json_metadata.staff_pick;
   updatedPost.json_metadata.staff_pick_by = post.json_metadata.staff_pick_by;
-  updatedPost.json_metadata.config = post.json_metadata.config || questionnaire[post.json_metadata.type]
 
   Object.assign(post, updatedPost);
   return post;
